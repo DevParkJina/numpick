@@ -876,7 +876,7 @@ function renderSalesDashboard() {
 async function handleProductsFile(ev) {
   const file = ev.target.files[0]; if (!file) return;
   try {
-    productsData = await parseExcel(file);
+    productsData = (await parseExcel(file)).filter(r => String(col(r,'상품상태')||'').trim() === '1');
     const sups = [...new Set(productsData.map(r => String(col(r,'공급사')||'').trim()).filter(Boolean))].sort();
     const sel  = document.getElementById('filter-supplier');
     sel.innerHTML = '<option value="">전체</option>' + sups.map(s => `<option value="${s}">${s}</option>`).join('');

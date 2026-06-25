@@ -106,6 +106,18 @@
       </div>
 
       <div style="display:flex; align-items:center; gap:8px;">
+        <span style="font-size:12px; font-weight:500; color:#94a3b8;">그룹기준</span>
+        <div style="display:flex; background:#f1f5f9; border-radius:8px; padding:3px; gap:2px;">
+          <button id="group-media" onclick="setGroupBy('media')" class="tog-btn on"
+            style="padding:4px 14px; border-radius:6px; font-size:12px; font-weight:500; border:none;">매체별</button>
+          <button id="group-brand" onclick="setGroupBy('brand')" class="tog-btn off"
+            style="padding:4px 14px; border-radius:6px; font-size:12px; font-weight:500; border:none; background:transparent;">브랜드별</button>
+          <button id="group-supplier" onclick="setGroupBy('supplier')" class="tog-btn off"
+            style="padding:4px 14px; border-radius:6px; font-size:12px; font-weight:500; border:none; background:transparent;">공급사별</button>
+        </div>
+      </div>
+
+      <div style="display:flex; align-items:center; gap:8px;">
         <span style="font-size:12px; font-weight:500; color:#94a3b8;">정렬기준</span>
         <div style="display:flex; background:#f1f5f9; border-radius:8px; padding:3px; gap:2px;">
           <button id="sort-qty" onclick="setSortBy('qty')" class="tog-btn on"
@@ -392,6 +404,7 @@ let productsData = [];
 let mediaData    = [];
 let mediaChanData = [];
 let sortBy       = 'qty';
+let groupBy      = 'media';
 let charts       = {};
 let filterPtype  = '';
 let filterRtype  = '';
@@ -561,6 +574,19 @@ function setSortBy(type) {
     b.style.background = 'transparent';
   });
   const btn = document.getElementById('sort-' + type);
+  btn.className = 'tog-btn on';
+  btn.style.background = '';
+  renderSalesDashboard();
+}
+
+function setGroupBy(type) {
+  groupBy = type;
+  ['media','brand','supplier'].forEach(t => {
+    const b = document.getElementById('group-' + t);
+    b.className = 'tog-btn off';
+    b.style.background = 'transparent';
+  });
+  const btn = document.getElementById('group-' + type);
   btn.className = 'tog-btn on';
   btn.style.background = '';
   renderSalesDashboard();
@@ -745,8 +771,8 @@ function renderSalesDashboard() {
     return true;
   });
 
-  // Aggregate: media → (brand+product) → {qty, amt}
-  const byMedia = {};
+  // Aggregate by groupBy: media | brand | supplier
+  const byGroup = {};
   let totalQty = 0, totalAmt = 0;
   const mediaSet = new Set();
 
@@ -754,24 +780,30 @@ function renderSalesDashboard() {
     const media    = String(col(r, '매체명')  || '').trim();
     const brand    = String(col(r, '브랜드')  || '').trim();
     const product  = String(col(r, '상품명')  || '').trim();
-    if (!media || !product) return;
+    if (!product) return;
 
     const qty      = safeNum(col(r, '수량'));
     const amt      = safeNum(col(r, '매출액', '거래금액'));
     const supplier = String(col(r, '공급사')  || '').trim();
     const code     = String(col(r, '상품코드', '공급사상품코드', '공급사발급코드') || '').trim();
 
-    totalQty += qty; totalAmt += amt; mediaSet.add(media);
+    totalQty += qty; totalAmt += amt;
+    if (media) mediaSet.add(media);
 
-    if (!byMedia[media]) byMedia[media] = { total:{ qty:0, amt:0 }, prods:{} };
-    byMedia[media].total.qty += qty;
-    byMedia[media].total.amt += amt;
+    const groupKey = groupBy === 'media' ? (media || '(매체없음)')
+                   : groupBy === 'brand'  ? (brand || '(브랜드없음)')
+                   : (supplier || '(공급사없음)');
+
+    if (!byGroup[groupKey]) byGroup[groupKey] = { total:{ qty:0, amt:0 }, prods:{} };
+    byGroup[groupKey].total.qty += qty;
+    byGroup[groupKey].total.amt += amt;
 
     const key = brand ? `${brand}|||${product}` : product;
-    if (!byMedia[media].prods[key]) byMedia[media].prods[key] = { brand, name: product, supplier, code, qty:0, amt:0 };
-    byMedia[media].prods[key].qty += qty;
-    byMedia[media].prods[key].amt += amt;
+    if (!byGroup[groupKey].prods[key]) byGroup[groupKey].prods[key] = { brand, name: product, supplier, code, qty:0, amt:0 };
+    byGroup[groupKey].prods[key].qty += qty;
+    byGroup[groupKey].prods[key].amt += amt;
   });
+  const byMedia = byGroup;
 
   // KPI
   const kpis = document.getElementById('sales-kpis');
@@ -809,7 +841,7 @@ function renderSalesDashboard() {
       : b[1].total.amt - a[1].total.amt);
 
   sortedMedias.forEach(([mediaCode, mData], rank) => {
-    const mName  = MEDIA_MAP[mediaCode.trim()] || mediaCode;
+    const mName  = groupBy === 'media' ? (MEDIA_MAP[mediaCode.trim()] || mediaCode) : mediaCode;
     const sorted = Object.values(mData.prods)
       .sort((a,b) => sortBy === 'qty' ? b.qty - a.qty : b.amt - a.amt)
       .slice(0, 10);
@@ -826,7 +858,7 @@ function renderSalesDashboard() {
           font-size:11px; font-weight:700; flex-shrink:0; ${rankS}">${rank+1}</div>
         <div style="flex:1; min-width:0;">
           <div style="font-size:14px; font-weight:600; color:#0f172a; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${mName}</div>
-          <div style="font-size:11px; font-weight:400; color:#94a3b8; margin-top:1px;">${mediaCode}</div>
+          <div style="font-size:11px; font-weight:400; color:#94a3b8; margin-top:1px;">${groupBy === 'media' ? mediaCode : groupBy === 'brand' ? '브랜드' : '공급사'}</div>
         </div>
         <div style="text-align:right; flex-shrink:0;">
           <div class="num" style="font-size:14px; font-weight:700; color:#4f46e5;">${mData.total.qty.toLocaleString()}개</div>

@@ -539,10 +539,10 @@ async function handleSalesFile(ev) {
   } catch(e) { alert('파일 읽기 오류: ' + e.message); }
 }
 
-function resetSales() {
+async function resetSales() {
   salesData = [];
   localStorage.removeItem(_SK.sales.lock);
-  localStorage.removeItem(_SK.sales.data);
+  await clearDB('sales');
   updateLockBtn('sales', false);
   document.getElementById('sales-upload-wrap').style.display = '';
   document.getElementById('sales-controls').style.display = 'none';
@@ -570,46 +570,87 @@ function setSortBy(type) {
 //  PERSIST — localStorage 잠금 저장
 // ════════════════════════════════════════════════════
 const _SK = {
-  sales:    { lock:'np_lock_sales',    data:'np_data_sales'    },
-  products: { lock:'np_lock_prods',    data:'np_data_prods'    },
-  media:    { lock:'np_lock_media',    data:'np_data_media'    },
+  sales:    { lock:'np_lock_sales' },
+  products: { lock:'np_lock_prods' },
+  media:    { lock:'np_lock_media' },
 };
+
+function openDB() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open('nyumpick', 1);
+    req.onupgradeneeded = e => {
+      const db = e.target.result;
+      ['sales','products','media'].forEach(s => {
+        if (!db.objectStoreNames.contains(s)) db.createObjectStore(s);
+      });
+    };
+    req.onsuccess = e => resolve(e.target.result);
+    req.onerror   = e => reject(e.target.error);
+  });
+}
+async function saveDB(tab, data) {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(tab, 'readwrite');
+    tx.objectStore(tab).put(data, 'data');
+    tx.oncomplete = resolve;
+    tx.onerror = e => reject(e.target.error);
+  });
+}
+async function loadDB(tab) {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(tab, 'readonly');
+    const req = tx.objectStore(tab).get('data');
+    req.onsuccess = e => resolve(e.target.result);
+    req.onerror   = e => reject(e.target.error);
+  });
+}
+async function clearDB(tab) {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(tab, 'readwrite');
+    tx.objectStore(tab).clear();
+    tx.oncomplete = resolve;
+    tx.onerror    = e => reject(e.target.error);
+  });
+}
 
 function isLocked(tab) { return localStorage.getItem(_SK[tab].lock) === '1'; }
 
-function toggleLock(tab) {
+async function toggleLock(tab) {
   if (isLocked(tab)) {
     localStorage.removeItem(_SK[tab].lock);
-    localStorage.removeItem(_SK[tab].data);
+    await clearDB(tab);
     updateLockBtn(tab, false);
   } else {
-    if (!saveToStorage(tab)) return;
+    if (!(await saveToStorage(tab))) return;
     localStorage.setItem(_SK[tab].lock, '1');
     updateLockBtn(tab, true);
   }
 }
 
-function saveToStorage(tab) {
+async function saveToStorage(tab) {
   try {
     if (tab === 'sales') {
       if (!salesData.length) { alert('저장할 데이터가 없습니다.'); return false; }
-      localStorage.setItem(_SK.sales.data, JSON.stringify(salesData));
+      await saveDB('sales', salesData);
     } else if (tab === 'products') {
       if (!productsData.length) { alert('저장할 데이터가 없습니다.'); return false; }
-      localStorage.setItem(_SK.products.data, JSON.stringify(productsData));
+      await saveDB('products', productsData);
     } else if (tab === 'media') {
       if (!mediaData.length) { alert('저장할 데이터가 없습니다.'); return false; }
-      localStorage.setItem(_SK.media.data, JSON.stringify({ mediaData, mediaChanData }));
+      await saveDB('media', { mediaData, mediaChanData });
     }
     return true;
   } catch(e) {
-    alert('저장 실패: 데이터가 너무 큽니다. 파일 크기를 줄여주세요.');
+    alert('저장 실패: ' + e.message);
     return false;
   }
 }
 
-function autoSaveIfLocked(tab) {
-  if (isLocked(tab)) saveToStorage(tab);
+async function autoSaveIfLocked(tab) {
+  if (isLocked(tab)) await saveToStorage(tab);
 }
 
 function updateLockBtn(tab, locked) {
@@ -621,13 +662,13 @@ function updateLockBtn(tab, locked) {
   btn.style.border     = locked ? 'none'    : '1px solid #e2e8f0';
 }
 
-function loadFromStorage() {
+async function loadFromStorage() {
   // 판매분석
   if (isLocked('sales')) {
     try {
-      const raw = localStorage.getItem(_SK.sales.data);
-      if (raw) {
-        salesData = JSON.parse(raw);
+      const data = await loadDB('sales');
+      if (data && data.length) {
+        salesData = data;
         let minD = null, maxD = null;
         salesData.forEach(r => {
           const d = toDate(col(r,'주문일시'));
@@ -643,15 +684,15 @@ function loadFromStorage() {
         updateLockBtn('sales', true);
         renderSalesDashboard();
       }
-    } catch(e) { localStorage.removeItem(_SK.sales.lock); localStorage.removeItem(_SK.sales.data); }
+    } catch(e) { localStorage.removeItem(_SK.sales.lock); }
   }
 
   // 상품현황
   if (isLocked('products')) {
     try {
-      const raw = localStorage.getItem(_SK.products.data);
-      if (raw) {
-        productsData = JSON.parse(raw);
+      const data = await loadDB('products');
+      if (data && data.length) {
+        productsData = data;
         const sups = [...new Set(productsData.map(r => String(col(r,'공급사')||'').trim()).filter(Boolean))].sort();
         const sel  = document.getElementById('filter-supplier');
         sel.innerHTML = '<option value="">전체</option>' + sups.map(s => `<option value="${s}">${s}</option>`).join('');
@@ -660,15 +701,14 @@ function loadFromStorage() {
         updateLockBtn('products', true);
         renderProductsDashboard();
       }
-    } catch(e) { localStorage.removeItem(_SK.products.lock); localStorage.removeItem(_SK.products.data); }
+    } catch(e) { localStorage.removeItem(_SK.products.lock); }
   }
 
   // 매체 상품현황
   if (isLocked('media')) {
     try {
-      const raw = localStorage.getItem(_SK.media.data);
-      if (raw) {
-        const payload = JSON.parse(raw);
+      const payload = await loadDB('media');
+      if (payload) {
         mediaData     = payload.mediaData     || [];
         mediaChanData = payload.mediaChanData  || [];
         const medias = [...new Set(mediaData.map(r => String(col(r,'매체명')||'').trim()).filter(Boolean))].sort();
@@ -685,10 +725,9 @@ function loadFromStorage() {
         updateLockBtn('media', true);
         renderMediaDashboard();
       }
-    } catch(e) { localStorage.removeItem(_SK.media.lock); localStorage.removeItem(_SK.media.data); }
+    } catch(e) { localStorage.removeItem(_SK.media.lock); }
   }
 }
-
 function renderSalesDashboard() {
   const from = document.getElementById('date-from').value;
   const to   = document.getElementById('date-to').value;
@@ -876,7 +915,7 @@ function renderSalesDashboard() {
 async function handleProductsFile(ev) {
   const file = ev.target.files[0]; if (!file) return;
   try {
-    productsData = (await parseExcel(file)).filter(r => String(col(r,'상품상태')||'').trim() === '1');
+    productsData = await parseExcel(file);
     const sups = [...new Set(productsData.map(r => String(col(r,'공급사')||'').trim()).filter(Boolean))].sort();
     const sel  = document.getElementById('filter-supplier');
     sel.innerHTML = '<option value="">전체</option>' + sups.map(s => `<option value="${s}">${s}</option>`).join('');
@@ -887,10 +926,10 @@ async function handleProductsFile(ev) {
   } catch(e) { alert('파일 오류: ' + e.message); }
 }
 
-function resetProducts() {
+async function resetProducts() {
   productsData = [];
   localStorage.removeItem(_SK.products.lock);
-  localStorage.removeItem(_SK.products.data);
+  await clearDB('products');
   updateLockBtn('products', false);
   document.getElementById('filter-ptype').value = '';
   document.getElementById('filter-rtype').value = '';
@@ -1242,11 +1281,11 @@ async function handleMediaFile(ev) {
   } catch(e) { alert('파일 오류: ' + e.message); }
 }
 
-function resetMedia() {
+async function resetMedia() {
   mediaData = [];
   mediaChanData = [];
   localStorage.removeItem(_SK.media.lock);
-  localStorage.removeItem(_SK.media.data);
+  await clearDB('media');
   updateLockBtn('media', false);
   document.getElementById('media-filter-brand').value = '';
   document.getElementById('media-filter-media').innerHTML = '<option value="">전체</option>';

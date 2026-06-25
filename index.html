@@ -124,6 +124,8 @@
             style="padding:4px 14px; border-radius:6px; font-size:12px; font-weight:500; border:none;">수량</button>
           <button id="sort-amt" onclick="setSortBy('amt')" class="tog-btn off"
             style="padding:4px 14px; border-radius:6px; font-size:12px; font-weight:500; border:none; background:transparent;">매출액</button>
+          <button id="sort-brand" onclick="setSortBy('brand')" class="tog-btn off"
+            style="padding:4px 14px; border-radius:6px; font-size:12px; font-weight:500; border:none; background:transparent;">브랜드별</button>
         </div>
       </div>
 
@@ -569,7 +571,7 @@ async function resetSales() {
 
 function setSortBy(type) {
   sortBy = type;
-  document.querySelectorAll('#sort-qty, #sort-amt').forEach(b => {
+  document.querySelectorAll('#sort-qty, #sort-amt, #sort-brand').forEach(b => {
     b.className = 'tog-btn off';
     b.style.background = 'transparent';
   });
@@ -842,9 +844,21 @@ function renderSalesDashboard() {
 
   sortedMedias.forEach(([mediaCode, mData], rank) => {
     const mName  = groupBy === 'media' ? (MEDIA_MAP[mediaCode.trim()] || mediaCode) : mediaCode;
-    const sorted = Object.values(mData.prods)
-      .sort((a,b) => sortBy === 'qty' ? b.qty - a.qty : b.amt - a.amt)
-      .slice(0, 10);
+    let sorted;
+    if (sortBy === 'brand') {
+      const brandAgg = {};
+      Object.values(mData.prods).forEach(p => {
+        const bk = p.brand || '(브랜드없음)';
+        if (!brandAgg[bk]) brandAgg[bk] = { name: bk, qty: 0, amt: 0 };
+        brandAgg[bk].qty += p.qty;
+        brandAgg[bk].amt += p.amt;
+      });
+      sorted = Object.values(brandAgg).sort((a,b) => b.qty - a.qty).slice(0, 10);
+    } else {
+      sorted = Object.values(mData.prods)
+        .sort((a,b) => sortBy === 'qty' ? b.qty - a.qty : b.amt - a.amt)
+        .slice(0, 10);
+    }
 
     const cid = 'chart_' + mediaCode.replace(/[^a-zA-Z0-9]/g, '_');
     const rankS = RANK_STYLE[Math.min(rank, 3)];
@@ -871,7 +885,7 @@ function renderSalesDashboard() {
           <thead>
             <tr style="border-bottom:1px solid #f1f5f9;">
               <th style="text-align:left; padding:6px 4px; font-size:10px; font-weight:600; color:#94a3b8; text-transform:uppercase; letter-spacing:0.4px; width:28px;">순위</th>
-              <th style="text-align:left; padding:6px 4px; font-size:10px; font-weight:600; color:#94a3b8; text-transform:uppercase; letter-spacing:0.4px;">상품</th>
+              <th style="text-align:left; padding:6px 4px; font-size:10px; font-weight:600; color:#94a3b8; text-transform:uppercase; letter-spacing:0.4px;">${sortBy==='brand' ? '브랜드' : '상품'}</th>
               <th style="text-align:right; padding:6px 4px; font-size:10px; font-weight:600; color:#94a3b8; text-transform:uppercase; letter-spacing:0.4px;">수량</th>
               <th style="text-align:right; padding:6px 4px; font-size:10px; font-weight:600; color:#94a3b8; text-transform:uppercase; letter-spacing:0.4px;">매출액</th>
             </tr>
@@ -884,9 +898,13 @@ function renderSalesDashboard() {
                     font-size:10px; font-weight:700; ${RANK_STYLE[Math.min(i,3)]}">${i+1}</div>
                 </td>
                 <td style="padding:7px 4px;">
-                  ${p.brand ? `<div style="font-size:10px; font-weight:400; color:#94a3b8; margin-bottom:1px;">${p.brand}</div>` : ''}
-                  <div style="font-size:12px; font-weight:500; color:#1e293b; line-height:1.3;">${p.name}</div>
-                  ${(p.supplier || p.code) ? `<div style="font-size:9px; font-weight:400; color:#cbd5e1; margin-top:1px;">${[p.supplier, p.code].filter(Boolean).join('  ·  ')}</div>` : ''}
+                  ${sortBy==='brand' ? `
+                    <div style="font-size:12px; font-weight:500; color:#1e293b;">${p.name}</div>
+                  ` : `
+                    ${p.brand ? `<div style="font-size:10px; font-weight:400; color:#94a3b8; margin-bottom:1px;">${p.brand}</div>` : ''}
+                    <div style="font-size:12px; font-weight:500; color:#1e293b; line-height:1.3;">${p.name}</div>
+                    ${(p.supplier || p.code) ? `<div style="font-size:9px; font-weight:400; color:#cbd5e1; margin-top:1px;">${[p.supplier, p.code].filter(Boolean).join('  ·  ')}</div>` : ''}
+                  `}
                 </td>
                 <td style="padding:7px 4px; text-align:right;">
                   <span class="num" style="font-size:12px; font-weight:600; color:#334155;">${p.qty.toLocaleString()}</span>
@@ -904,7 +922,7 @@ function renderSalesDashboard() {
 
     // Chart
     const labels = sorted.map(p => p.name.length > 9 ? p.name.slice(0,9)+'…' : p.name);
-    const vals   = sorted.map(p => sortBy === 'qty' ? p.qty : p.amt);
+    const vals   = sorted.map(p => sortBy === 'brand' ? p.qty : sortBy === 'qty' ? p.qty : p.amt);
 
     charts[cid] = new Chart(document.getElementById(cid), {
       type: 'bar',

@@ -836,6 +836,64 @@ function renderSalesDashboard() {
     return;
   }
 
+  // Special view: media x brand heatmap
+  if (groupBy === 'media' && sortBy === 'brand') {
+    const mediaBrandAgg = {};
+    const brandTotals = {};
+    const mediaTotals = {};
+    Object.entries(byMedia).forEach(([mk, mData]) => {
+      mediaBrandAgg[mk] = {};
+      mediaTotals[mk] = mData.total;
+      Object.values(mData.prods).forEach(p => {
+        const b = p.brand || '(기타)';
+        if (!mediaBrandAgg[mk][b]) mediaBrandAgg[mk][b] = {qty:0,amt:0};
+        mediaBrandAgg[mk][b].qty += p.qty;
+        mediaBrandAgg[mk][b].amt += p.amt;
+        if (!brandTotals[b]) brandTotals[b] = {qty:0,amt:0};
+        brandTotals[b].qty += p.qty;
+        brandTotals[b].amt += p.amt;
+      });
+    });
+    const sortedMKs = Object.keys(mediaBrandAgg).sort((a,b) => mediaTotals[b].qty - mediaTotals[a].qty);
+    const TOP_N = 7;
+    const allBrands = Object.entries(brandTotals).sort((a,b) => b[1].qty - a[1].qty);
+    const topBrands = allBrands.slice(0, TOP_N).map(e => e[0]);
+    const colBrands = allBrands.length > TOP_N ? [...topBrands, '기타'] : topBrands;
+    const allVals = [];
+    sortedMKs.forEach(mk => {
+      colBrands.forEach(b => {
+        const v = b === '기타'
+          ? Object.entries(mediaBrandAgg[mk]).filter(([br]) => !topBrands.includes(br)).reduce((s,[,vv]) => s+vv.qty, 0)
+          : (mediaBrandAgg[mk][b] || {qty:0}).qty;
+        allVals.push(v);
+      });
+    });
+    const maxVal = Math.max(...allVals, 1);
+    const cellBg = v => { const t = Math.min(v/maxVal,1); const r=Math.round(255-t*176),g=Math.round(255-t*185),bv=Math.round(255-t*26); return 'rgb('+r+','+g+','+bv+')'; };
+
+    const RANK_S = ['background:#fbbf24;color:white','background:#94a3b8;color:white','background:#cd7f32;color:white','background:#e2e8f0;color:#64748b'];
+    const top3Rows = sortedMKs.slice(0,5).map((mk,ri) => {
+      const brs = Object.entries(mediaBrandAgg[mk]).sort((a,b)=>b[1].qty-a[1].qty);
+      return '<tr style="border-bottom:1px solid #f8fafc;"><td style="padding:8px 10px;white-space:nowrap;"><div style="display:flex;align-items:center;gap:8px;"><div style="width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;'+RANK_S[Math.min(ri,3)]+';flex-shrink:0;">'+(ri+1)+'</div><span style="font-size:12px;font-weight:500;color:#1e293b;">'+(MEDIA_MAP[mk.trim()]||mk)+'</span></div></td><td style="padding:8px 6px;font-size:11px;color:#4f46e5;font-weight:500;">'+(brs[0]?brs[0][0]:'-')+'</td><td style="padding:8px 6px;font-size:11px;color:#64748b;">'+(brs[1]?brs[1][0]:'-')+'</td><td style="padding:8px 6px;font-size:11px;color:#94a3b8;">'+(brs[2]?brs[2][0]:'-')+'</td><td style="padding:8px 6px;text-align:right;" class="num"><span style="font-size:12px;font-weight:600;color:#334155;">'+mediaTotals[mk].qty.toLocaleString()+'</span></td><td style="padding:8px 6px;text-align:right;" class="num"><span style="font-size:11px;color:#94a3b8;">'+fmtAmt(mediaTotals[mk].amt)+'</span></td></tr>';
+    }).join('');
+
+    const hmRows = sortedMKs.map(mk => {
+      const cells = colBrands.map(b => {
+        const v = b==='기타'
+          ? Object.entries(mediaBrandAgg[mk]).filter(([br])=>!topBrands.includes(br)).reduce((s,[,vv])=>s+vv.qty,0)
+          : (mediaBrandAgg[mk][b]||{qty:0}).qty;
+        const t = Math.min(v/maxVal,1);
+        const txt = t>0.45?'white':'#475569';
+        return '<td style="padding:7px 8px;text-align:center;background:'+cellBg(v)+';color:'+txt+';font-size:11px;font-weight:'+(v>0?'600':'400')+';min-width:60px;" class="num">'+(v>0?v.toLocaleString():'-')+'</td>';
+      }).join('');
+      return '<tr style="border-bottom:1px solid #f0f0f0;"><td style="padding:7px 12px;font-size:12px;font-weight:500;color:#1e293b;white-space:nowrap;position:sticky;left:0;background:white;border-right:1px solid #e8ecf0;">'+(MEDIA_MAP[mk.trim()]||mk)+'</td>'+cells+'</tr>';
+    }).join('');
+
+    grid.innerHTML = '<div style="grid-column:1/-1;display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap;"><div class="card" style="flex:0 0 auto;min-width:360px;"><div style="padding:14px 18px 10px;border-bottom:1px solid #f1f5f9;"><div style="font-size:13px;font-weight:600;color:#0f172a;">매체별 TOP3 요약</div></div><div style="padding:0 0 12px;"><table style="width:100%;border-collapse:collapse;"><thead><tr style="border-bottom:1px solid #f1f5f9;"><th style="padding:8px 10px;text-align:left;font-size:10px;font-weight:600;color:#94a3b8;">매체</th><th style="padding:8px 6px;text-align:left;font-size:10px;font-weight:600;color:#94a3b8;">1위</th><th style="padding:8px 6px;text-align:left;font-size:10px;font-weight:600;color:#94a3b8;">2위</th><th style="padding:8px 6px;text-align:left;font-size:10px;font-weight:600;color:#94a3b8;">3위</th><th style="padding:8px 6px;text-align:right;font-size:10px;font-weight:600;color:#94a3b8;">총 수량</th><th style="padding:8px 6px;text-align:right;font-size:10px;font-weight:600;color:#94a3b8;">매출액</th></tr></thead><tbody>'+top3Rows+'</tbody></table><div style="padding:8px 14px 0;font-size:9px;color:#cbd5e1;">* 매체 중 수량 기준 상위 5개 노출</div></div></div><div class="card" style="flex:1 1 0;min-width:300px;overflow:hidden;"><div style="padding:14px 18px 10px;border-bottom:1px solid #f1f5f9;display:flex;align-items:center;justify-content:space-between;"><div style="font-size:13px;font-weight:600;color:#0f172a;">매체 x 브랜드 히트맵</div><div style="display:flex;align-items:center;gap:6px;"><span style="font-size:9px;color:#cbd5e1;">진할수록 판매량 높음</span><div style="width:60px;height:8px;border-radius:4px;background:linear-gradient(to right,#e0e7ff,#4f46e5);"></div></div></div><div style="overflow-x:auto;"><table style="border-collapse:collapse;min-width:100%;"><thead><tr style="border-bottom:2px solid #e8ecf0;"><th style="padding:8px 12px;text-align:left;font-size:10px;font-weight:600;color:#94a3b8;position:sticky;left:0;background:white;border-right:1px solid #e8ecf0;">매체</th>'+colBrands.map(b=>'<th style="padding:8px 8px;text-align:center;font-size:10px;font-weight:600;color:#64748b;min-width:60px;white-space:nowrap;">'+(b.length>6?b.slice(0,6)+'...':b)+'</th>').join('')+'</tr></thead><tbody>'+hmRows+'</tbody></table></div></div></div>';
+    return;
+  }
+
+  // Normal card view
   // Sort media by total desc → rank order
   const sortedMedias = Object.entries(byMedia)
     .sort((a,b) => sortBy === 'qty'

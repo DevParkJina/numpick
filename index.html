@@ -835,7 +835,9 @@ function renderSalesDashboard() {
     const qty      = safeNum(col(r, '수량'));
     const amt      = safeNum(col(r, '매출액', '거래금액'));
     const supplier = String(col(r, '공급사')  || '').trim();
-    const code     = String(col(r, '상품코드', '공급사상품코드', '공급사발급코드') || '').trim();
+    const code        = String(col(r, '상품코드', '공급사상품코드', '공급사발급코드') || '').trim();
+    const normalPrice = safeNum(col(r, '정상가'));
+    const salePrice   = safeNum(col(r, '판매단가', '단가', '판매가'));
 
     totalQty += qty; totalAmt += amt;
     if (media) mediaSet.add(media);
@@ -849,7 +851,7 @@ function renderSalesDashboard() {
     byGroup[groupKey].total.amt += amt;
 
     const key = brand ? `${brand}|||${product}` : product;
-    if (!byGroup[groupKey].prods[key]) byGroup[groupKey].prods[key] = { brand, name: product, supplier, code, qty:0, amt:0 };
+    if (!byGroup[groupKey].prods[key]) byGroup[groupKey].prods[key] = { brand, name: product, supplier, code, normalPrice, salePrice, qty:0, amt:0 };
     byGroup[groupKey].prods[key].qty += qty;
     byGroup[groupKey].prods[key].amt += amt;
   });

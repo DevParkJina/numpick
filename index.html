@@ -394,6 +394,7 @@
             <span style="font-size:12px; color:#94a3b8;">~</span>
             <input type="date" id="trend-cmp-to"   style="border:1px solid #c7d2fe; border-radius:8px; padding:5px 8px; font-size:12px; color:#374151; outline:none; font-family:'Noto Sans KR',sans-serif;">
           </div>
+          <span id="trend-compare-label" style="font-size:11px; color:#94a3b8; font-family:'Noto Sans KR',sans-serif;"></span>
         </div>
       </div>
 
@@ -2218,6 +2219,11 @@ function getTrendFilteredRows() {
     if (d > prevToD)   return false;
     return true;
   }) : [];
+
+  const labelEl = document.getElementById('trend-compare-label');
+  if (labelEl) {
+    labelEl.textContent = (prevFromD && prevToD) ? `(${fmtDate(prevFromD)} ~ ${fmtDate(prevToD)})` : '';
+  }
 
   return { curr, prev, prevFromD, prevToD };
 }

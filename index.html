@@ -579,6 +579,9 @@ const MEDIA_MAP = {
   'iris':          '아이리스',
   'samga':         '삼가',
   'cheotjang':     '첫장',
+  'cnwalk':        '건쥬',
+  'ium':           '이음',
+  'tium':          '티움',
   'raon':          '우리부고',
   'devnium':       '데브늄',
   'md_enccompany': '이엔씨컴퍼니_자체답례',
@@ -2136,12 +2139,13 @@ function initTrendTab() {
   const brands     = [...new Set(salesData.map(r => String(col(r,'브랜드')||'').trim()).filter(Boolean))].sort();
   const categories = [...new Set(salesData.map(r => String(col(r,'상품군','카테고리','분류')||'').trim()).filter(Boolean))].sort();
 
-  const buildOpts = (id, arr) => {
+  const buildOpts = (id, arr, labelFn) => {
     const sel = document.getElementById(id);
     if (!sel) return;
-    sel.innerHTML = '<option value="">전체</option>' + arr.map(v=>`<option value="${v}">${v}</option>`).join('');
+    const fn = labelFn || (v => v);
+    sel.innerHTML = '<option value="">전체</option>' + arr.map(v=>`<option value="${v}">${fn(v)}</option>`).join('');
   };
-  buildOpts('trend-filter-media',    medias);
+  buildOpts('trend-filter-media',    medias,    v => MEDIA_MAP[v.trim()] || v);
   buildOpts('trend-filter-brand',    brands);
   buildOpts('trend-filter-category', categories);
 
@@ -2267,7 +2271,7 @@ function renderTrend() {
     { label:'총 매출액',    val: fmtAmt(cAgg.amt),                   raw: cAgg.amt,    prevRaw: pAgg.amt,    color:'#4f46e5', icon:'💰' },
     { label:'총 판매수량',  val: cAgg.qty.toLocaleString()+'개',      raw: cAgg.qty,    prevRaw: pAgg.qty,    color:'#8b5cf6', icon:'📦' },
     { label:'주문건수',     val: cAgg.orders.toLocaleString()+'건',   raw: cAgg.orders, prevRaw: pAgg.orders, color:'#ec4899', icon:'🛒' },
-    { label:'판매 상품수',  val: cAgg.prods.toLocaleString()+'종',    raw: cAgg.prods,  prevRaw: pAgg.prods,  color:'#f59e0b', icon:'🏷' },
+    { label:'판매 상품수',  val: cAgg.prods.toLocaleString()+'종',    raw: cAgg.prods,  prevRaw: pAgg.prods,  color:'#f59e0b', icon:'🗂️' },
   ].map(k => `
     <div style="background:white; border-radius:16px; box-shadow:0 1px 4px rgba(0,0,0,0.06); padding:18px 20px; font-family:'Noto Sans KR',sans-serif;">
       <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
@@ -2302,7 +2306,7 @@ function setTrendPeriod(mode) {
 function renderTrendTimeseries() {
   destroyTrendChart('trend-timeseries-chart');
   const rows = _trendRows;
-  const dateField = document.getElementById('trend-date-field').value;
+  const dateField = '주문일시';
 
   const buckets = {};
   rows.forEach(r => {
@@ -2502,7 +2506,7 @@ function setTrendDow(mode) {
 function renderTrendDow() {
   destroyTrendChart('trend-dow-chart');
   const DOW_KR = ['일','월','화','수','목','금','토'];
-  const dateField = document.getElementById('trend-date-field').value;
+  const dateField = '주문일시';
   const buckets = [0,1,2,3,4,5,6].map(() => ({ amt:0, qty:0, orders: new Set() }));
   _trendRows.forEach(r => {
     const d = toDate(col(r, dateField));
@@ -2558,7 +2562,7 @@ function setTrendHour(mode) {
 
 function renderTrendHour() {
   destroyTrendChart('trend-hour-chart');
-  const dateField = document.getElementById('trend-date-field').value;
+  const dateField = '주문일시';
   const buckets = Array.from({length:24}, () => ({ amt:0, qty:0, orders: new Set() }));
   _trendRows.forEach(r => {
     const d = toDate(col(r, dateField));

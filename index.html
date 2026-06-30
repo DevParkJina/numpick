@@ -444,8 +444,10 @@
       </div>
       <div style="display:flex; gap:16px; margin-top:12px; flex-wrap:wrap;">
         <span style="font-size:11px; color:#8b5cf6; font-family:'Noto Sans KR',sans-serif; display:flex; align-items:center; gap:4px;"><span style="width:12px; height:8px; background:#8b5cf680; border:1.5px solid #8b5cf6; border-radius:2px; display:inline-block;"></span>판매수량</span>
+        <span style="font-size:11px; color:#94a3b8; font-family:'Noto Sans KR',sans-serif; display:flex; align-items:center; gap:4px;"><span style="width:12px; height:8px; background:#94a3b825; border:1.5px solid #94a3b8; border-radius:2px; display:inline-block;"></span>비교 판매수량</span>
         <span style="font-size:11px; color:#4f46e5; font-family:'Noto Sans KR',sans-serif; display:flex; align-items:center; gap:4px;"><span style="width:16px; height:2px; background:#4f46e5; display:inline-block;"></span>매출액</span>
-        <span style="font-size:11px; color:#10b981; font-family:'Noto Sans KR',sans-serif; display:flex; align-items:center; gap:4px;"><span style="width:16px; height:2px; background:#10b981; display:inline-block; border-bottom:2px dashed #10b981; height:0;"></span>주문건수</span>
+        <span style="font-size:11px; color:#94a3b8; font-family:'Noto Sans KR',sans-serif; display:flex; align-items:center; gap:4px;"><span style="width:16px; height:0; border-top:2px dashed #94a3b8; display:inline-block;"></span>비교 매출액</span>
+        <span style="font-size:11px; color:#10b981; font-family:'Noto Sans KR',sans-serif; display:flex; align-items:center; gap:4px;"><span style="width:16px; height:0; border-top:2px dashed #10b981; display:inline-block;"></span>주문건수</span>
       </div>
     </div>
 
@@ -2299,92 +2301,89 @@ function setTrendPeriod(mode) {
 
 function renderTrendTimeseries() {
   destroyTrendChart('trend-timeseries-chart');
-  const rows = _trendRows;
-  const dateField = '주문일시';
+  const DOW = ['일','월','화','수','목','금','토'];
 
-  const buckets = {};
-  rows.forEach(r => {
-    const d = toDate(col(r, dateField));
-    if (!d) return;
-    let key;
+  // 정렬용 키 (ISO 형식) 반환
+  const sortKey = (d) => {
     if (trendPeriodMode === 'day') {
-      const DOW = ['일','월','화','수','목','금','토'];
-      const mm = pad2(d.getMonth()+1), dd = pad2(d.getDate());
-      key = `${mm}/${dd}(${DOW[d.getDay()]})`;
+      return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
     } else if (trendPeriodMode === 'week') {
       const mon = new Date(d); mon.setDate(d.getDate() - ((d.getDay()+6)%7));
-      key = fmtDate(mon);
+      return fmtDate(mon);
     } else {
-      key = `${d.getFullYear()}-${pad2(d.getMonth()+1)}`;
+      return `${d.getFullYear()}-${pad2(d.getMonth()+1)}`;
     }
-    if (!buckets[key]) buckets[key] = { amt:0, qty:0, orders: new Set() };
-    buckets[key].amt += safeNum(col(r,'매출액','거래금액'));
-    buckets[key].qty += safeNum(col(r,'수량'));
-    const on = String(col(r,'주문번호')||'').trim();
-    if (on) buckets[key].orders.add(on);
-  });
+  };
 
-  const labels = Object.keys(buckets).sort();
-  const amts   = labels.map(k => buckets[k].amt);
-  const qtys   = labels.map(k => buckets[k].qty);
-  const cnts   = labels.map(k => buckets[k].orders.size);
-  const maxAmt = Math.max(...amts, 1);
-  const maxQty = Math.max(...qtys, 1);
+  // 표시용 라벨
+  const displayLabel = (key) => {
+    if (trendPeriodMode === 'day') {
+      const d = new Date(key + 'T00:00:00');
+      return `${pad2(d.getMonth()+1)}/${pad2(d.getDate())}(${DOW[d.getDay()]})`;
+    } else if (trendPeriodMode === 'week') {
+      const d = new Date(key + 'T00:00:00');
+      return `${d.getMonth()+1}/${d.getDate()}주`;
+    } else {
+      const [y, m] = key.split('-');
+      return `${y}.${m}`;
+    }
+  };
+
+  const buildBuckets = (rowArr) => {
+    const b = {};
+    rowArr.forEach(r => {
+      const d = toDate(col(r, '주문일시'));
+      if (!d) return;
+      const key = sortKey(d);
+      if (!b[key]) b[key] = { amt:0, qty:0, orders: new Set() };
+      b[key].amt += safeNum(col(r,'매출액','거래금액'));
+      b[key].qty += safeNum(col(r,'수량'));
+      const on = String(col(r,'주문번호')||'').trim();
+      if (on) b[key].orders.add(on);
+    });
+    return b;
+  };
+
+  const currB = buildBuckets(_trendRows);
+  const prevB = buildBuckets(_trendPrevRows);
+  const hasPrev = Object.keys(prevB).length > 0;
+
+  const allKeys = [...new Set([...Object.keys(currB), ...Object.keys(prevB)])].sort();
+  const labels  = allKeys.map(displayLabel);
+
+  const cAmts = allKeys.map(k => currB[k]?.amt  || 0);
+  const pAmts = allKeys.map(k => prevB[k]?.amt  || 0);
+  const cQtys = allKeys.map(k => currB[k]?.qty  || 0);
+  const pQtys = allKeys.map(k => prevB[k]?.qty  || 0);
+  const cCnts = allKeys.map(k => currB[k]?.orders.size || 0);
+
+  const datasets = [
+    { label:'판매수량',    data:cQtys, type:'bar',  backgroundColor:'#8b5cf633', borderColor:'#8b5cf6', borderWidth:1.5, borderRadius:4, borderSkipped:false, yAxisID:'y',  order:3 },
+    ...(hasPrev ? [
+      { label:'비교 판매수량', data:pQtys, type:'bar',  backgroundColor:'#94a3b825', borderColor:'#94a3b8', borderWidth:1.5, borderRadius:4, borderSkipped:false, yAxisID:'y',  order:4 },
+    ] : []),
+    { label:'매출액',      data:cAmts, type:'line', borderColor:'#4f46e5', backgroundColor:'#4f46e500', borderWidth:2,   pointRadius:allKeys.length>60?0:3, tension:0.3, yAxisID:'y2', order:1 },
+    ...(hasPrev ? [
+      { label:'비교 매출액',   data:pAmts, type:'line', borderColor:'#94a3b8', backgroundColor:'#94a3b800', borderWidth:1.5, borderDash:[5,4], pointRadius:allKeys.length>60?0:2, tension:0.3, yAxisID:'y2', order:2 },
+    ] : []),
+    { label:'주문건수',    data:cCnts, type:'line', borderColor:'#10b981', backgroundColor:'#10b98100', borderWidth:1.5, borderDash:[4,3], pointRadius:allKeys.length>60?0:2, tension:0.3, yAxisID:'y3', order:0 },
+  ];
 
   trendCharts['trend-timeseries-chart'] = new Chart(document.getElementById('trend-timeseries-chart'), {
     type: 'bar',
-    data: {
-      labels,
-      datasets: [
-        {
-          label: '판매수량',
-          data: qtys,
-          backgroundColor: '#8b5cf633',
-          borderColor: '#8b5cf6',
-          borderWidth: 1.5,
-          borderRadius: 4,
-          borderSkipped: false,
-          yAxisID: 'y',
-          order: 2,
-        },
-        {
-          label: '매출액',
-          data: amts,
-          type: 'line',
-          borderColor: '#4f46e5',
-          backgroundColor: '#4f46e500',
-          borderWidth: 2,
-          pointRadius: labels.length > 60 ? 0 : 3,
-          tension: 0.3,
-          yAxisID: 'y2',
-          order: 1,
-        },
-        {
-          label: '주문건수',
-          data: cnts,
-          type: 'line',
-          borderColor: '#10b981',
-          backgroundColor: '#10b98100',
-          borderWidth: 1.5,
-          borderDash: [4,3],
-          pointRadius: labels.length > 60 ? 0 : 2,
-          tension: 0.3,
-          yAxisID: 'y3',
-          order: 0,
-        },
-      ]
-    },
+    data: { labels, datasets },
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      interaction: { mode: 'index', intersect: false },
+      interaction: { mode:'index', intersect:false },
       plugins: {
-        legend: { display: false },
+        legend: { display:false },
         tooltip: {
           callbacks: {
             label: ctx => {
-              if (ctx.dataset.label === '매출액')   return '매출액: ' + fmtAmt(ctx.raw);
-              if (ctx.dataset.label === '판매수량') return '판매수량: ' + ctx.raw.toLocaleString() + '개';
+              const l = ctx.dataset.label;
+              if (l === '매출액' || l === '비교 매출액')     return l + ': ' + fmtAmt(ctx.raw);
+              if (l === '판매수량' || l === '비교 판매수량') return l + ': ' + ctx.raw.toLocaleString() + '개';
               return '주문건수: ' + ctx.raw.toLocaleString() + '건';
             }
           }

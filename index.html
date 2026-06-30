@@ -366,8 +366,8 @@
 
     <!-- 1. 필터 -->
     <div style="background:white; border-radius:16px; box-shadow:0 1px 4px rgba(0,0,0,0.06); padding:16px 20px; margin-bottom:20px;">
-      <!-- 첫째 줄: 조회기간 + 비교기간 -->
-      <div style="display:flex; flex-wrap:wrap; align-items:center; gap:14px; margin-bottom:12px; padding-bottom:12px; border-bottom:1px solid #f1f5f9;">
+      <!-- 조회기간 + 매체 / 브랜드 / 상품군 + 조회버튼 -->
+      <div style="display:flex; flex-wrap:wrap; align-items:center; gap:12px;">
 
         <div style="display:flex; align-items:center; gap:6px;">
           <span style="font-size:11px; font-weight:600; color:#64748b; white-space:nowrap;">조회기간</span>
@@ -377,32 +377,6 @@
         </div>
 
         <div style="width:1px; height:20px; background:#e2e8f0;"></div>
-
-        <div style="display:flex; align-items:center; gap:6px;">
-          <span style="font-size:11px; font-weight:600; color:#64748b; white-space:nowrap;">비교기간</span>
-          <div style="display:flex; gap:3px;">
-            <button id="trend-cmp-week"   onclick="setTrendCompare('week')"
-              style="padding:4px 12px; border-radius:6px; font-size:12px; font-weight:600; border:none; cursor:pointer; background:#4f46e5; color:white; font-family:'Noto Sans KR',sans-serif;">전주</button>
-            <button id="trend-cmp-month"  onclick="setTrendCompare('month')"
-              style="padding:4px 12px; border-radius:6px; font-size:12px; font-weight:600; border:none; cursor:pointer; background:#f1f5f9; color:#64748b; font-family:'Noto Sans KR',sans-serif;">전월</button>
-            <button id="trend-cmp-custom" onclick="setTrendCompare('custom')"
-              style="padding:4px 12px; border-radius:6px; font-size:12px; font-weight:600; border:none; cursor:pointer; background:#f1f5f9; color:#64748b; font-family:'Noto Sans KR',sans-serif;">직접선택</button>
-          </div>
-          <!-- 직접선택 시만 표시 -->
-          <div id="trend-cmp-custom-wrap" style="display:none; align-items:center; gap:4px;">
-            <input type="date" id="trend-cmp-from" style="border:1px solid #c7d2fe; border-radius:8px; padding:5px 8px; font-size:12px; color:#374151; outline:none; font-family:'Noto Sans KR',sans-serif;">
-            <span style="font-size:12px; color:#94a3b8;">~</span>
-            <input type="date" id="trend-cmp-to"   style="border:1px solid #c7d2fe; border-radius:8px; padding:5px 8px; font-size:12px; color:#374151; outline:none; font-family:'Noto Sans KR',sans-serif;">
-          </div>
-        </div>
-
-        <div style="margin-left:auto;">
-          <span id="trend-compare-label" style="font-size:11px; color:#94a3b8; font-weight:400;"></span>
-        </div>
-      </div>
-
-      <!-- 둘째 줄: 매체 / 브랜드 / 상품군 + 조회버튼 -->
-      <div style="display:flex; flex-wrap:wrap; align-items:center; gap:12px;">
 
         <div style="display:flex; align-items:center; gap:6px;">
           <span style="font-size:11px; font-weight:600; color:#64748b;">매체</span>
@@ -2105,7 +2079,6 @@ let trendPeriodMode  = 'day';
 let trendProdMode    = 'amt';
 let trendDowMode     = 'amt';
 let trendHourMode    = 'amt';
-let trendCompareMode = 'week'; // 'week' | 'month' | 'custom'
 let _trendRows       = [];
 let _trendPrevRows   = [];
 
@@ -2113,17 +2086,6 @@ function destroyTrendChart(id) {
   if (trendCharts[id]) { trendCharts[id].destroy(); delete trendCharts[id]; }
 }
 
-function setTrendCompare(mode) {
-  trendCompareMode = mode;
-  ['week','month','custom'].forEach(m => {
-    const btn = document.getElementById('trend-cmp-' + m);
-    if (!btn) return;
-    btn.style.background = m === mode ? '#4f46e5' : '#f1f5f9';
-    btn.style.color      = m === mode ? 'white'   : '#64748b';
-  });
-  const wrap = document.getElementById('trend-cmp-custom-wrap');
-  if (wrap) wrap.style.display = mode === 'custom' ? 'flex' : 'none';
-}
 
 function initTrendTab() {
   if (!salesData.length) {
@@ -2165,9 +2127,6 @@ function initTrendTab() {
     toEl.value   = fmtDate(to7);
   }
 
-  // 비교기간 버튼 초기화 (전주 기본)
-  setTrendCompare('week');
-
   renderTrend();
 }
 
@@ -2181,23 +2140,13 @@ function getTrendFilteredRows() {
   const fromD = from ? new Date(from + 'T00:00:00') : null;
   const toD   = to   ? new Date(to   + 'T23:59:59') : null;
 
-  // 비교기간 계산
+  // 비교기간: 항상 전주 대비 (조회기간 직전 동일 일수)
   let prevFromD = null, prevToD = null;
   if (fromD && toD) {
-    if (trendCompareMode === 'week') {
-      prevToD   = new Date(fromD.getTime() - 1);
-      prevFromD = new Date(prevToD.getTime() - 6 * 24 * 60 * 60 * 1000);
-      prevFromD.setHours(0,0,0,0);
-    } else if (trendCompareMode === 'month') {
-      prevToD   = new Date(fromD.getTime() - 1);
-      prevFromD = new Date(prevToD.getTime() - 29 * 24 * 60 * 60 * 1000);
-      prevFromD.setHours(0,0,0,0);
-    } else {
-      const cf = document.getElementById('trend-cmp-from').value;
-      const ct = document.getElementById('trend-cmp-to').value;
-      if (cf) prevFromD = new Date(cf + 'T00:00:00');
-      if (ct) prevToD   = new Date(ct + 'T23:59:59');
-    }
+    const rangeDays = Math.round((toD - fromD) / (24 * 60 * 60 * 1000));
+    prevToD   = new Date(fromD.getTime() - 1);
+    prevFromD = new Date(prevToD.getTime() - rangeDays * 24 * 60 * 60 * 1000);
+    prevFromD.setHours(0,0,0,0);
   }
 
   const applyBaseFilters = (r) => {
@@ -2225,12 +2174,6 @@ function getTrendFilteredRows() {
     return true;
   }) : [];
 
-  // 비교기간 라벨
-  const labelEl = document.getElementById('trend-compare-label');
-  if (labelEl && prevFromD && prevToD) {
-    labelEl.textContent = `비교기간: ${fmtDate(prevFromD)} ~ ${fmtDate(prevToD)}`;
-  }
-
   return { curr, prev, prevFromD, prevToD };
 }
 
@@ -2253,8 +2196,8 @@ function fmtChange(curr, prev) {
   if (!prev || prev === 0) return '';
   const pct = ((curr - prev) / prev * 100);
   const sign = pct >= 0 ? '▲' : '▼';
-  const color = pct >= 0 ? '#10b981' : '#ef4444';
-  return `<span style="font-size:11px; font-weight:600; color:${color}; margin-left:6px;">${sign} ${Math.abs(pct).toFixed(1)}%</span>`;
+  const color = pct >= 0 ? '#ef4444' : '#3b82f6';
+  return `<span style="font-size:11px; font-weight:700; color:${color}; margin-left:4px;">${sign} ${Math.abs(pct).toFixed(1)}%</span>`;
 }
 
 function renderTrend() {
@@ -2280,7 +2223,7 @@ function renderTrend() {
       </div>
       <div style="font-size:20px; font-weight:700; color:#0f172a; font-variant-numeric:tabular-nums;">${k.val}</div>
       <div style="margin-top:4px; font-size:11px; color:#94a3b8;">
-        비교기간 ${k.prevRaw ? fmtAmt(k.prevRaw) : '-'}${fmtChange(k.raw, k.prevRaw)}
+        전주 대비${fmtChange(k.raw, k.prevRaw)}
       </div>
     </div>
   `).join('');
@@ -2314,7 +2257,9 @@ function renderTrendTimeseries() {
     if (!d) return;
     let key;
     if (trendPeriodMode === 'day') {
-      key = fmtDate(d);
+      const DOW = ['일','월','화','수','목','금','토'];
+      const mm = pad2(d.getMonth()+1), dd = pad2(d.getDate());
+      key = `${mm}/${dd}(${DOW[d.getDay()]})`;
     } else if (trendPeriodMode === 'week') {
       const mon = new Date(d); mon.setDate(d.getDate() - ((d.getDay()+6)%7));
       key = fmtDate(mon);

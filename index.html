@@ -578,7 +578,7 @@ const MEDIA_MAP = {
   'iris':          '아이리스',
   'samga':         '삼가',
   'cheotjang':     '첫장',
-  'cnwalk':        '건쥬',
+  'cnwalk':        '걷쥬',
   'ium':           '이음',
   'tium':          '티움',
   'raon':          '우리부고',
@@ -1026,11 +1026,11 @@ function renderSalesDashboard() {
     const product  = String(col(r, '상품명')  || '').trim();
     if (!product) return;
 
-    const qty      = safeNum(col(r, '수량'));
-    const amt      = safeNum(col(r, '매출액', '거래금액'));
-    const supplier = String(col(r, '공급사')  || '').trim();
-    const code        = String(col(r, '상품코드', '공급사상품코드', '공급사발급코드') || '').trim();
+    const qty         = safeNum(col(r, '수량'));
     const normalPrice = safeNum(col(r, '정상가'));
+    const amt         = normalPrice > 0 ? normalPrice * qty : safeNum(col(r, '매출액', '거래금액'));
+    const supplier    = String(col(r, '공급사')  || '').trim();
+    const code        = String(col(r, '상품코드', '공급사상품코드', '공급사발급코드') || '').trim();
     const salePrice   = safeNum(col(r, '판매단가', '단가', '판매가'));
 
     totalQty += qty; totalAmt += amt;
@@ -1159,7 +1159,23 @@ function renderSalesDashboard() {
     ? allSortedMedias.filter(([mk]) => selectedMedias.has(mk))
     : allSortedMedias;
 
-  sortedMedias.forEach(([mediaCode, mData], rank) => {
+  // 전체 선택 시 합산 카드 1개 + 모든 개별 매체 카드
+  let displayMedias = sortedMedias;
+  if (groupBy === 'media' && selectedMedias.size === 0) {
+    const merged = { total:{ qty:0, amt:0 }, prods:{} };
+    allSortedMedias.forEach(([, mData]) => {
+      merged.total.qty += mData.total.qty;
+      merged.total.amt += mData.total.amt;
+      Object.entries(mData.prods).forEach(([key, p]) => {
+        if (!merged.prods[key]) merged.prods[key] = { ...p, qty:0, amt:0 };
+        merged.prods[key].qty += p.qty;
+        merged.prods[key].amt += p.amt;
+      });
+    });
+    displayMedias = [['전체', merged], ...allSortedMedias];
+  }
+
+  displayMedias.forEach(([mediaCode, mData], rank) => {
     const mName  = groupBy === 'media' ? (MEDIA_MAP[mediaCode.trim()] || mediaCode) : mediaCode;
     let sorted;
     if (sortBy === 'brand') {
@@ -1179,17 +1195,20 @@ function renderSalesDashboard() {
 
     const cid = 'chart_' + mediaCode.replace(/[^a-zA-Z0-9]/g, '_');
     const rankS = RANK_STYLE[Math.min(rank, 3)];
+    const isAllCard = mediaCode === '전체';
 
     const card = document.createElement('div');
     card.className = 'card';
     card.style.overflow = 'hidden';
     card.innerHTML = `
       <div style="padding:16px 20px 14px; border-bottom:1px solid #f1f5f9; display:flex; align-items:center; gap:12px;">
-        <div style="width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center;
-          font-size:11px; font-weight:700; flex-shrink:0; ${rankS}">${rank+1}</div>
+        ${isAllCard
+          ? `<div style="width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:700; flex-shrink:0; background:#4f46e5; color:white;">전</div>`
+          : `<div style="width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; flex-shrink:0; ${rankS}">${rank+1}</div>`
+        }
         <div style="flex:1; min-width:0;">
-          <div style="font-size:14px; font-weight:600; color:#0f172a; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${mName}</div>
-          <div style="font-size:11px; font-weight:400; color:#94a3b8; margin-top:1px;">${groupBy === 'media' ? mediaCode : groupBy === 'brand' ? '브랜드' : '공급사'}</div>
+          <div style="font-size:14px; font-weight:600; color:#0f172a; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${isAllCard ? '전체 합계' : mName}</div>
+          <div style="font-size:11px; font-weight:400; color:#94a3b8; margin-top:1px;">${isAllCard ? '전체 매체 합산' : groupBy === 'media' ? mediaCode : groupBy === 'brand' ? '브랜드' : '공급사'}</div>
         </div>
         <div style="text-align:right; flex-shrink:0;">
           <div class="num" style="font-size:14px; font-weight:700; color:#4f46e5;">${mData.total.qty.toLocaleString()}개</div>

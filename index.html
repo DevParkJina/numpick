@@ -589,7 +589,11 @@ const MEDIA_MAP = {
   'md_fdnara':     '의전나라_자체답례',
   'md_samga':      '삼가_자체답례',
   'md_wooribugo':  '우리부고_기온',
-  'md_devnium':    '데브늄_기온'
+  'md_devnium':    '데브늄_기온',
+  'dasom':         '다솜',
+  'flowergil':     '꽃길',
+  'raon_hana':     '하나부고',
+  'telent':        '달란트비즈'
 };
 
 const CHART_COLORS = [
@@ -2447,6 +2451,12 @@ function setTrendProdTab(mode) {
 }
 
 function renderTrendProductTable() {
+  const rowAmt = r => {
+    const qty  = safeNum(col(r,'수량'));
+    const norm = safeNum(col(r,'정상가'));
+    return norm > 0 ? norm * qty : safeNum(col(r,'거래금액','매출액'));
+  };
+
   const currByCode = {};
   _trendRows.forEach(r => {
     const code = String(col(r,'상품코드','공급사상품코드')||'').trim() || String(col(r,'상품명')||'').trim();
@@ -2457,7 +2467,7 @@ function renderTrendProductTable() {
       supplier: String(col(r,'공급사')||'').trim(),
       amt:0, qty:0, orders: new Set()
     };
-    currByCode[code].amt += safeNum(col(r,'매출액','거래금액'));
+    currByCode[code].amt += rowAmt(r);
     currByCode[code].qty += safeNum(col(r,'수량'));
     const on = String(col(r,'주문번호')||'').trim();
     if (on) currByCode[code].orders.add(on);
@@ -2468,7 +2478,7 @@ function renderTrendProductTable() {
     const code = String(col(r,'상품코드','공급사상품코드')||'').trim() || String(col(r,'상품명')||'').trim();
     if (!code) return;
     if (!prevByCode[code]) prevByCode[code] = { amt:0, qty:0 };
-    prevByCode[code].amt += safeNum(col(r,'매출액','거래금액'));
+    prevByCode[code].amt += rowAmt(r);
     prevByCode[code].qty += safeNum(col(r,'수량'));
   });
 
@@ -2495,9 +2505,9 @@ function renderTrendProductTable() {
     <thead style="background:#f8fafc;">
       <tr>
         <th style="text-align:center; padding:8px 10px; font-size:11px; font-weight:600; color:#64748b; border-bottom:1px solid #f1f5f9; width:32px;">순위</th>
-        <th style="text-align:left; padding:8px 10px; font-size:11px; font-weight:600; color:#64748b; border-bottom:1px solid #f1f5f9;">상품명</th>
-        <th style="text-align:left; padding:8px 10px; font-size:11px; font-weight:600; color:#64748b; border-bottom:1px solid #f1f5f9;">브랜드</th>
         <th style="text-align:left; padding:8px 10px; font-size:11px; font-weight:600; color:#64748b; border-bottom:1px solid #f1f5f9;">공급사</th>
+        <th style="text-align:left; padding:8px 10px; font-size:11px; font-weight:600; color:#64748b; border-bottom:1px solid #f1f5f9;">브랜드</th>
+        <th style="text-align:left; padding:8px 10px; font-size:11px; font-weight:600; color:#64748b; border-bottom:1px solid #f1f5f9;">상품명</th>
         <th style="text-align:right; padding:8px 10px; font-size:11px; font-weight:600; color:#64748b; border-bottom:1px solid #f1f5f9;">매출액</th>
         <th style="text-align:right; padding:8px 10px; font-size:11px; font-weight:600; color:#64748b; border-bottom:1px solid #f1f5f9;">수량</th>
         <th style="text-align:right; padding:8px 10px; font-size:11px; font-weight:600; color:#64748b; border-bottom:1px solid #f1f5f9;">주문건수</th>
@@ -2509,9 +2519,9 @@ function renderTrendProductTable() {
       ${items.map((p,i) => `
         <tr style="border-bottom:1px solid #f8fafc;">
           <td style="text-align:center; padding:8px 10px; font-size:12px; font-weight:700; color:${i<3?'#4f46e5':'#94a3b8'};">${i+1}</td>
-          <td style="padding:8px 10px; font-size:12px; font-weight:500; color:#1e293b; max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${p.name||'-'}</td>
-          <td style="padding:8px 10px; font-size:11px; color:#64748b;">${p.brand||'-'}</td>
           <td style="padding:8px 10px; font-size:11px; color:#64748b;">${p.supplier||'-'}</td>
+          <td style="padding:8px 10px; font-size:11px; color:#64748b;">${p.brand||'-'}</td>
+          <td style="padding:8px 10px; font-size:12px; font-weight:500; color:#1e293b; max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${p.name||'-'}</td>
           <td style="padding:8px 10px; font-size:12px; font-weight:500; color:#0f172a; text-align:right;" class="num">${fmtAmt(p.amt)}</td>
           <td style="padding:8px 10px; font-size:12px; text-align:right;" class="num">${p.qty.toLocaleString()}</td>
           <td style="padding:8px 10px; font-size:12px; text-align:right;" class="num">${p.orders.toLocaleString()}</td>

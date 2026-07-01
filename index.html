@@ -2238,6 +2238,7 @@ function getTrendFilteredRows() {
   }
 
   const applyBaseFilters = (r) => {
+    if (String(col(r,'주문상태')||'').trim().includes('취소')) return false;
     if (fMedia && String(col(r,'매체명')||'').trim() !== fMedia) return false;
     if (fBrand && String(col(r,'브랜드')||'').trim() !== fBrand) return false;
     if (fCat   && String(col(r,'상품군','카테고리','분류')||'').trim() !== fCat) return false;
@@ -2279,8 +2280,10 @@ function aggRows(rows) {
     const pc = String(col(r,'상품코드','공급사상품코드')||'').trim();
     if (on) orderNums.add(on);
     if (pc) prodCodes.add(pc);
-    amt += safeNum(col(r,'매출액','거래금액'));
-    qty += safeNum(col(r,'수량'));
+    const q    = safeNum(col(r,'수량'));
+    const norm = safeNum(col(r,'정상가'));
+    amt += norm > 0 ? norm * q : safeNum(col(r,'거래금액','매출액'));
+    qty += q;
   });
   return { amt, qty, orders: orderNums.size, prods: prodCodes.size };
 }
@@ -2376,7 +2379,7 @@ function renderTrendTimeseries() {
       if (!d) return;
       const key = sortKey(d);
       if (!b[key]) b[key] = { amt:0, qty:0, orders: new Set() };
-      b[key].amt += safeNum(col(r,'매출액','거래금액'));
+      b[key].amt += (safeNum(col(r,'정상가'))>0 ? safeNum(col(r,'정상가'))*safeNum(col(r,'수량')) : safeNum(col(r,'거래금액','매출액')));
       b[key].qty += safeNum(col(r,'수량'));
       const on = String(col(r,'주문번호')||'').trim();
       if (on) b[key].orders.add(on);
@@ -2554,7 +2557,7 @@ function renderTrendDow() {
     const d = toDate(col(r, dateField));
     if (!d) return;
     const dw = d.getDay();
-    buckets[dw].amt += safeNum(col(r,'매출액','거래금액'));
+    buckets[dw].amt += (safeNum(col(r,'정상가'))>0 ? safeNum(col(r,'정상가'))*safeNum(col(r,'수량')) : safeNum(col(r,'거래금액','매출액')));
     buckets[dw].qty += safeNum(col(r,'수량'));
     const on = String(col(r,'주문번호')||'').trim();
     if (on) buckets[dw].orders.add(on);
@@ -2563,7 +2566,7 @@ function renderTrendDow() {
     const d = toDate(col(r, dateField));
     if (!d) return;
     const dw = d.getDay();
-    prevBuckets[dw].amt += safeNum(col(r,'매출액','거래금액'));
+    prevBuckets[dw].amt += (safeNum(col(r,'정상가'))>0 ? safeNum(col(r,'정상가'))*safeNum(col(r,'수량')) : safeNum(col(r,'거래금액','매출액')));
     prevBuckets[dw].qty += safeNum(col(r,'수량'));
     const on = String(col(r,'주문번호')||'').trim();
     if (on) prevBuckets[dw].orders.add(on);
@@ -2637,7 +2640,7 @@ function renderTrendHour() {
     const d = toDate(col(r, dateField));
     if (!d) return;
     const h = d.getHours();
-    buckets[h].amt += safeNum(col(r,'매출액','거래금액'));
+    buckets[h].amt += (safeNum(col(r,'정상가'))>0 ? safeNum(col(r,'정상가'))*safeNum(col(r,'수량')) : safeNum(col(r,'거래금액','매출액')));
     buckets[h].qty += safeNum(col(r,'수량'));
     const on = String(col(r,'주문번호')||'').trim();
     if (on) buckets[h].orders.add(on);
@@ -2646,7 +2649,7 @@ function renderTrendHour() {
     const d = toDate(col(r, dateField));
     if (!d) return;
     const h = d.getHours();
-    prevBuckets[h].amt += safeNum(col(r,'매출액','거래금액'));
+    prevBuckets[h].amt += (safeNum(col(r,'정상가'))>0 ? safeNum(col(r,'정상가'))*safeNum(col(r,'수량')) : safeNum(col(r,'거래금액','매출액')));
     prevBuckets[h].qty += safeNum(col(r,'수량'));
     const on = String(col(r,'주문번호')||'').trim();
     if (on) prevBuckets[h].orders.add(on);
@@ -2711,7 +2714,7 @@ function renderTrendBottom() {
       const k = keyFn(r);
       if (!k) return;
       if (!map[k]) map[k] = { key:k, amt:0, qty:0, orders:new Set(), pAmt:0, pQty:0 };
-      map[k].amt += safeNum(col(r,'매출액','거래금액'));
+      map[k].amt += (safeNum(col(r,'정상가'))>0 ? safeNum(col(r,'정상가'))*safeNum(col(r,'수량')) : safeNum(col(r,'거래금액','매출액')));
       map[k].qty += safeNum(col(r,'수량'));
       const on = String(col(r,'주문번호')||'').trim();
       if (on) map[k].orders.add(on);
@@ -2722,7 +2725,7 @@ function renderTrendBottom() {
         const k = keyFn(r);
         if (!k) return;
         if (!map[k]) map[k] = { key:k, amt:0, qty:0, orders:new Set(), pAmt:0, pQty:0 };
-        map[k].pAmt += safeNum(col(r,'매출액','거래금액'));
+        map[k].pAmt += (safeNum(col(r,'정상가'))>0 ? safeNum(col(r,'정상가'))*safeNum(col(r,'수량')) : safeNum(col(r,'거래금액','매출액')));
         map[k].pQty += safeNum(col(r,'수량'));
       });
     }

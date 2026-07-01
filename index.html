@@ -2527,21 +2527,17 @@ function renderTrendProductTable() {
   const capPct = abs => abs > 1000 ? '1,000%+' : abs.toFixed(1) + '%';
 
   const fmtChgCell = p => {
-    if (trendProdMode === 'rise' || trendProdMode === 'fall') {
-      const isRise = trendProdMode === 'rise';
-      const badge  = isRise ? getRiseBadge(p) : '';
-      const pct    = p.pctQty;
-      let pctHtml  = '';
-      if (p.prevQty > 0 && pct !== null) {
-        const color = pct >= 0 ? '#10b981' : '#ef4444';
-        pctHtml = `<span style="color:${color};font-weight:600;font-size:12px;">${pct>=0?'▲':'▼'} ${capPct(Math.abs(pct))}</span>`;
-      }
-      const detail = `<div style="font-size:10px;color:#94a3b8;margin-top:2px;white-space:nowrap;">전주 ${p.prevQty.toLocaleString()}개 → ${p.qty.toLocaleString()}개</div>`;
-      return `<div style="text-align:right;">${badge}${pctHtml}${detail}</div>`;
+    const isRise = trendProdMode === 'rise';
+    const badge  = isRise ? getRiseBadge(p) : '';
+    // amt 탭은 매출 기준 %, 나머지는 수량 기준 %
+    const pct = trendProdMode === 'amt' ? p.pctAmt : p.pctQty;
+    let pctHtml = '';
+    if (p.prevQty > 0 && pct !== null) {
+      const color = pct >= 0 ? '#10b981' : '#ef4444';
+      pctHtml = `<span style="color:${color};font-weight:600;font-size:12px;">${pct>=0?'▲':'▼'} ${capPct(Math.abs(pct))}</span>`;
     }
-    const pct = trendProdMode === 'qty' ? p.pctQty : p.pctAmt;
-    if (pct === null) return '<span style="color:#cbd5e1;">-</span>';
-    return `<span style="color:${pct>=0?'#10b981':'#ef4444'};font-weight:600;">${pct>=0?'▲':'▼'} ${capPct(Math.abs(pct))}</span>`;
+    const detail = `<div style="font-size:10px;color:#94a3b8;margin-top:2px;white-space:nowrap;">전주 ${p.prevQty.toLocaleString()}개 → ${p.qty.toLocaleString()}개</div>`;
+    return `<div style="text-align:right;">${badge}${pctHtml}${detail}</div>`;
   };
 
   const table = document.getElementById('trend-prod-table');

@@ -395,6 +395,8 @@
             <input type="date" id="trend-cmp-to"   style="border:1px solid #c7d2fe; border-radius:8px; padding:5px 8px; font-size:12px; color:#374151; outline:none; font-family:'Noto Sans KR',sans-serif;">
           </div>
           <span id="trend-compare-label" style="font-size:11px; color:#94a3b8; font-family:'Noto Sans KR',sans-serif;"></span>
+          <button id="trend-show-cmp" onclick="toggleShowComparison()"
+            style="padding:4px 12px; border-radius:6px; font-size:11px; font-weight:600; border:none; cursor:pointer; background:#4f46e5; color:white; font-family:'Noto Sans KR',sans-serif; margin-left:4px;">비교 ON</button>
         </div>
       </div>
 
@@ -2124,6 +2126,7 @@ let trendProdMode    = 'amt';
 let trendDowMode     = 'amt';
 let trendHourMode    = 'amt';
 let trendCompareMode = 'week';
+let showComparison   = true;
 let _trendRows       = [];
 let _trendPrevRows   = [];
 
@@ -2141,6 +2144,20 @@ function setTrendCompare(mode) {
   });
   const wrap = document.getElementById('trend-cmp-custom-wrap');
   if (wrap) wrap.style.display = mode === 'custom' ? 'flex' : 'none';
+}
+
+function toggleShowComparison() {
+  showComparison = !showComparison;
+  const btn = document.getElementById('trend-show-cmp');
+  if (btn) {
+    btn.style.background = showComparison ? '#4f46e5' : '#e2e8f0';
+    btn.style.color      = showComparison ? 'white'   : '#94a3b8';
+    btn.textContent      = showComparison ? '비교 ON' : '비교 OFF';
+  }
+  renderTrendTimeseries();
+  renderTrendDow();
+  renderTrendHour();
+  renderTrendBottom();
 }
 
 function initTrendTab() {
@@ -2365,7 +2382,7 @@ function renderTrendTimeseries() {
 
   const currB = buildBuckets(_trendRows);
   const prevB = buildBuckets(_trendPrevRows);
-  const hasPrev = Object.keys(prevB).length > 0;
+  const hasPrev = showComparison && Object.keys(prevB).length > 0;
 
   const allKeys = [...new Set([...Object.keys(currB), ...Object.keys(prevB)])].sort();
   const labels  = allKeys.map(displayLabel);
@@ -2521,7 +2538,8 @@ function renderTrendDow() {
   destroyTrendChart('trend-dow-chart');
   const DOW_KR = ['일','월','화','수','목','금','토'];
   const dateField = '주문일시';
-  const buckets = [0,1,2,3,4,5,6].map(() => ({ amt:0, qty:0, orders: new Set() }));
+  const buckets     = [0,1,2,3,4,5,6].map(() => ({ amt:0, qty:0, orders: new Set() }));
+  const prevBuckets = [0,1,2,3,4,5,6].map(() => ({ amt:0, qty:0, orders: new Set() }));
   _trendRows.forEach(r => {
     const d = toDate(col(r, dateField));
     if (!d) return;
@@ -2531,30 +2549,56 @@ function renderTrendDow() {
     const on = String(col(r,'주문번호')||'').trim();
     if (on) buckets[dw].orders.add(on);
   });
+  _trendPrevRows.forEach(r => {
+    const d = toDate(col(r, dateField));
+    if (!d) return;
+    const dw = d.getDay();
+    prevBuckets[dw].amt += safeNum(col(r,'매출액','거래금액'));
+    prevBuckets[dw].qty += safeNum(col(r,'수량'));
+    const on = String(col(r,'주문번호')||'').trim();
+    if (on) prevBuckets[dw].orders.add(on);
+  });
   // 월~일 순으로
-  const order = [1,2,3,4,5,6,0];
+  const order  = [1,2,3,4,5,6,0];
   const labels = order.map(i => DOW_KR[i]);
-  const vals   = order.map(i => trendDowMode==='amt' ? buckets[i].amt : trendDowMode==='qty' ? buckets[i].qty : buckets[i].orders.size);
+  const vals   = order.map(i => trendDowMode==='amt' ? buckets[i].amt     : trendDowMode==='qty' ? buckets[i].qty     : buckets[i].orders.size);
+  const pVals  = order.map(i => trendDowMode==='amt' ? prevBuckets[i].amt : trendDowMode==='qty' ? prevBuckets[i].qty : prevBuckets[i].orders.size);
+  const hasPrev = showComparison && _trendPrevRows.length > 0;
 
   trendCharts['trend-dow-chart'] = new Chart(document.getElementById('trend-dow-chart'), {
     type: 'bar',
     data: {
       labels,
-      datasets: [{
-        data: vals,
-        backgroundColor: order.map(i => i===0||i===6 ? '#ec489933' : '#4f46e533'),
-        borderColor:     order.map(i => i===0||i===6 ? '#ec4899'   : '#4f46e5'),
-        borderWidth: 1.5,
-        borderRadius: 5,
-        borderSkipped: false,
-      }]
+      datasets: [
+        {
+          label: '조회기간',
+          data: vals,
+          backgroundColor: order.map(i => i===0||i===6 ? '#ec489933' : '#4f46e533'),
+          borderColor:     order.map(i => i===0||i===6 ? '#ec4899'   : '#4f46e5'),
+          borderWidth: 1.5,
+          borderRadius: 5,
+          borderSkipped: false,
+        },
+        ...(hasPrev ? [{
+          label: '비교기간',
+          data: pVals,
+          backgroundColor: '#94a3b825',
+          borderColor: '#94a3b8',
+          borderWidth: 1.5,
+          borderRadius: 5,
+          borderSkipped: false,
+        }] : [])
+      ]
     },
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      plugins: { legend:{ display:false }, tooltip:{ callbacks:{ label: ctx =>
-        trendDowMode==='amt' ? fmtAmt(ctx.raw) : ctx.raw.toLocaleString() + (trendDowMode==='qty'?'개':'건')
-      }}},
+      plugins: {
+        legend: { display: hasPrev, labels: { font:{ size:11, family:'Noto Sans KR' }, boxWidth:12, padding:10 } },
+        tooltip: { callbacks: { label: ctx =>
+          `${ctx.dataset.label}: ` + (trendDowMode==='amt' ? fmtAmt(ctx.raw) : ctx.raw.toLocaleString() + (trendDowMode==='qty'?'개':'건'))
+        }}
+      },
       scales: {
         x: { grid:{ display:false }, ticks:{ font:{size:11, family:'Noto Sans KR'} } },
         y: { grid:{ color:'#f8fafc' }, ticks:{ font:{size:10}, callback: v => trendDowMode==='amt' ? fmtAmt(v) : v.toLocaleString() } }
@@ -2576,8 +2620,9 @@ function setTrendHour(mode) {
 
 function renderTrendHour() {
   destroyTrendChart('trend-hour-chart');
-  const dateField = '주문일시';
-  const buckets = Array.from({length:24}, () => ({ amt:0, qty:0, orders: new Set() }));
+  const dateField   = '주문일시';
+  const buckets     = Array.from({length:24}, () => ({ amt:0, qty:0, orders: new Set() }));
+  const prevBuckets = Array.from({length:24}, () => ({ amt:0, qty:0, orders: new Set() }));
   _trendRows.forEach(r => {
     const d = toDate(col(r, dateField));
     if (!d) return;
@@ -2587,10 +2632,21 @@ function renderTrendHour() {
     const on = String(col(r,'주문번호')||'').trim();
     if (on) buckets[h].orders.add(on);
   });
-  const labels = buckets.map((_,i) => i+'시');
-  const vals   = buckets.map(b => trendHourMode==='amt' ? b.amt : trendHourMode==='qty' ? b.qty : b.orders.size);
-  const maxV   = Math.max(...vals, 1);
-  const colors = vals.map(v => {
+  _trendPrevRows.forEach(r => {
+    const d = toDate(col(r, dateField));
+    if (!d) return;
+    const h = d.getHours();
+    prevBuckets[h].amt += safeNum(col(r,'매출액','거래금액'));
+    prevBuckets[h].qty += safeNum(col(r,'수량'));
+    const on = String(col(r,'주문번호')||'').trim();
+    if (on) prevBuckets[h].orders.add(on);
+  });
+  const labels  = buckets.map((_,i) => i+'시');
+  const vals    = buckets.map(b     => trendHourMode==='amt' ? b.amt     : trendHourMode==='qty' ? b.qty     : b.orders.size);
+  const pVals   = prevBuckets.map(b => trendHourMode==='amt' ? b.amt     : trendHourMode==='qty' ? b.qty     : b.orders.size);
+  const hasPrev = showComparison && _trendPrevRows.length > 0;
+  const maxV    = Math.max(...vals, 1);
+  const colors  = vals.map(v => {
     const intensity = Math.round(v / maxV * 200);
     return `rgba(79,70,229,${(intensity/255).toFixed(2)})`;
   });
@@ -2599,21 +2655,36 @@ function renderTrendHour() {
     type: 'bar',
     data: {
       labels,
-      datasets: [{
-        data: vals,
-        backgroundColor: colors,
-        borderColor: '#4f46e5',
-        borderWidth: 0.5,
-        borderRadius: 3,
-        borderSkipped: false,
-      }]
+      datasets: [
+        {
+          label: '조회기간',
+          data: vals,
+          backgroundColor: colors,
+          borderColor: '#4f46e5',
+          borderWidth: 0.5,
+          borderRadius: 3,
+          borderSkipped: false,
+        },
+        ...(hasPrev ? [{
+          label: '비교기간',
+          data: pVals,
+          backgroundColor: '#94a3b825',
+          borderColor: '#94a3b8',
+          borderWidth: 0.5,
+          borderRadius: 3,
+          borderSkipped: false,
+        }] : [])
+      ]
     },
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      plugins: { legend:{ display:false }, tooltip:{ callbacks:{ label: ctx =>
-        trendHourMode==='amt' ? fmtAmt(ctx.raw) : ctx.raw.toLocaleString() + (trendHourMode==='qty'?'개':'건')
-      }}},
+      plugins: {
+        legend: { display: hasPrev, labels: { font:{ size:10, family:'Noto Sans KR' }, boxWidth:10, padding:8 } },
+        tooltip: { callbacks: { label: ctx =>
+          `${ctx.dataset.label}: ` + (trendHourMode==='amt' ? fmtAmt(ctx.raw) : ctx.raw.toLocaleString() + (trendHourMode==='qty'?'개':'건'))
+        }}
+      },
       scales: {
         x: { grid:{ display:false }, ticks:{ font:{size:9, family:'Noto Sans KR'}, maxRotation:0, autoSkip:true, maxTicksLimit:12 } },
         y: { grid:{ color:'#f8fafc' }, ticks:{ font:{size:10}, callback: v => trendHourMode==='amt' ? fmtAmt(v) : v.toLocaleString() } }
@@ -2624,18 +2695,28 @@ function renderTrendHour() {
 
 // ── 하단 보조 분석 ──
 function renderTrendBottom() {
-  const buildGroupTable = (rows, keyFn, elId) => {
+  const buildGroupTable = (currRows, prevRows, keyFn, elId) => {
     const map = {};
-    rows.forEach(r => {
+    currRows.forEach(r => {
       const k = keyFn(r);
       if (!k) return;
-      if (!map[k]) map[k] = { key:k, amt:0, qty:0, orders: new Set() };
+      if (!map[k]) map[k] = { key:k, amt:0, qty:0, orders:new Set(), pAmt:0, pQty:0 };
       map[k].amt += safeNum(col(r,'매출액','거래금액'));
       map[k].qty += safeNum(col(r,'수량'));
       const on = String(col(r,'주문번호')||'').trim();
       if (on) map[k].orders.add(on);
     });
-    const items = Object.values(map).sort((a,b) => b.amt - a.amt).slice(0,10);
+    const hasPrev = showComparison && prevRows.length > 0;
+    if (hasPrev) {
+      prevRows.forEach(r => {
+        const k = keyFn(r);
+        if (!k) return;
+        if (!map[k]) map[k] = { key:k, amt:0, qty:0, orders:new Set(), pAmt:0, pQty:0 };
+        map[k].pAmt += safeNum(col(r,'매출액','거래금액'));
+        map[k].pQty += safeNum(col(r,'수량'));
+      });
+    }
+    const items    = Object.values(map).sort((a,b) => b.amt - a.amt).slice(0,10);
     const totalAmt = items.reduce((s,i) => s + i.amt, 0) || 1;
     const el = document.getElementById(elId);
     el.innerHTML = `
@@ -2646,6 +2727,7 @@ function renderTrendBottom() {
             <th style="text-align:right; padding:6px 8px; font-size:11px; font-weight:600; color:#64748b;">매출액</th>
             <th style="text-align:right; padding:6px 8px; font-size:11px; font-weight:600; color:#64748b;">수량</th>
             <th style="text-align:right; padding:6px 8px; font-size:11px; font-weight:600; color:#64748b;">비중</th>
+            ${hasPrev ? '<th style="text-align:right; padding:6px 8px; font-size:11px; font-weight:600; color:#64748b;">비교 대비</th>' : ''}
           </tr>
         </thead>
         <tbody>
@@ -2655,6 +2737,7 @@ function renderTrendBottom() {
               <td style="padding:6px 8px; text-align:right; font-size:12px;" class="num">${fmtAmt(it.amt)}</td>
               <td style="padding:6px 8px; text-align:right; font-size:12px;" class="num">${it.qty.toLocaleString()}</td>
               <td style="padding:6px 8px; text-align:right; font-size:11px; color:#64748b;">${(it.amt/totalAmt*100).toFixed(1)}%</td>
+              ${hasPrev ? `<td style="padding:6px 8px; text-align:right; font-size:11px;">${fmtChange(it.amt, it.pAmt) || '<span style="color:#cbd5e1">-</span>'}</td>` : ''}
             </tr>
           `).join('')}
         </tbody>
@@ -2662,10 +2745,9 @@ function renderTrendBottom() {
     `;
   };
 
-  const rows = _trendRows;
-  buildGroupTable(rows, r => String(col(r,'매체명')||'').trim(),  'trend-by-media');
-  buildGroupTable(rows, r => String(col(r,'브랜드')||'').trim(),  'trend-by-brand');
-  buildGroupTable(rows, r => String(col(r,'공급사')||'').trim(),  'trend-by-supplier');
+  buildGroupTable(_trendRows, _trendPrevRows, r => String(col(r,'매체명')||'').trim(),  'trend-by-media');
+  buildGroupTable(_trendRows, _trendPrevRows, r => String(col(r,'브랜드')||'').trim(),  'trend-by-brand');
+  buildGroupTable(_trendRows, _trendPrevRows, r => String(col(r,'공급사')||'').trim(),  'trend-by-supplier');
 
   // 주문상태 도넛 차트
   destroyTrendChart('trend-status-chart');

@@ -87,7 +87,7 @@
       style="border:2px dashed #a5b4fc; border-radius:16px; padding:80px 40px; text-align:center; background:white; cursor:pointer; transition:all 0.2s;">
       <div style="font-size:44px; margin-bottom:14px;">📂</div>
       <div style="font-size:16px; font-weight:600; color:#374151; margin-bottom:6px;">주문 엑셀 파일을 드래그하거나 클릭하세요</div>
-      <div style="font-size:13px; color:#94a3b8; font-weight:400;">주문번호 · 브랜드 · 상품명 · 매출액 · 수량 · 매체명 · 주문일시 컬럼 포함 파일</div>
+      <div style="font-size:13px; color:#94a3b8; font-weight:400;">주문번호 · 브랜드 · 상품명 · 거래금액 · 수량 · 매체명 · 주문일시 컬럼 포함 파일</div>
       <input type="file" id="sales-file" accept=".xlsx,.xls" style="display:none" onchange="handleSalesFile(event)">
     </div>
   </div>
@@ -127,7 +127,7 @@
           <button id="sort-qty" onclick="setSortBy('qty')" class="tog-btn on"
             style="padding:4px 14px; border-radius:6px; font-size:12px; font-weight:500; border:none;">수량</button>
           <button id="sort-amt" onclick="setSortBy('amt')" class="tog-btn off"
-            style="padding:4px 14px; border-radius:6px; font-size:12px; font-weight:500; border:none; background:transparent;">매출액</button>
+            style="padding:4px 14px; border-radius:6px; font-size:12px; font-weight:500; border:none; background:transparent;">거래금액</button>
           <button id="sort-brand" onclick="setSortBy('brand')" class="tog-btn off"
             style="padding:4px 14px; border-radius:6px; font-size:12px; font-weight:500; border:none; background:transparent;">브랜드별</button>
         </div>
@@ -367,7 +367,7 @@
     <!-- 공통 필터 -->
     <div style="background:white; border-radius:16px; box-shadow:0 1px 4px rgba(0,0,0,0.06); padding:16px 20px; margin-bottom:20px;">
 
-      <!-- 1행: 기준일 + 분석기간 + 비교방식 -->
+      <!-- 1행: 기준일 + 분석기간 -->
       <div style="display:flex; flex-wrap:wrap; align-items:center; gap:16px; margin-bottom:12px; padding-bottom:12px; border-bottom:1px solid #f1f5f9;">
 
         <div style="display:flex; align-items:center; gap:6px;">
@@ -385,21 +385,18 @@
             <button id="trend-period-30"     onclick="setTrendPeriod('30')"     style="padding:4px 12px; border-radius:6px; font-size:12px; font-weight:600; border:none; cursor:pointer; background:#f1f5f9; color:#64748b; font-family:'Noto Sans KR',sans-serif;">최근 30일</button>
             <button id="trend-period-custom" onclick="setTrendPeriod('custom')" style="padding:4px 12px; border-radius:6px; font-size:12px; font-weight:600; border:none; cursor:pointer; background:#f1f5f9; color:#64748b; font-family:'Noto Sans KR',sans-serif;">직접선택</button>
           </div>
-          <div id="trend-custom-start-wrap" style="display:none; align-items:center; gap:4px;">
+          <div id="trend-custom-start-wrap" style="display:none; align-items:center; gap:4px; flex-wrap:wrap;">
+            <span style="font-size:11px; color:#94a3b8;">분석:</span>
             <input type="date" id="trend-custom-start" style="border:1px solid #c7d2fe; border-radius:8px; padding:5px 8px; font-size:12px; color:#374151; outline:none; font-family:'Noto Sans KR',sans-serif;">
             <span style="font-size:11px; color:#94a3b8;">~ 기준일</span>
-          </div>
-        </div>
-
-        <div style="width:1px; height:20px; background:#e2e8f0;"></div>
-
-        <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
-          <span style="font-size:11px; font-weight:600; color:#64748b; white-space:nowrap;">비교방식</span>
-          <div style="display:flex; gap:3px;">
-            <button id="trend-cmp-prev"  onclick="setTrendCmp('prev')"  style="padding:4px 12px; border-radius:6px; font-size:12px; font-weight:600; border:none; cursor:pointer; background:#4f46e5; color:white; font-family:'Noto Sans KR',sans-serif;">직전 동일기간</button>
-            <button id="trend-cmp-week"  onclick="setTrendCmp('week')"  style="padding:4px 12px; border-radius:6px; font-size:12px; font-weight:600; border:none; cursor:pointer; background:#f1f5f9; color:#64748b; font-family:'Noto Sans KR',sans-serif;">전주 동일요일</button>
-            <button id="trend-cmp-month" onclick="setTrendCmp('month')" style="padding:4px 12px; border-radius:6px; font-size:12px; font-weight:600; border:none; cursor:pointer; background:#f1f5f9; color:#64748b; font-family:'Noto Sans KR',sans-serif;">전월 동일기간</button>
-            <button id="trend-cmp-none"  onclick="setTrendCmp('none')"  style="padding:4px 12px; border-radius:6px; font-size:12px; font-weight:600; border:none; cursor:pointer; background:#f1f5f9; color:#64748b; font-family:'Noto Sans KR',sans-serif;">비교 안 함</button>
+            <span style="width:1px; height:16px; background:#e2e8f0; display:inline-block; margin:0 4px;"></span>
+            <span style="font-size:11px; color:#94a3b8;">비교:</span>
+            <input type="date" id="trend-custom-cmp-start" style="border:1px solid #e2e8f0; border-radius:8px; padding:5px 8px; font-size:12px; color:#374151; outline:none; font-family:'Noto Sans KR',sans-serif;">
+            <span style="font-size:11px; color:#94a3b8;">~</span>
+            <input type="date" id="trend-custom-cmp-end" style="border:1px solid #e2e8f0; border-radius:8px; padding:5px 8px; font-size:12px; color:#374151; outline:none; font-family:'Noto Sans KR',sans-serif;">
+            <label style="display:flex; align-items:center; gap:4px; font-size:11px; color:#64748b; cursor:pointer; margin-left:4px;">
+              <input type="checkbox" id="trend-custom-no-cmp" onchange="renderTrend()" style="cursor:pointer;"> 비교 안 함
+            </label>
           </div>
         </div>
       </div>
@@ -407,9 +404,9 @@
       <!-- 2행: 기간 표시 + 필터 + 조회/초기화 -->
       <div style="display:flex; flex-wrap:wrap; align-items:center; gap:12px;">
 
-        <div style="display:flex; align-items:center; gap:6px; padding:4px 10px; background:#f8fafc; border-radius:8px;">
+        <div style="display:flex; flex-direction:column; gap:2px; padding:6px 12px; background:#f0f4ff; border-radius:8px; border-left:3px solid #4f46e5;">
           <span id="trend-period-label" style="font-size:11px; color:#4f46e5; font-weight:600;"></span>
-          <span id="trend-cmp-label"    style="font-size:11px; color:#94a3b8;"></span>
+          <span id="trend-cmp-label"    style="font-size:11px; color:#64748b;"></span>
         </div>
 
         <div style="display:flex; align-items:center; gap:6px;">
@@ -1059,7 +1056,7 @@ function renderSalesDashboard() {
 
     const qty         = safeNum(col(r, '수량'));
     const normalPrice = safeNum(col(r, '정상가'));
-    const amt         = normalPrice > 0 ? normalPrice * qty : safeNum(col(r, '매출액', '거래금액'));
+    const amt         = normalPrice > 0 ? normalPrice * qty : safeNum(col(r, '거래금액', '매출액'));
     const supplier    = String(col(r, '공급사')  || '').trim();
     const code        = String(col(r, '상품코드', '공급사상품코드', '공급사발급코드') || '').trim();
     const salePrice   = safeNum(col(r, '판매단가', '단가', '판매가'));
@@ -1087,7 +1084,7 @@ function renderSalesDashboard() {
   kpis.innerHTML = [
     { label:'총 주문건수', value: rows.length.toLocaleString() + '건',   color:'#6366f1' },
     { label:'총 판매수량', value: totalQty.toLocaleString() + '개',        color:'#8b5cf6' },
-    { label:'총 매출액',   value: fmtAmt(totalAmt),                        color:'#ec4899' },
+    { label:'총 거래금액',  value: fmtAmt(totalAmt),                        color:'#ec4899' },
     { label:'활성 매체수', value: mediaSet.size + '개',                    color:'#f59e0b' },
   ].map(k => `
     <div class="card" style="padding:18px 22px;">
@@ -1254,7 +1251,7 @@ function renderSalesDashboard() {
               <th style="text-align:left; padding:6px 4px; font-size:10px; font-weight:600; color:#94a3b8; text-transform:uppercase; letter-spacing:0.4px; width:28px;">순위</th>
               <th style="text-align:left; padding:6px 4px; font-size:10px; font-weight:600; color:#94a3b8; text-transform:uppercase; letter-spacing:0.4px;">${sortBy==='brand' ? '브랜드' : '상품'}</th>
               <th style="text-align:right; padding:6px 4px; font-size:10px; font-weight:600; color:#94a3b8; text-transform:uppercase; letter-spacing:0.4px;">수량</th>
-              <th style="text-align:right; padding:6px 4px; font-size:10px; font-weight:600; color:#94a3b8; text-transform:uppercase; letter-spacing:0.4px;">매출액</th>
+              <th style="text-align:right; padding:6px 4px; font-size:10px; font-weight:600; color:#94a3b8; text-transform:uppercase; letter-spacing:0.4px;">거래금액</th>
             </tr>
           </thead>
           <tbody>
@@ -2151,7 +2148,6 @@ loadFromStorage();
 // ════════════════════════════════════════════════════
 let trendCharts      = {};
 let _trendPeriodMode = '7';
-let _trendCmpMode    = 'prev';
 let _trendTimeUnit   = 'day';
 let _trendRows       = [];
 let _trendPrevRows   = [];
@@ -2175,16 +2171,6 @@ function setTrendPeriod(mode) {
   });
   const wrap = document.getElementById('trend-custom-start-wrap');
   if (wrap) wrap.style.display = mode === 'custom' ? 'flex' : 'none';
-}
-
-function setTrendCmp(mode) {
-  _trendCmpMode = mode;
-  ['prev','week','month','none'].forEach(m => {
-    const btn = document.getElementById('trend-cmp-' + m);
-    if (!btn) return;
-    btn.style.background = m === mode ? '#4f46e5' : '#f1f5f9';
-    btn.style.color      = m === mode ? 'white'   : '#64748b';
-  });
 }
 
 function setTrendTimeUnit(unit) {
@@ -2230,7 +2216,6 @@ function initTrendTab() {
   if (!endEl.value && maxD) endEl.value = fmtDate(maxD);
 
   setTrendPeriod('7');
-  setTrendCmp('prev');
   renderTrend();
 }
 
@@ -2254,18 +2239,22 @@ function getTrendFilteredRows() {
   const durationMs = toD.getTime() - fromD.getTime();
   let prevFromD = null, prevToD = null;
 
-  if (_trendCmpMode === 'prev') {
+  if (_trendPeriodMode === '7' || _trendPeriodMode === '14' || _trendPeriodMode === '30') {
+    // 자동 비교: 분석기간과 동일한 길이를 직전으로 이동
     prevToD   = new Date(fromD.getTime() - 1);
     prevFromD = new Date(prevToD.getTime() - durationMs);
     prevFromD.setHours(0,0,0,0);
-  } else if (_trendCmpMode === 'week') {
-    const ms7 = 7 * 24 * 60 * 60 * 1000;
-    prevFromD = new Date(fromD.getTime() - ms7);
-    prevToD   = new Date(toD.getTime() - ms7);
-  } else if (_trendCmpMode === 'month') {
-    prevFromD = new Date(fromD); prevFromD.setMonth(prevFromD.getMonth() - 1);
-    prevToD   = new Date(toD);   prevToD.setMonth(prevToD.getMonth() - 1);
-    prevToD.setHours(23,59,59,999);
+  } else {
+    // 직접선택: 비교기간 inputs에서 읽기 (비교 안 함 체크 시 null)
+    const noCmp = document.getElementById('trend-custom-no-cmp');
+    if (!noCmp || !noCmp.checked) {
+      const cs = document.getElementById('trend-custom-cmp-start').value;
+      const ce = document.getElementById('trend-custom-cmp-end').value;
+      if (cs && ce) {
+        prevFromD = new Date(cs + 'T00:00:00');
+        prevToD   = new Date(ce + 'T23:59:59');
+      }
+    }
   }
 
   const fMedia    = document.getElementById('trend-filter-media').value;
@@ -2294,9 +2283,18 @@ function getTrendFilteredRows() {
   }) : [];
 
   const periodLabel = document.getElementById('trend-period-label');
-  if (periodLabel) periodLabel.textContent = `${fmtDate(fromD)} ~ ${fmtDate(toD)}`;
+  if (periodLabel) periodLabel.textContent = `분석 기간: ${fmtDate(fromD)} ~ ${fmtDate(toD)}`;
   const cmpLabel = document.getElementById('trend-cmp-label');
-  if (cmpLabel) cmpLabel.textContent = (prevFromD && prevToD) ? `| 비교: ${fmtDate(prevFromD)} ~ ${fmtDate(prevToD)}` : '';
+  if (cmpLabel) {
+    if (prevFromD && prevToD) {
+      const cmpDesc = _trendPeriodMode === '7'  ? '전주 동일 7일'   :
+                      _trendPeriodMode === '14' ? '2주 전 동일 14일' :
+                      _trendPeriodMode === '30' ? '전월 동일 30일'  : '직접 선택 비교기간';
+      cmpLabel.textContent = `비교 대상: ${fmtDate(prevFromD)} ~ ${fmtDate(prevToD)} (${cmpDesc})`;
+    } else {
+      cmpLabel.textContent = '비교 없음';
+    }
+  }
 
   return { curr, prev, fromD, toD, prevFromD, prevToD };
 }
@@ -2352,9 +2350,12 @@ function resetTrend() {
   document.getElementById('trend-filter-supplier').value = '';
   document.getElementById('trend-filter-brand').value    = '';
   document.getElementById('trend-filter-product').value  = '';
-  document.getElementById('trend-custom-start').value    = '';
+  document.getElementById('trend-custom-start').value      = '';
+  document.getElementById('trend-custom-cmp-start').value  = '';
+  document.getElementById('trend-custom-cmp-end').value    = '';
+  const noCmp = document.getElementById('trend-custom-no-cmp');
+  if (noCmp) noCmp.checked = false;
   setTrendPeriod('7');
-  setTrendCmp('prev');
   renderTrend();
 }
 
@@ -2402,7 +2403,7 @@ function renderGroupTable(currRows, prevRows, keyFn, elId, nameFn) {
     <table style="width:100%; border-collapse:collapse; font-size:12px;">
       <thead><tr style="border-bottom:1px solid #f1f5f9;">
         <th style="text-align:left; padding:6px 8px; font-size:11px; font-weight:600; color:#64748b;">이름</th>
-        <th style="text-align:right; padding:6px 8px; font-size:11px; font-weight:600; color:#64748b;">매출액</th>
+        <th style="text-align:right; padding:6px 8px; font-size:11px; font-weight:600; color:#64748b;">거래금액</th>
         <th style="text-align:right; padding:6px 8px; font-size:11px; font-weight:600; color:#64748b;">수량</th>
         <th style="text-align:right; padding:6px 8px; font-size:11px; font-weight:600; color:#64748b;">주문</th>
         <th style="text-align:right; padding:6px 8px; font-size:11px; font-weight:600; color:#64748b;">비중</th>
@@ -2485,7 +2486,7 @@ function renderTimeseriesChart(chartId, currRows, prevRows, fromD, toD) {
   const { labels, buckets } = buildTrendBuckets(currRows, fromD, toD, _trendTimeUnit);
   const pb = buildTrendBuckets(prevRows, _trendPrevFromD, _trendPrevToD, _trendTimeUnit).buckets;
   const datasets = [
-    { label:'매출액', data:buckets.map(b=>b.amt), type:'line', yAxisID:'y1',
+    { label:'거래금액', data:buckets.map(b=>b.amt), type:'line', yAxisID:'y1',
       borderColor:'#4f46e5', backgroundColor:'transparent', borderWidth:2, pointRadius:3, tension:0.3 },
     { label:'판매수량', data:buckets.map(b=>b.qty), type:'bar', yAxisID:'y2',
       backgroundColor:'#8b5cf680', borderColor:'#8b5cf6', borderWidth:1.5, borderRadius:3 },
@@ -2494,7 +2495,7 @@ function renderTimeseriesChart(chartId, currRows, prevRows, fromD, toD) {
   ];
   if (prevRows.length) {
     datasets.push(
-      { label:'비교 매출액', data:pb.map(b=>b.amt), type:'line', yAxisID:'y1',
+      { label:'비교 거래금액', data:pb.map(b=>b.amt), type:'line', yAxisID:'y1',
         borderColor:'#94a3b8', backgroundColor:'transparent', borderWidth:1.5, borderDash:[5,4], pointRadius:2, tension:0.3 },
       { label:'비교 수량', data:pb.map(b=>b.qty), type:'bar', yAxisID:'y2',
         backgroundColor:'#94a3b820', borderColor:'#94a3b8', borderWidth:1, borderRadius:3 }
@@ -2538,7 +2539,7 @@ function renderTrendAll() {
   }
 
   renderKpiCards('trend-all-kpi', [
-    { label:'총 매출액',     value:fmtAmt(cAgg.amt),                    change:pAgg?fmtChange(cAgg.amt,pAgg.amt):'' },
+    { label:'총 거래금액',     value:fmtAmt(cAgg.amt),                    change:pAgg?fmtChange(cAgg.amt,pAgg.amt):'' },
     { label:'총 주문건수',   value:cAgg.orders.toLocaleString()+'건',    change:pAgg?fmtChange(cAgg.orders,pAgg.orders):'' },
     { label:'총 판매수량',   value:cAgg.qty.toLocaleString()+'개',       change:pAgg?fmtChange(cAgg.qty,pAgg.qty):'' },
     { label:'활성 매체 수',  value:activeMedias+'개',    change:'' },
@@ -2554,7 +2555,7 @@ function renderTrendAll() {
 
   _insightText = [
     `📅 분석 기간: ${fmtDate(_trendFromD)} ~ ${fmtDate(_trendToD)}`,
-    `💰 총 매출액: ${fmtAmt(cAgg.amt)}${pAgg?' ('+( fmtChange(cAgg.amt,pAgg.amt)||'변동 없음')+')':''}`,
+    `💰 총 거래금액: ${fmtAmt(cAgg.amt)}${pAgg?' ('+( fmtChange(cAgg.amt,pAgg.amt)||'변동 없음')+')':''}`,
     `📦 총 판매수량: ${cAgg.qty.toLocaleString()}개`,
     `🧾 총 주문건수: ${cAgg.orders.toLocaleString()}건`,
     `📡 활성 매체 수: ${activeMedias}개`,
@@ -2616,7 +2617,7 @@ function renderTrendMediaDetail(mediaKey) {
   }
 
   renderKpiCards('trend-media-kpi', [
-    { label:'총 매출액',    value:fmtAmt(cAgg.amt),                  change:pAgg?fmtChange(cAgg.amt,pAgg.amt):'' },
+    { label:'총 거래금액',    value:fmtAmt(cAgg.amt),                  change:pAgg?fmtChange(cAgg.amt,pAgg.amt):'' },
     { label:'총 주문건수',  value:cAgg.orders.toLocaleString()+'건',  change:pAgg?fmtChange(cAgg.orders,pAgg.orders):'' },
     { label:'총 판매수량',  value:cAgg.qty.toLocaleString()+'개',     change:pAgg?fmtChange(cAgg.qty,pAgg.qty):'' },
     { label:'판매 상품 수', value:activeProds+'개',  change:'' },
@@ -2644,7 +2645,7 @@ function renderTrendMediaDetail(mediaKey) {
   _insightText = [
     `📅 분석 기간: ${fmtDate(_trendFromD)} ~ ${fmtDate(_trendToD)}`,
     `📡 선택 매체: ${mediaName}`,
-    `💰 총 매출액: ${fmtAmt(cAgg.amt)}${pAgg?' ('+( fmtChange(cAgg.amt,pAgg.amt)||'변동 없음')+')':''}`,
+    `💰 총 거래금액: ${fmtAmt(cAgg.amt)}${pAgg?' ('+( fmtChange(cAgg.amt,pAgg.amt)||'변동 없음')+')':''}`,
     `📦 총 판매수량: ${cAgg.qty.toLocaleString()}개`,
     `🧾 총 주문건수: ${cAgg.orders.toLocaleString()}건`,
     `🏷️ 판매 상품 수: ${activeProds}개 · 브랜드 ${activeBrands}개`,

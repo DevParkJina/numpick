@@ -2542,20 +2542,32 @@ function renderTrendAll() {
 
   const summaryEl = document.getElementById('trend-all-summary');
   if (summaryEl) {
-    const pt = pAgg ? ` &nbsp;|&nbsp; 전기 대비 ${fmtChange(cAgg.amt, pAgg.amt)||'-'}` : '';
     summaryEl.innerHTML = `
-      <div style="font-size:12px; font-weight:700; opacity:0.75; margin-bottom:8px;">전체 분석 요약</div>
-      <div style="font-size:26px; font-weight:800; margin-bottom:6px;">${fmtAmt(cAgg.amt)}</div>
-      <div style="font-size:13px; opacity:0.85;">${cAgg.orders.toLocaleString()}건 · ${cAgg.qty.toLocaleString()}개 · 매체 ${activeMedias}개 · 공급사 ${activeSuppliers}개${pt}</div>`;
+      <div style="font-size:12px; font-weight:700; opacity:0.75; margin-bottom:10px;">전체 분석 요약</div>
+      <div style="display:flex; align-items:flex-start; gap:0; flex-wrap:wrap;">
+        <div style="min-width:180px;">
+          <div style="font-size:10px; font-weight:600; opacity:0.6; margin-bottom:3px; letter-spacing:0.5px;">현재기간</div>
+          <div style="font-size:26px; font-weight:800; margin-bottom:4px;" class="num">${fmtAmt(cAgg.amt)}</div>
+          <div style="font-size:12px; opacity:0.85;">${cAgg.orders.toLocaleString()}건 · ${cAgg.qty.toLocaleString()}개 · 매체 ${activeMedias}개 · 공급사 ${activeSuppliers}개</div>
+        </div>
+        ${pAgg ? `
+        <div style="width:1px; background:rgba(255,255,255,0.25); align-self:stretch; margin:0 20px; flex-shrink:0;"></div>
+        <div style="min-width:160px;">
+          <div style="font-size:10px; font-weight:600; opacity:0.6; margin-bottom:3px; letter-spacing:0.5px;">비교기간</div>
+          <div style="font-size:20px; font-weight:700; opacity:0.85; margin-bottom:4px;" class="num">${fmtAmt(pAgg.amt)}</div>
+          <div style="font-size:12px; opacity:0.75;">${pAgg.orders.toLocaleString()}건 · ${pAgg.qty.toLocaleString()}개</div>
+          <div style="font-size:12px; margin-top:6px;">${fmtChange(cAgg.amt, pAgg.amt)||''}</div>
+        </div>` : ''}
+      </div>`;
   }
 
   renderKpiCards('trend-all-kpi', [
-    { label:'총 거래금액',     value:fmtAmt(cAgg.amt),                    prevValue:pAgg?fmtAmt(pAgg.amt):null,                              change:pAgg?fmtChange(cAgg.amt,pAgg.amt):'' },
-    { label:'총 주문건수',   value:cAgg.orders.toLocaleString()+'건',    prevValue:pAgg?pAgg.orders.toLocaleString()+'건':null,             change:pAgg?fmtChange(cAgg.orders,pAgg.orders):'' },
-    { label:'총 판매수량',   value:cAgg.qty.toLocaleString()+'개',       prevValue:pAgg?pAgg.qty.toLocaleString()+'개':null,                change:pAgg?fmtChange(cAgg.qty,pAgg.qty):'' },
+    { label:'총 거래금액',     value:fmtAmt(cAgg.amt),                                                               change:pAgg?fmtChange(cAgg.amt,pAgg.amt):'' },
+    { label:'총 주문건수',   value:cAgg.orders.toLocaleString()+'건',                                               change:pAgg?fmtChange(cAgg.orders,pAgg.orders):'' },
+    { label:'총 판매수량',   value:cAgg.qty.toLocaleString()+'개',                                                  change:pAgg?fmtChange(cAgg.qty,pAgg.qty):'' },
     { label:'활성 매체 수',  value:activeMedias+'개',    change:'' },
     { label:'활성 공급사 수',value:activeSuppliers+'개', change:'' },
-    { label:'평균 주문단가', value:cAgg.orders?fmtAmt(Math.round(cAgg.amt/cAgg.orders)):'-', prevValue:pAgg&&pAgg.orders?fmtAmt(Math.round(pAgg.amt/pAgg.orders)):null, change:'' },
+    { label:'평균 주문단가', value:cAgg.orders?fmtAmt(Math.round(cAgg.amt/cAgg.orders)):'-',                        change:'' },
   ]);
 
   renderGroupTable(_trendRows, _trendPrevRows, r=>String(col(r,'매체명')||'').trim(), 'trend-all-media',    v=>MEDIA_MAP[v]||v);
@@ -2620,29 +2632,51 @@ function renderTrendMediaDetail(mediaKey) {
 
   const headerEl = document.getElementById('trend-media-header');
   if (headerEl) {
-    const pt = pAgg ? ` &nbsp;|&nbsp; 전기 대비 ${fmtChange(cAgg.amt,pAgg.amt)||'-'}` : '';
     headerEl.innerHTML = `
       <div style="font-size:12px; font-weight:700; opacity:0.7; margin-bottom:6px;">선택 매체</div>
-      <div style="font-size:24px; font-weight:800; margin-bottom:4px;">${mediaName}</div>
-      <div style="font-size:13px; opacity:0.85;">${fmtAmt(cAgg.amt)} · ${cAgg.orders.toLocaleString()}건 · ${cAgg.qty.toLocaleString()}개${pt}</div>`;
+      <div style="font-size:24px; font-weight:800; margin-bottom:8px;">${mediaName}</div>
+      <div style="display:flex; align-items:flex-start; gap:0; flex-wrap:wrap;">
+        <div style="min-width:160px;">
+          <div style="font-size:10px; font-weight:600; opacity:0.6; margin-bottom:2px; letter-spacing:0.5px;">현재기간</div>
+          <div style="font-size:16px; font-weight:700; margin-bottom:2px;" class="num">${fmtAmt(cAgg.amt)}</div>
+          <div style="font-size:12px; opacity:0.8;">${cAgg.orders.toLocaleString()}건 · ${cAgg.qty.toLocaleString()}개</div>
+        </div>
+        ${pAgg ? `
+        <div style="width:1px; background:rgba(255,255,255,0.25); align-self:stretch; margin:0 16px; flex-shrink:0;"></div>
+        <div style="min-width:140px;">
+          <div style="font-size:10px; font-weight:600; opacity:0.6; margin-bottom:2px; letter-spacing:0.5px;">비교기간</div>
+          <div style="font-size:14px; font-weight:600; opacity:0.8; margin-bottom:2px;" class="num">${fmtAmt(pAgg.amt)}</div>
+          <div style="font-size:12px; opacity:0.7; margin-bottom:3px;">${pAgg.orders.toLocaleString()}건 · ${pAgg.qty.toLocaleString()}개</div>
+          <div style="font-size:12px;">${fmtChange(cAgg.amt, pAgg.amt)||''}</div>
+        </div>` : ''}
+      </div>`;
   }
 
   renderKpiCards('trend-media-kpi', [
-    { label:'총 거래금액',    value:fmtAmt(cAgg.amt),                  prevValue:pAgg?fmtAmt(pAgg.amt):null,                              change:pAgg?fmtChange(cAgg.amt,pAgg.amt):'' },
-    { label:'총 주문건수',  value:cAgg.orders.toLocaleString()+'건',  prevValue:pAgg?pAgg.orders.toLocaleString()+'건':null,             change:pAgg?fmtChange(cAgg.orders,pAgg.orders):'' },
-    { label:'총 판매수량',  value:cAgg.qty.toLocaleString()+'개',     prevValue:pAgg?pAgg.qty.toLocaleString()+'개':null,                change:pAgg?fmtChange(cAgg.qty,pAgg.qty):'' },
+    { label:'총 거래금액',    value:fmtAmt(cAgg.amt),                                                              change:pAgg?fmtChange(cAgg.amt,pAgg.amt):'' },
+    { label:'총 주문건수',  value:cAgg.orders.toLocaleString()+'건',                                              change:pAgg?fmtChange(cAgg.orders,pAgg.orders):'' },
+    { label:'총 판매수량',  value:cAgg.qty.toLocaleString()+'개',                                                 change:pAgg?fmtChange(cAgg.qty,pAgg.qty):'' },
     { label:'판매 상품 수', value:activeProds+'개',  change:'' },
     { label:'주요 브랜드 수',value:activeBrands+'개', change:'' },
-    { label:'평균 주문단가',value:cAgg.orders?fmtAmt(Math.round(cAgg.amt/cAgg.orders)):'-', prevValue:pAgg&&pAgg.orders?fmtAmt(Math.round(pAgg.amt/pAgg.orders)):null, change:'' },
+    { label:'평균 주문단가',value:cAgg.orders?fmtAmt(Math.round(cAgg.amt/cAgg.orders)):'-',                       change:'' },
   ]);
 
   const summaryEl = document.getElementById('trend-media-summary');
   if (summaryEl) {
     summaryEl.innerHTML = `
-      <div style="font-size:13px; font-weight:600; color:#374151; margin-bottom:6px;">${mediaName} 분석 요약</div>
-      <div style="font-size:13px; color:#64748b; line-height:1.8;">
-        매출 ${fmtAmt(cAgg.amt)} · ${cAgg.qty.toLocaleString()}개 판매 · ${cAgg.orders.toLocaleString()}건 주문${pAgg?' · '+fmtChange(cAgg.amt,pAgg.amt):''}<br>
-        활성 브랜드 ${activeBrands}개 · 판매 상품 ${activeProds}개
+      <div style="font-size:13px; font-weight:600; color:#374151; margin-bottom:8px;">${mediaName} 분석 요약</div>
+      <div style="display:flex; gap:16px; flex-wrap:wrap;">
+        <div>
+          <div style="font-size:10px; font-weight:600; color:#4f46e5; margin-bottom:3px; letter-spacing:0.5px;">현재기간</div>
+          <div style="font-size:13px; color:#374151; line-height:1.8;">${fmtAmt(cAgg.amt)} · ${cAgg.qty.toLocaleString()}개 · ${cAgg.orders.toLocaleString()}건<br>브랜드 ${activeBrands}개 · 상품 ${activeProds}개</div>
+        </div>
+        ${pAgg ? `
+        <div style="width:1px; background:#f1f5f9; flex-shrink:0;"></div>
+        <div>
+          <div style="font-size:10px; font-weight:600; color:#94a3b8; margin-bottom:3px; letter-spacing:0.5px;">비교기간</div>
+          <div style="font-size:13px; color:#64748b; line-height:1.8;">${fmtAmt(pAgg.amt)} · ${pAgg.qty.toLocaleString()}개 · ${pAgg.orders.toLocaleString()}건</div>
+          <div style="font-size:12px; margin-top:4px;">${fmtChange(cAgg.amt, pAgg.amt)||''}</div>
+        </div>` : ''}
       </div>`;
   }
 

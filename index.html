@@ -2376,8 +2376,9 @@ function renderKpiCards(elId, cards) {
   if (!el) return;
   el.innerHTML = cards.map(c => `
     <div style="background:white; border-radius:14px; box-shadow:0 1px 4px rgba(0,0,0,0.06); padding:16px 18px; font-family:'Noto Sans KR',sans-serif;">
-      <div style="font-size:11px; font-weight:600; color:#94a3b8; margin-bottom:8px;">${c.label}</div>
-      <div style="font-size:20px; font-weight:700; color:#0f172a; margin-bottom:4px;" class="num">${c.value}</div>
+      <div style="font-size:11px; font-weight:600; color:#94a3b8; margin-bottom:6px;">${c.label}</div>
+      <div style="font-size:20px; font-weight:700; color:#0f172a; margin-bottom:2px;" class="num">${c.value}</div>
+      ${c.prevValue ? `<div style="font-size:11px; color:#94a3b8; margin-bottom:3px;">비교 ${c.prevValue}</div>` : '<div style="height:18px;"></div>'}
       ${c.change ? `<div style="font-size:11px;">${c.change}</div>` : '<div style="height:16px;"></div>'}
     </div>
   `).join('');
@@ -2400,25 +2401,31 @@ function renderGroupTable(currRows, prevRows, keyFn, elId, nameFn) {
   const prev  = buildMap(prevRows);
   const total = Object.values(curr).reduce((s,v) => s+v.amt, 0) || 1;
   const items = Object.values(curr).sort((a,b) => b.amt-a.amt).slice(0,10)
-    .map(it => ({ ...it, orders:it.orders.size, pAmt:(prev[it.key]||{amt:0}).amt }));
+    .map(it => {
+      const p = prev[it.key];
+      return { ...it, orders:it.orders.size, pAmt:p?p.amt:0, pQty:p?p.qty:0, pOrders:p?p.orders.size:0, hasPrev:!!p };
+    });
   const hasPrev = prevRows.length > 0;
   const el = document.getElementById(elId); if (!el) return;
+  const stackCell = (cur, prev, fmt) => hasPrev
+    ? `${fmt(cur)}<div style="font-size:10px;color:#94a3b8;margin-top:2px;">${prev !== null ? fmt(prev) : '-'}</div>`
+    : fmt(cur);
   el.innerHTML = `
     <table style="width:100%; border-collapse:collapse; font-size:12px;">
-      <thead><tr style="border-bottom:1px solid #f1f5f9;">
+      <thead><tr style="border-bottom:2px solid #f1f5f9;">
         <th style="text-align:left; padding:6px 8px; font-size:11px; font-weight:600; color:#64748b;">이름</th>
-        <th style="text-align:right; padding:6px 8px; font-size:11px; font-weight:600; color:#64748b;">거래금액</th>
-        <th style="text-align:right; padding:6px 8px; font-size:11px; font-weight:600; color:#64748b;">수량</th>
-        <th style="text-align:right; padding:6px 8px; font-size:11px; font-weight:600; color:#64748b;">주문</th>
+        <th style="text-align:right; padding:6px 8px; font-size:11px; font-weight:600; color:#64748b;">거래금액${hasPrev?'<div style="font-size:9px;color:#94a3b8;font-weight:400;">비교기간</div>':''}</th>
+        <th style="text-align:right; padding:6px 8px; font-size:11px; font-weight:600; color:#64748b;">수량${hasPrev?'<div style="font-size:9px;color:#94a3b8;font-weight:400;">비교기간</div>':''}</th>
+        <th style="text-align:right; padding:6px 8px; font-size:11px; font-weight:600; color:#64748b;">주문${hasPrev?'<div style="font-size:9px;color:#94a3b8;font-weight:400;">비교기간</div>':''}</th>
         <th style="text-align:right; padding:6px 8px; font-size:11px; font-weight:600; color:#64748b;">비중</th>
         ${hasPrev ? '<th style="text-align:right; padding:6px 8px; font-size:11px; font-weight:600; color:#64748b;">증감</th>' : ''}
       </tr></thead>
       <tbody>${items.map((it,i) => `
         <tr style="border-bottom:1px solid #f8fafc;">
           <td style="padding:6px 8px; font-size:12px; color:#1e293b; font-weight:${i<3?'600':'400'};">${(nameFn||String)(it.key)}</td>
-          <td style="padding:6px 8px; text-align:right; font-size:12px;" class="num">${fmtAmt(it.amt)}</td>
-          <td style="padding:6px 8px; text-align:right; font-size:12px;" class="num">${it.qty.toLocaleString()}</td>
-          <td style="padding:6px 8px; text-align:right; font-size:12px;" class="num">${it.orders.toLocaleString()}</td>
+          <td style="padding:6px 8px; text-align:right; font-size:12px; line-height:1.4;" class="num">${stackCell(it.amt, it.hasPrev?it.pAmt:null, fmtAmt)}</td>
+          <td style="padding:6px 8px; text-align:right; font-size:12px; line-height:1.4;" class="num">${stackCell(it.qty, it.hasPrev?it.pQty:null, v=>v.toLocaleString())}</td>
+          <td style="padding:6px 8px; text-align:right; font-size:12px; line-height:1.4;" class="num">${stackCell(it.orders, it.hasPrev?it.pOrders:null, v=>v.toLocaleString())}</td>
           <td style="padding:6px 8px; text-align:right; font-size:11px; color:#64748b;">${(it.amt/total*100).toFixed(1)}%</td>
           ${hasPrev ? `<td style="padding:6px 8px; text-align:right; font-size:11px;">${fmtChange(it.amt, it.pAmt)||'<span style="color:#cbd5e1">-</span>'}</td>` : ''}
         </tr>`).join('')}
@@ -2543,12 +2550,12 @@ function renderTrendAll() {
   }
 
   renderKpiCards('trend-all-kpi', [
-    { label:'총 거래금액',     value:fmtAmt(cAgg.amt),                    change:pAgg?fmtChange(cAgg.amt,pAgg.amt):'' },
-    { label:'총 주문건수',   value:cAgg.orders.toLocaleString()+'건',    change:pAgg?fmtChange(cAgg.orders,pAgg.orders):'' },
-    { label:'총 판매수량',   value:cAgg.qty.toLocaleString()+'개',       change:pAgg?fmtChange(cAgg.qty,pAgg.qty):'' },
+    { label:'총 거래금액',     value:fmtAmt(cAgg.amt),                    prevValue:pAgg?fmtAmt(pAgg.amt):null,                              change:pAgg?fmtChange(cAgg.amt,pAgg.amt):'' },
+    { label:'총 주문건수',   value:cAgg.orders.toLocaleString()+'건',    prevValue:pAgg?pAgg.orders.toLocaleString()+'건':null,             change:pAgg?fmtChange(cAgg.orders,pAgg.orders):'' },
+    { label:'총 판매수량',   value:cAgg.qty.toLocaleString()+'개',       prevValue:pAgg?pAgg.qty.toLocaleString()+'개':null,                change:pAgg?fmtChange(cAgg.qty,pAgg.qty):'' },
     { label:'활성 매체 수',  value:activeMedias+'개',    change:'' },
     { label:'활성 공급사 수',value:activeSuppliers+'개', change:'' },
-    { label:'평균 주문단가', value:cAgg.orders?fmtAmt(Math.round(cAgg.amt/cAgg.orders)):'-', change:'' },
+    { label:'평균 주문단가', value:cAgg.orders?fmtAmt(Math.round(cAgg.amt/cAgg.orders)):'-', prevValue:pAgg&&pAgg.orders?fmtAmt(Math.round(pAgg.amt/pAgg.orders)):null, change:'' },
   ]);
 
   renderGroupTable(_trendRows, _trendPrevRows, r=>String(col(r,'매체명')||'').trim(), 'trend-all-media',    v=>MEDIA_MAP[v]||v);
@@ -2621,12 +2628,12 @@ function renderTrendMediaDetail(mediaKey) {
   }
 
   renderKpiCards('trend-media-kpi', [
-    { label:'총 거래금액',    value:fmtAmt(cAgg.amt),                  change:pAgg?fmtChange(cAgg.amt,pAgg.amt):'' },
-    { label:'총 주문건수',  value:cAgg.orders.toLocaleString()+'건',  change:pAgg?fmtChange(cAgg.orders,pAgg.orders):'' },
-    { label:'총 판매수량',  value:cAgg.qty.toLocaleString()+'개',     change:pAgg?fmtChange(cAgg.qty,pAgg.qty):'' },
+    { label:'총 거래금액',    value:fmtAmt(cAgg.amt),                  prevValue:pAgg?fmtAmt(pAgg.amt):null,                              change:pAgg?fmtChange(cAgg.amt,pAgg.amt):'' },
+    { label:'총 주문건수',  value:cAgg.orders.toLocaleString()+'건',  prevValue:pAgg?pAgg.orders.toLocaleString()+'건':null,             change:pAgg?fmtChange(cAgg.orders,pAgg.orders):'' },
+    { label:'총 판매수량',  value:cAgg.qty.toLocaleString()+'개',     prevValue:pAgg?pAgg.qty.toLocaleString()+'개':null,                change:pAgg?fmtChange(cAgg.qty,pAgg.qty):'' },
     { label:'판매 상품 수', value:activeProds+'개',  change:'' },
     { label:'주요 브랜드 수',value:activeBrands+'개', change:'' },
-    { label:'평균 주문단가',value:cAgg.orders?fmtAmt(Math.round(cAgg.amt/cAgg.orders)):'-', change:'' },
+    { label:'평균 주문단가',value:cAgg.orders?fmtAmt(Math.round(cAgg.amt/cAgg.orders)):'-', prevValue:pAgg&&pAgg.orders?fmtAmt(Math.round(pAgg.amt/pAgg.orders)):null, change:'' },
   ]);
 
   const summaryEl = document.getElementById('trend-media-summary');

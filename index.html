@@ -438,7 +438,13 @@
     <!-- ── 전체 보기 ── -->
     <div id="trend-view-all">
 
-      <div id="trend-all-summary" style="background:linear-gradient(135deg,#4f46e5,#7c3aed); border-radius:16px; padding:20px 28px; margin-bottom:20px; color:white; font-family:'Noto Sans KR',sans-serif;"></div>
+      <div style="background:white; border-radius:16px; box-shadow:0 2px 12px rgba(79,70,229,0.09); border:1px solid #ece9ff; padding:24px 28px; margin-bottom:20px; font-family:'Noto Sans KR',sans-serif;">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:18px;">
+          <div style="font-size:15px; font-weight:700; color:#0f172a; letter-spacing:-0.3px;">인사이트 요약</div>
+          <button onclick="copyInsight()" style="display:flex; align-items:center; gap:5px; background:#4f46e5; color:white; border:none; border-radius:8px; padding:7px 14px; font-size:12px; font-weight:600; cursor:pointer; font-family:'Noto Sans KR',sans-serif; transition:opacity 0.15s;" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">📋 보고용 복사</button>
+        </div>
+        <div id="trend-all-insight-card"></div>
+      </div>
 
       <div id="trend-all-kpi" style="display:grid; grid-template-columns:repeat(6,1fr); gap:14px; margin-bottom:20px;"></div>
 
@@ -483,13 +489,6 @@
         </div>
       </div>
 
-      <div style="background:white; border-radius:16px; box-shadow:0 1px 4px rgba(0,0,0,0.06); padding:20px 24px; margin-bottom:20px;">
-        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
-          <div style="font-size:14px; font-weight:700; color:#0f172a; font-family:'Noto Sans KR',sans-serif;">인사이트</div>
-          <button onclick="copyInsight()" style="background:#f1f5f9; color:#374151; border:none; border-radius:8px; padding:6px 14px; font-size:12px; font-weight:600; cursor:pointer; font-family:'Noto Sans KR',sans-serif;">보고용 복사</button>
-        </div>
-        <div id="trend-all-insight" style="font-size:13px; color:#374151; line-height:2; font-family:'Noto Sans KR',sans-serif;"></div>
-      </div>
     </div>
 
     <!-- ── 매체 상세 보기 ── -->
@@ -2376,10 +2375,9 @@ function renderKpiCards(elId, cards) {
   if (!el) return;
   el.innerHTML = cards.map(c => `
     <div style="background:white; border-radius:14px; box-shadow:0 1px 4px rgba(0,0,0,0.06); padding:16px 18px; font-family:'Noto Sans KR',sans-serif;">
-      <div style="font-size:11px; font-weight:600; color:#94a3b8; margin-bottom:6px;">${c.label}</div>
-      <div style="font-size:20px; font-weight:700; color:#0f172a; margin-bottom:2px;" class="num">${c.value}</div>
-      ${c.prevValue ? `<div style="font-size:11px; color:#94a3b8; margin-bottom:3px;">비교 ${c.prevValue}</div>` : '<div style="height:18px;"></div>'}
-      ${c.change ? `<div style="font-size:11px;">${c.change}</div>` : '<div style="height:16px;"></div>'}
+      <div style="font-size:11px; font-weight:600; color:#94a3b8; margin-bottom:8px;">${c.label}</div>
+      <div style="font-size:20px; font-weight:700; color:#0f172a; line-height:1.2;" class="num">${c.value}</div>
+      ${c.change ? `<div style="font-size:11px; margin-top:4px;">${c.change}</div>` : ''}
     </div>
   `).join('');
 }
@@ -2540,26 +2538,66 @@ function renderTrendAll() {
   const activeMedias    = new Set(_trendRows.map(r=>String(col(r,'매체명')||'').trim()).filter(Boolean)).size;
   const activeSuppliers = new Set(_trendRows.map(r=>String(col(r,'공급사')||'').trim()).filter(Boolean)).size;
 
-  const summaryEl = document.getElementById('trend-all-summary');
-  if (summaryEl) {
-    summaryEl.innerHTML = `
-      <div style="font-size:12px; font-weight:700; opacity:0.75; margin-bottom:10px;">전체 분석 요약</div>
-      <div style="display:flex; align-items:flex-start; gap:0; flex-wrap:wrap;">
-        <div style="min-width:180px;">
-          <div style="font-size:10px; font-weight:600; opacity:0.6; margin-bottom:3px; letter-spacing:0.5px;">현재기간</div>
-          <div style="font-size:26px; font-weight:800; margin-bottom:4px;" class="num">${fmtAmt(cAgg.amt)}</div>
-          <div style="font-size:12px; opacity:0.85;">${cAgg.orders.toLocaleString()}건 · ${cAgg.qty.toLocaleString()}개 · 매체 ${activeMedias}개 · 공급사 ${activeSuppliers}개</div>
-        </div>
-        ${pAgg ? `
-        <div style="width:1px; background:rgba(255,255,255,0.25); align-self:stretch; margin:0 20px; flex-shrink:0;"></div>
-        <div style="min-width:160px;">
-          <div style="font-size:10px; font-weight:600; opacity:0.6; margin-bottom:3px; letter-spacing:0.5px;">비교기간</div>
-          <div style="font-size:20px; font-weight:700; opacity:0.85; margin-bottom:4px;" class="num">${fmtAmt(pAgg.amt)}</div>
-          <div style="font-size:12px; opacity:0.75;">${pAgg.orders.toLocaleString()}건 · ${pAgg.qty.toLocaleString()}개</div>
-          <div style="font-size:12px; margin-top:6px;">${fmtChange(cAgg.amt, pAgg.amt)||''}</div>
-        </div>` : ''}
+  // ── 인사이트 요약 카드 ──
+  (function() {
+    const fromStr    = fmtDate(_trendFromD);
+    const toStr      = fmtDate(_trendToD);
+    const prevFromStr = _trendPrevFromD ? fmtDate(_trendPrevFromD) : null;
+    const prevToStr   = _trendPrevToD   ? fmtDate(_trendPrevToD)   : null;
+
+    const periodBadges = `
+      <div style="display:flex; gap:8px; margin-bottom:18px; flex-wrap:wrap;">
+        <span style="background:#f0f4ff; color:#4f46e5; border-radius:20px; padding:4px 12px; font-size:11px; font-weight:600;">📅 분석 ${fromStr} ~ ${toStr}</span>
+        ${prevFromStr ? `<span style="background:#f8fafc; color:#64748b; border-radius:20px; padding:4px 12px; font-size:11px; font-weight:500; border:1px solid #f1f5f9;">비교 ${prevFromStr} ~ ${prevToStr}</span>` : ''}
       </div>`;
-  }
+
+    let htmlBlocks = '', plainLines = `분석 기간: ${fromStr} ~ ${toStr}`;
+    if (prevFromStr) plainLines += `\n비교 기간: ${prevFromStr} ~ ${prevToStr}`;
+
+    if (pAgg) {
+      const items = [
+        { label:'총 거래금액', particle:'은', curr:cAgg.amt,    prev:pAgg.amt,    fmtCurr:fmtAmt(cAgg.amt),    fmtPrev:fmtAmt(pAgg.amt),    fmtDiff:v=>fmtAmt(Math.abs(v)) },
+        { label:'주문건수',   particle:'는', curr:cAgg.orders, prev:pAgg.orders, fmtCurr:cAgg.orders.toLocaleString()+'건', fmtPrev:pAgg.orders.toLocaleString()+'건', fmtDiff:v=>Math.abs(v).toLocaleString()+'건' },
+        { label:'판매수량',   particle:'은', curr:cAgg.qty,    prev:pAgg.qty,    fmtCurr:cAgg.qty.toLocaleString()+'개',   fmtPrev:pAgg.qty.toLocaleString()+'개',   fmtDiff:v=>Math.abs(v).toLocaleString()+'개' },
+      ];
+      items.forEach(it => {
+        const diff = it.curr - it.prev;
+        const pct  = it.prev ? (diff / it.prev * 100) : 0;
+        const up   = diff >= 0;
+        const color  = up ? '#10b981' : '#ef4444';
+        const border = up ? '#10b981' : '#ef4444';
+        const arrow  = up ? '▲' : '▼';
+        const sign   = up ? '+' : '-';
+        const verb   = up ? '증가했습니다' : '감소했습니다';
+        const diffStr = `${sign}${it.fmtDiff(diff)}`;
+        const pctStr  = `${arrow}${Math.abs(pct).toFixed(1)}%`;
+
+        htmlBlocks += `
+          <div style="padding:14px 18px; background:#f8fafc; border-radius:12px; border-left:3px solid ${border};">
+            <div style="font-size:10px; font-weight:700; color:#94a3b8; letter-spacing:0.8px; text-transform:uppercase; margin-bottom:6px;">${it.label}</div>
+            <div style="font-size:13px; color:#374151; line-height:1.9;">
+              <strong style="color:#0f172a;">${it.fmtCurr}</strong>${it.particle === '은' ? '으로' : '로'}, 비교기간 <strong>${it.fmtPrev}</strong> 대비<br>
+              <span style="color:${color}; font-weight:700;">${diffStr} ${verb}.</span>
+              <span style="display:inline-block; background:${up?'#f0fdf4':'#fff1f2'}; color:${color}; font-weight:700; font-size:12px; border-radius:6px; padding:1px 8px; margin-left:4px;">${pctStr}</span>
+            </div>
+          </div>`;
+        plainLines += `\n\n${it.label}${it.particle} ${it.fmtCurr}으로, 비교기간 ${it.fmtPrev} 대비\n${diffStr} ${verb}. ${pctStr}`;
+      });
+    } else {
+      htmlBlocks = `
+        <div style="padding:14px 18px; background:#f8fafc; border-radius:12px;">
+          <div style="font-size:13px; color:#374151; line-height:1.9;">
+            총 거래금액 <strong>${fmtAmt(cAgg.amt)}</strong> · 주문 <strong>${cAgg.orders.toLocaleString()}건</strong> · 판매 <strong>${cAgg.qty.toLocaleString()}개</strong><br>
+            <span style="color:#94a3b8; font-size:12px;">매체 ${activeMedias}개 · 공급사 ${activeSuppliers}개</span>
+          </div>
+        </div>`;
+      plainLines += `\n\n총 거래금액: ${fmtAmt(cAgg.amt)}\n주문건수: ${cAgg.orders.toLocaleString()}건\n판매수량: ${cAgg.qty.toLocaleString()}개`;
+    }
+
+    _insightText = plainLines;
+    const insEl = document.getElementById('trend-all-insight-card');
+    if (insEl) insEl.innerHTML = periodBadges + `<div style="display:flex; flex-direction:column; gap:10px;">${htmlBlocks}</div>`;
+  })();
 
   renderKpiCards('trend-all-kpi', [
     { label:'총 거래금액',     value:fmtAmt(cAgg.amt),                                                               change:pAgg?fmtChange(cAgg.amt,pAgg.amt):'' },
@@ -2575,17 +2613,6 @@ function renderTrendAll() {
   renderSupplierMediaMatrix(_trendRows, 'trend-all-matrix');
   renderTimeseriesChart('trend-timeseries-chart', _trendRows, _trendPrevRows, _trendFromD, _trendToD);
   renderProductChanges(_trendRows, _trendPrevRows, 'trend-prod-rise', 'trend-prod-fall', 'trend-prod-new', 'trend-prod-gone');
-
-  _insightText = [
-    `📅 분석 기간: ${fmtDate(_trendFromD)} ~ ${fmtDate(_trendToD)}`,
-    `💰 총 거래금액: ${fmtAmt(cAgg.amt)}${pAgg?' ('+( fmtChange(cAgg.amt,pAgg.amt)||'변동 없음')+')':''}`,
-    `📦 총 판매수량: ${cAgg.qty.toLocaleString()}개`,
-    `🧾 총 주문건수: ${cAgg.orders.toLocaleString()}건`,
-    `📡 활성 매체 수: ${activeMedias}개`,
-    `🏭 활성 공급사 수: ${activeSuppliers}개`,
-  ].join('\n');
-  const insEl = document.getElementById('trend-all-insight');
-  if (insEl) insEl.innerHTML = _insightText.split('\n').map(l=>`<div>${l}</div>`).join('');
 }
 
 function renderSupplierMediaMatrix(rows, elId) {

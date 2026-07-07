@@ -371,8 +371,8 @@
       <div style="display:flex; flex-wrap:wrap; align-items:center; gap:16px; margin-bottom:12px; padding-bottom:12px; border-bottom:1px solid #f1f5f9;">
 
         <div style="display:flex; align-items:center; gap:6px;">
-          <span style="font-size:11px; font-weight:600; color:#64748b; white-space:nowrap;">기준일</span>
-          <input type="date" id="trend-end-date" style="border:1px solid #e2e8f0; border-radius:8px; padding:5px 9px; font-size:12px; color:#374151; outline:none; font-family:'Noto Sans KR',sans-serif;">
+          <span style="font-size:11px; font-weight:600; color:#64748b; white-space:nowrap;">기준일(시작)</span>
+          <input type="date" id="trend-start-date" style="border:1px solid #e2e8f0; border-radius:8px; padding:5px 9px; font-size:12px; color:#374151; outline:none; font-family:'Noto Sans KR',sans-serif;">
         </div>
 
         <div style="width:1px; height:20px; background:#e2e8f0;"></div>
@@ -380,15 +380,14 @@
         <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
           <span style="font-size:11px; font-weight:600; color:#64748b; white-space:nowrap;">분석기간</span>
           <div style="display:flex; gap:3px;">
-            <button id="trend-period-7"      onclick="setTrendPeriod('7')"      style="padding:4px 12px; border-radius:6px; font-size:12px; font-weight:600; border:none; cursor:pointer; background:#4f46e5; color:white; font-family:'Noto Sans KR',sans-serif;">최근 7일</button>
-            <button id="trend-period-14"     onclick="setTrendPeriod('14')"     style="padding:4px 12px; border-radius:6px; font-size:12px; font-weight:600; border:none; cursor:pointer; background:#f1f5f9; color:#64748b; font-family:'Noto Sans KR',sans-serif;">최근 14일</button>
-            <button id="trend-period-30"     onclick="setTrendPeriod('30')"     style="padding:4px 12px; border-radius:6px; font-size:12px; font-weight:600; border:none; cursor:pointer; background:#f1f5f9; color:#64748b; font-family:'Noto Sans KR',sans-serif;">최근 30일</button>
+            <button id="trend-period-7"      onclick="setTrendPeriod('7')"      style="padding:4px 12px; border-radius:6px; font-size:12px; font-weight:600; border:none; cursor:pointer; background:#4f46e5; color:white; font-family:'Noto Sans KR',sans-serif;">7일간</button>
+            <button id="trend-period-14"     onclick="setTrendPeriod('14')"     style="padding:4px 12px; border-radius:6px; font-size:12px; font-weight:600; border:none; cursor:pointer; background:#f1f5f9; color:#64748b; font-family:'Noto Sans KR',sans-serif;">14일간</button>
+            <button id="trend-period-30"     onclick="setTrendPeriod('30')"     style="padding:4px 12px; border-radius:6px; font-size:12px; font-weight:600; border:none; cursor:pointer; background:#f1f5f9; color:#64748b; font-family:'Noto Sans KR',sans-serif;">30일간</button>
             <button id="trend-period-custom" onclick="setTrendPeriod('custom')" style="padding:4px 12px; border-radius:6px; font-size:12px; font-weight:600; border:none; cursor:pointer; background:#f1f5f9; color:#64748b; font-family:'Noto Sans KR',sans-serif;">직접선택</button>
           </div>
-          <div id="trend-custom-start-wrap" style="display:none; align-items:center; gap:4px; flex-wrap:wrap;">
-            <span style="font-size:11px; color:#94a3b8;">분석:</span>
-            <input type="date" id="trend-custom-start" style="border:1px solid #c7d2fe; border-radius:8px; padding:5px 8px; font-size:12px; color:#374151; outline:none; font-family:'Noto Sans KR',sans-serif;">
-            <span style="font-size:11px; color:#94a3b8;">~ 기준일</span>
+          <div id="trend-custom-end-wrap" style="display:none; align-items:center; gap:4px; flex-wrap:wrap;">
+            <span style="font-size:11px; color:#94a3b8;">종료일:</span>
+            <input type="date" id="trend-custom-end" style="border:1px solid #c7d2fe; border-radius:8px; padding:5px 8px; font-size:12px; color:#374151; outline:none; font-family:'Noto Sans KR',sans-serif;">
             <span style="width:1px; height:16px; background:#e2e8f0; display:inline-block; margin:0 4px;"></span>
             <span style="font-size:11px; color:#94a3b8;">비교:</span>
             <input type="date" id="trend-custom-cmp-start" style="border:1px solid #e2e8f0; border-radius:8px; padding:5px 8px; font-size:12px; color:#374151; outline:none; font-family:'Noto Sans KR',sans-serif;">
@@ -2169,7 +2168,7 @@ function setTrendPeriod(mode) {
     btn.style.background = m === mode ? '#4f46e5' : '#f1f5f9';
     btn.style.color      = m === mode ? 'white'   : '#64748b';
   });
-  const wrap = document.getElementById('trend-custom-start-wrap');
+  const wrap = document.getElementById('trend-custom-end-wrap');
   if (wrap) wrap.style.display = mode === 'custom' ? 'flex' : 'none';
 }
 
@@ -2212,28 +2211,33 @@ function initTrendTab() {
     const d = toDate(col(r,'주문일시'));
     if (d && (!maxD || d > maxD)) maxD = d;
   });
-  const endEl = document.getElementById('trend-end-date');
-  if (!endEl.value && maxD) endEl.value = fmtDate(maxD);
+  const startEl = document.getElementById('trend-start-date');
+  if (!startEl.value && maxD) {
+    // 기본값: 최신 데이터가 분석기간(7일) 끝에 오도록 시작일 세팅
+    const defaultStart = new Date(maxD);
+    defaultStart.setDate(defaultStart.getDate() - 6);
+    startEl.value = fmtDate(defaultStart);
+  }
 
   setTrendPeriod('7');
   renderTrend();
 }
 
 function getTrendFilteredRows() {
-  const endDateStr = document.getElementById('trend-end-date').value;
-  if (!endDateStr) return { curr:[], prev:[], fromD:null, toD:null, prevFromD:null, prevToD:null };
+  const startDateStr = document.getElementById('trend-start-date').value;
+  if (!startDateStr) return { curr:[], prev:[], fromD:null, toD:null, prevFromD:null, prevToD:null };
 
-  const toD = new Date(endDateStr + 'T23:59:59');
-  let fromD;
+  const fromD = new Date(startDateStr + 'T00:00:00');
+  let toD;
   if (_trendPeriodMode === '7') {
-    fromD = new Date(toD); fromD.setDate(fromD.getDate() - 6); fromD.setHours(0,0,0,0);
+    toD = new Date(fromD); toD.setDate(toD.getDate() + 6); toD.setHours(23,59,59,999);
   } else if (_trendPeriodMode === '14') {
-    fromD = new Date(toD); fromD.setDate(fromD.getDate() - 13); fromD.setHours(0,0,0,0);
+    toD = new Date(fromD); toD.setDate(toD.getDate() + 13); toD.setHours(23,59,59,999);
   } else if (_trendPeriodMode === '30') {
-    fromD = new Date(toD); fromD.setDate(fromD.getDate() - 29); fromD.setHours(0,0,0,0);
+    toD = new Date(fromD); toD.setDate(toD.getDate() + 29); toD.setHours(23,59,59,999);
   } else {
-    const cs = document.getElementById('trend-custom-start').value;
-    fromD = cs ? new Date(cs + 'T00:00:00') : new Date(toD); fromD.setHours(0,0,0,0);
+    const ce = document.getElementById('trend-custom-end').value;
+    toD = ce ? new Date(ce + 'T23:59:59') : new Date(fromD); toD.setHours(23,59,59,999);
   }
 
   const durationMs = toD.getTime() - fromD.getTime();
@@ -2350,7 +2354,7 @@ function resetTrend() {
   document.getElementById('trend-filter-supplier').value = '';
   document.getElementById('trend-filter-brand').value    = '';
   document.getElementById('trend-filter-product').value  = '';
-  document.getElementById('trend-custom-start').value      = '';
+  document.getElementById('trend-custom-end').value        = '';
   document.getElementById('trend-custom-cmp-start').value  = '';
   document.getElementById('trend-custom-cmp-end').value    = '';
   const noCmp = document.getElementById('trend-custom-no-cmp');

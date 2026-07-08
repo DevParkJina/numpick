@@ -446,7 +446,6 @@
         <div id="trend-all-insight-card"></div>
       </div>
 
-      <div id="trend-all-kpi" style="display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:20px;"></div>
 
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:20px;">
         <div style="background:white; border-radius:16px; box-shadow:0 1px 4px rgba(0,0,0,0.06); padding:20px 24px;">
@@ -2539,7 +2538,7 @@ function renderTrendAll() {
   const activeMedias    = new Set(_trendRows.map(r=>String(col(r,'매체명')||'').trim()).filter(Boolean)).size;
   const activeSuppliers = new Set(_trendRows.map(r=>String(col(r,'공급사')||'').trim()).filter(Boolean)).size;
 
-  // ── 인사이트 요약 카드 (줄글) ──
+  // ── 인사이트 요약 카드 (KPI + 줄글) ──
   (function() {
     const fromStr     = fmtDate(_trendFromD);
     const toStr       = fmtDate(_trendToD);
@@ -2548,30 +2547,43 @@ function renderTrendAll() {
     const periodStr   = `분석 ${fromStr} ~ ${toStr}${prevFromStr ? ` · 비교 ${prevFromStr} ~ ${prevToStr}` : ''}`;
     const G = '#10b981', R = '#ef4444';
 
-    let html = `<div style="font-size:11px; color:#94a3b8; font-weight:500; margin-bottom:14px; padding-bottom:12px; border-bottom:1px solid #f1f5f9;">${periodStr}</div>`;
+    // KPI 그리드 (카드 안에 포함, 보고용 복사 plain 텍스트에는 미포함)
+    const kpiAvgUnit  = cAgg.orders ? Math.round(cAgg.amt / cAgg.orders) : 0;
+    const kpiPAvgUnit = pAgg && pAgg.orders ? Math.round(pAgg.amt / pAgg.orders) : 0;
+    const kpiItems = [
+      { label:'거래금액',    val:fmtAmt(cAgg.amt),                    prev:pAgg?fmtAmt(pAgg.amt):null,                    chg:pAgg?fmtChange(cAgg.amt,pAgg.amt):'' },
+      { label:'주문건수',    val:cAgg.orders.toLocaleString()+'건',    prev:pAgg?pAgg.orders.toLocaleString()+'건':null,   chg:pAgg?fmtChange(cAgg.orders,pAgg.orders):'' },
+      { label:'판매수량',    val:cAgg.qty.toLocaleString()+'개',       prev:pAgg?pAgg.qty.toLocaleString()+'개':null,      chg:pAgg?fmtChange(cAgg.qty,pAgg.qty):'' },
+      { label:'평균주문단가', val:kpiAvgUnit?fmtAmt(kpiAvgUnit):'-',  prev:kpiPAvgUnit?fmtAmt(kpiPAvgUnit):null,         chg:kpiPAvgUnit?fmtChange(kpiAvgUnit,kpiPAvgUnit):'' },
+    ];
+    const kpiCell = (k, last) => {
+      let c = `<div style="padding:14px 16px;${last?'':' border-right:1px solid #eef2f7;'}">`;
+      c += `<div style="font-size:10px;font-weight:600;color:#94a3b8;margin-bottom:5px;">${k.label}</div>`;
+      c += `<div style="font-size:18px;font-weight:700;color:#0f172a;line-height:1.2;">${k.val}</div>`;
+      if (k.chg) c += `<div style="font-size:11px;margin-top:3px;">${k.chg}</div>`;
+      if (k.prev) c += `<div style="font-size:10px;color:#94a3b8;margin-top:2px;">비교 ${k.prev}</div>`;
+      c += `</div>`;
+      return c;
+    };
+    const kpiHtml = `<div style="display:grid;grid-template-columns:repeat(4,1fr);background:#f8fafc;border-radius:12px;margin-bottom:18px;overflow:hidden;border:1px solid #f1f5f9;">${kpiItems.map((k,i)=>kpiCell(k,i===3)).join('')}</div>`;
+
+    let html = `<div style="font-size:11px; color:#94a3b8; font-weight:500; margin-bottom:14px; padding-bottom:12px; border-bottom:1px solid #f1f5f9;">${periodStr}</div>${kpiHtml}`;
     let plain = periodStr;
 
     if (pAgg) {
       const dAmt = cAgg.amt - pAgg.amt, dOrd = cAgg.orders - pAgg.orders, dQty = cAgg.qty - pAgg.qty;
-      const pAmt = pAgg.amt    ? dAmt    / pAgg.amt    * 100 : 0;
-      const pOrd = pAgg.orders ? dOrd    / pAgg.orders * 100 : 0;
-      const pQty = pAgg.qty    ? dQty    / pAgg.qty    * 100 : 0;
       const amtUp = dAmt >= 0, ordUp = dOrd >= 0, qtyUp = dQty >= 0;
       const s = v => v >= 0 ? '+' : '';
-      const avgUnit = cAgg.orders ? fmtAmt(Math.round(cAgg.amt / cAgg.orders)) : '-';
+      const avgUnit = kpiAvgUnit ? fmtAmt(kpiAvgUnit) : '-';
 
-      // ─ 데이터 줄글 ─
-      // Line 1: 거래금액
       const amtStr  = `${s(dAmt)}${fmtAmt(Math.abs(dAmt))} ${dAmt>=0?'증가':'감소'}했습니다.`;
       const line1H  = `거래금액은 <strong>${fmtAmt(cAgg.amt)}</strong>으로 비교기간 ${fmtAmt(pAgg.amt)} 대비 <span style="color:${amtUp?G:R};font-weight:600;">${amtStr}</span>`;
       const line1P  = `거래금액은 ${fmtAmt(cAgg.amt)}으로 비교기간 ${fmtAmt(pAgg.amt)} 대비 ${s(dAmt)}${fmtAmt(Math.abs(dAmt))} ${dAmt>=0?'증가':'감소'}했습니다.`;
 
-      // Line 2: 판매수량 + 주문건수
       const qtyStr  = `${s(dQty)}${Math.abs(dQty).toLocaleString()}개 ${qtyUp?'증가':'감소'}`;
       const ordStr  = `${s(dOrd)}${Math.abs(dOrd).toLocaleString()}건 ${ordUp?'증가':'감소'}했습니다.`;
       let line2H, line2P;
       if (qtyUp === ordUp) {
-        const dir = qtyUp ? '증가했습니다.' : '감소했습니다.';
         line2H = `판매수량은 <strong>${cAgg.qty.toLocaleString()}개</strong>로 <span style="color:${qtyUp?G:R};font-weight:600;">${qtyStr}</span>, 주문건수는 <strong>${cAgg.orders.toLocaleString()}건</strong>으로 <span style="color:${ordUp?G:R};font-weight:600;">${ordStr}</span>`;
         line2P = `판매수량은 ${cAgg.qty.toLocaleString()}개로 ${qtyStr}, 주문건수는 ${cAgg.orders.toLocaleString()}건으로 ${ordStr}`;
       } else {
@@ -2580,7 +2592,6 @@ function renderTrendAll() {
         line2P = `판매수량은 ${cAgg.qty.toLocaleString()}개로 ${qtyStr} ${qVerbJiman}, 주문건수는 ${cAgg.orders.toLocaleString()}건으로 ${ordStr}`;
       }
 
-      // ─ 종합 해석 (8가지 케이스) ─
       let synth;
       if      ( amtUp &&  qtyUp &&  ordUp) synth = `거래금액, 판매수량, 주문건수가 모두 증가해 전반적인 성장 흐름입니다.`;
       else if ( amtUp &&  qtyUp && !ordUp) synth = `주문은 줄었지만 거래금액과 판매수량이 함께 증가해,\n평균 주문단가 ${avgUnit} 기준 객단가 또는 주문당 판매량이 개선된 흐름으로 보입니다.`;
@@ -2599,7 +2610,7 @@ function renderTrendAll() {
       </div>`;
       plain += `\n\n${line1P}\n${line2P}\n\n${synth}`;
     } else {
-      html  += `<div style="font-size:13px; color:#374151; line-height:2;">총 거래금액 <strong>${fmtAmt(cAgg.amt)}</strong> · 주문 <strong>${cAgg.orders.toLocaleString()}건</strong> · 판매 <strong>${cAgg.qty.toLocaleString()}개</strong><br><span style="color:#94a3b8; font-size:12px;">매체 ${activeMedias}개 · 공급사 ${activeSuppliers}개</span></div>`;
+      html  += `<div style="font-size:13px; color:#94a3b8; line-height:2;">비교 기간 없이 조회 중입니다. 기간을 설정하면 증감 분석이 표시됩니다.</div>`;
       plain += `\n\n총 거래금액: ${fmtAmt(cAgg.amt)}\n주문건수: ${cAgg.orders.toLocaleString()}건\n판매수량: ${cAgg.qty.toLocaleString()}개`;
     }
 
@@ -2607,15 +2618,6 @@ function renderTrendAll() {
     const insEl = document.getElementById('trend-all-insight-card');
     if (insEl) insEl.innerHTML = html;
   })();
-
-  const avgUnit = cAgg.orders ? Math.round(cAgg.amt / cAgg.orders) : 0;
-  const pAvgUnit = pAgg && pAgg.orders ? Math.round(pAgg.amt / pAgg.orders) : 0;
-  renderKpiCards('trend-all-kpi', [
-    { label:'총 거래금액',   value:fmtAmt(cAgg.amt),                  prevValue:pAgg?fmtAmt(pAgg.amt):null,                 change:pAgg?fmtChange(cAgg.amt,pAgg.amt):'' },
-    { label:'총 주문건수', value:cAgg.orders.toLocaleString()+'건',  prevValue:pAgg?pAgg.orders.toLocaleString()+'건':null, change:pAgg?fmtChange(cAgg.orders,pAgg.orders):'' },
-    { label:'총 판매수량', value:cAgg.qty.toLocaleString()+'개',     prevValue:pAgg?pAgg.qty.toLocaleString()+'개':null,    change:pAgg?fmtChange(cAgg.qty,pAgg.qty):'' },
-    { label:'평균 주문단가', value:avgUnit?fmtAmt(avgUnit):'-',      prevValue:pAvgUnit?fmtAmt(pAvgUnit):null,              change:pAvgUnit?fmtChange(avgUnit,pAvgUnit):'' },
-  ]);
 
   renderGroupTable(_trendRows, _trendPrevRows, r=>String(col(r,'매체명')||'').trim(), 'trend-all-media',    v=>MEDIA_MAP[v]||v);
   renderGroupTable(_trendRows, _trendPrevRows, r=>String(col(r,'공급사')||'').trim(), 'trend-all-supplier');

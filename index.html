@@ -2421,23 +2421,23 @@ function renderProductChanges(currRows, prevRows) {
   if (!wrap) return;
 
   const tabDefs = [
-    { key:'rise', label:'▲ 상승 상품', color:'#ef4444' },
-    { key:'fall', label:'▼ 하락 상품', color:'#3b82f6' },
-    { key:'new',  label:'◆ 신규 판매', color:'#3b82f6' },
-    { key:'gone', label:'✕ 판매 중단', color:'#94a3b8' },
+    { key:'rise', label:'상승 상품' },
+    { key:'fall', label:'하락 상품' },
+    { key:'new',  label:'신규 판매' },
+    { key:'gone', label:'판매 중단' },
   ];
 
   const tabsHtml = tabDefs.map(t => {
     const isActive = t.key === 'rise';
-    return `<button id="prod-tab-${t.key}" onclick="switchProdTab('${t.key}')" style="padding:9px 18px;border:none;background:transparent;cursor:pointer;font-size:13px;font-weight:600;font-family:'Noto Sans KR',sans-serif;color:${isActive ? t.color : '#94a3b8'};border-bottom:${isActive ? `2px solid ${t.color}` : '2px solid transparent'};margin-bottom:-1px;letter-spacing:-0.2px;">${t.label}</button>`;
+    return `<button id="prod-tab-${t.key}" onclick="switchProdTab('${t.key}')" style="padding:7px 14px;border:none;background:transparent;cursor:pointer;font-size:12px;font-weight:${isActive?'600':'400'};font-family:'Noto Sans KR',sans-serif;color:${isActive?'#1e293b':'#94a3b8'};border-bottom:${isActive?'2px solid #475569':'2px solid transparent'};margin-bottom:-1px;letter-spacing:-0.1px;">${t.label}</button>`;
   }).join('');
 
   wrap.innerHTML = `
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
-      <div style="font-size:14px;font-weight:700;color:#0f172a;font-family:'Noto Sans KR',sans-serif;">주요 상품 변화</div>
-      <div style="font-size:11px;color:#94a3b8;font-family:'Noto Sans KR',sans-serif;">정렬 <span style="font-weight:600;color:#475569;">증감액순</span></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+      <div style="font-size:13px;font-weight:600;color:#1e293b;font-family:'Noto Sans KR',sans-serif;">주요 상품 변화</div>
+      <div style="font-size:10px;color:#94a3b8;font-family:'Noto Sans KR',sans-serif;">정렬: <span style="color:#64748b;">증감액순</span></div>
     </div>
-    <div style="display:flex;border-bottom:1px solid #e2e8f0;margin-bottom:0;margin-top:8px;">${tabsHtml}</div>
+    <div style="display:flex;border-bottom:1px solid #e2e8f0;margin-bottom:0;">${tabsHtml}</div>
     <div id="prod-change-table"></div>
   `;
 
@@ -2447,18 +2447,13 @@ function renderProductChanges(currRows, prevRows) {
 function switchProdTab(tab) {
   _prodChangeTab = tab;
   _prodChangeExpanded = false;
-  const tabDefs = [
-    { key:'rise', color:'#ef4444' },
-    { key:'fall', color:'#3b82f6' },
-    { key:'new',  color:'#3b82f6' },
-    { key:'gone', color:'#94a3b8' },
-  ];
-  tabDefs.forEach(t => {
-    const btn = document.getElementById('prod-tab-' + t.key);
+  ['rise','fall','new','gone'].forEach(key => {
+    const btn = document.getElementById('prod-tab-' + key);
     if (!btn) return;
-    const active = t.key === tab;
-    btn.style.color = active ? t.color : '#94a3b8';
-    btn.style.borderBottom = active ? `2px solid ${t.color}` : '2px solid transparent';
+    const active = key === tab;
+    btn.style.color = active ? '#1e293b' : '#94a3b8';
+    btn.style.fontWeight = active ? '600' : '400';
+    btn.style.borderBottom = active ? '2px solid #475569' : '2px solid transparent';
   });
   _renderProdChangeTable();
 }
@@ -2470,9 +2465,9 @@ function toggleProdMore() {
   if (!restEl || !toggleEl) return;
   restEl.style.display = _prodChangeExpanded ? 'block' : 'none';
   const n = toggleEl.dataset.count;
-  const label = _prodChangeExpanded ? `▲&nbsp; 나머지 ${n}개 접기` : `▼&nbsp; 나머지 ${n}개 더보기`;
+  const label = _prodChangeExpanded ? `나머지 ${n}개 접기` : `나머지 ${n}개 더보기`;
   const icon  = _prodChangeExpanded ? '−' : '+';
-  toggleEl.innerHTML = `<span style="font-size:12px;font-weight:500;color:#475569;font-family:'Noto Sans KR',sans-serif;">${label}</span><span style="font-size:14px;color:#94a3b8;line-height:1;">${icon}</span>`;
+  toggleEl.innerHTML = `<span style="font-size:11px;color:#94a3b8;font-family:'Noto Sans KR',sans-serif;">${label}</span><span style="font-size:11px;color:#cbd5e1;margin-left:4px;">${icon}</span>`;
 }
 
 function _renderProdChangeTable() {
@@ -2500,41 +2495,43 @@ function _renderProdChangeTable() {
     const d = isGone ? pMap[code] : cMap[code];
     const ca = (cMap[code]||{amt:0,qty:0}), pa = (pMap[code]||{amt:0,qty:0});
     const diff = ca.amt - pa.amt;
-    const rankCircle = `<div style="width:22px;height:22px;border-radius:50%;background:${rank<=3?tabColor:'#e2e8f0'};color:${rank<=3?'white':'#64748b'};font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;margin:0 auto;">${rank}</div>`;
-    const currVal = isGone ? '<span style="color:#cbd5e1;">-</span>' : fmtAmt(ca.amt);
-    const prevVal = isNew  ? '<span style="color:#cbd5e1;">-</span>' : fmtAmt(pa.amt);
+    const rankNum = String(rank).padStart(2, '0');
+    const rankEl  = `<span style="font-size:11px;font-weight:500;color:#cbd5e1;font-family:'Noto Sans KR',sans-serif;letter-spacing:0.5px;">${rankNum}</span>`;
+    const currVal = isGone ? '<span style="color:#e2e8f0;">—</span>' : fmtAmt(ca.amt);
+    const prevVal = isNew  ? '<span style="color:#e2e8f0;">—</span>' : fmtAmt(pa.amt);
     let changeBadge;
     if (isGone) {
-      changeBadge = `<span style="font-size:11px;font-weight:600;color:#94a3b8;background:#f1f5f9;padding:2px 8px;border-radius:20px;">소멸</span>`;
+      changeBadge = `<span style="font-size:10px;font-weight:400;color:#94a3b8;background:#f8fafc;padding:2px 5px;border-radius:3px;border:1px solid #e2e8f0;">소멸</span>`;
     } else if (isNew) {
-      changeBadge = `<span style="font-size:11px;font-weight:600;color:#3b82f6;background:#eff6ff;padding:2px 8px;border-radius:20px;">신규</span>`;
+      changeBadge = `<span style="font-size:10px;font-weight:400;color:#10b981;background:#f0fdf4;padding:2px 5px;border-radius:3px;border:1px solid #d1fae5;">신규</span>`;
     } else {
-      const sign  = diff >= 0 ? '+' : '-';
+      const sign  = diff >= 0 ? '+' : '−';
       const color = diff >= 0 ? '#10b981' : '#ef4444';
       const bg    = diff >= 0 ? '#f0fdf4' : '#fef2f2';
-      changeBadge = `<span style="font-size:11px;font-weight:700;color:${color};background:${bg};padding:2px 8px;border-radius:20px;">${sign}${fmtAmt(Math.abs(diff))}</span>`;
+      const border= diff >= 0 ? '#d1fae5' : '#fee2e2';
+      changeBadge = `<span style="font-size:11px;font-weight:600;color:${color};background:${bg};padding:2px 5px;border-radius:3px;border:1px solid ${border};">${sign}${fmtAmt(Math.abs(diff))}</span>`;
     }
-    return `<tr style="border-bottom:1px solid #f8fafc;">
-      <td style="padding:10px 8px;text-align:center;">${rankCircle}</td>
-      <td style="padding:10px 12px;font-size:11px;color:#1e293b;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${d.brand||'<span style="color:#cbd5e1;">-</span>'}</td>
-      <td style="padding:10px 12px;font-size:12px;font-weight:500;color:#1e293b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${(d.name||code).replace(/"/g,'&quot;')}">${d.name||code}</td>
-      <td style="padding:10px 12px;font-size:12px;color:#475569;text-align:right;white-space:nowrap;">${currVal}</td>
-      <td style="padding:10px 12px;font-size:12px;color:#94a3b8;text-align:right;white-space:nowrap;">${prevVal}</td>
-      <td style="padding:10px 12px;text-align:right;white-space:nowrap;">${changeBadge}</td>
+    return `<tr style="border-bottom:1px solid #f1f5f9;">
+      <td style="padding:9px 8px;text-align:center;">${rankEl}</td>
+      <td style="padding:9px 12px;font-size:11px;color:#475569;font-weight:400;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${d.brand||'<span style="color:#e2e8f0;">—</span>'}</td>
+      <td style="padding:9px 12px;font-size:12px;font-weight:500;color:#1e293b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${(d.name||code).replace(/"/g,'&quot;')}">${d.name||code}</td>
+      <td style="padding:9px 12px;font-size:11px;color:#475569;text-align:right;white-space:nowrap;">${currVal}</td>
+      <td style="padding:9px 12px;font-size:11px;color:#94a3b8;text-align:right;white-space:nowrap;">${prevVal}</td>
+      <td style="padding:9px 12px;text-align:right;white-space:nowrap;">${changeBadge}</td>
     </tr>`;
   };
 
   const top5 = allItems.slice(0, 5);
   const rest  = allItems.slice(5);
 
-  const colgroup = `<colgroup><col style="width:44px"><col style="width:88px"><col><col style="width:88px"><col style="width:88px"><col style="width:96px"></colgroup>`;
-  const thead = `<thead><tr style="border-bottom:1px solid #e2e8f0;background:#fafafa;">
-    <th style="padding:8px 8px;font-size:10px;font-weight:600;color:#94a3b8;text-align:center;letter-spacing:0.2px;">순위</th>
-    <th style="padding:8px 12px;font-size:10px;font-weight:600;color:#94a3b8;text-align:left;letter-spacing:0.2px;">브랜드</th>
-    <th style="padding:8px 12px;font-size:10px;font-weight:600;color:#94a3b8;text-align:left;letter-spacing:0.2px;">상품명</th>
-    <th style="padding:8px 12px;font-size:10px;font-weight:600;color:#94a3b8;text-align:right;letter-spacing:0.2px;">현재</th>
-    <th style="padding:8px 12px;font-size:10px;font-weight:600;color:#94a3b8;text-align:right;letter-spacing:0.2px;">이전</th>
-    <th style="padding:8px 12px;font-size:10px;font-weight:600;color:#94a3b8;text-align:right;letter-spacing:0.2px;">증감</th>
+  const colgroup = `<colgroup><col style="width:40px"><col style="width:88px"><col><col style="width:88px"><col style="width:88px"><col style="width:100px"></colgroup>`;
+  const thead = `<thead><tr style="background:#f8fafc;border-top:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0;">
+    <th style="padding:7px 8px;font-size:10px;font-weight:400;color:#94a3b8;text-align:center;font-family:'Noto Sans KR',sans-serif;">순위</th>
+    <th style="padding:7px 12px;font-size:10px;font-weight:400;color:#94a3b8;text-align:left;font-family:'Noto Sans KR',sans-serif;">브랜드</th>
+    <th style="padding:7px 12px;font-size:10px;font-weight:400;color:#94a3b8;text-align:left;font-family:'Noto Sans KR',sans-serif;">상품명</th>
+    <th style="padding:7px 12px;font-size:10px;font-weight:400;color:#94a3b8;text-align:right;font-family:'Noto Sans KR',sans-serif;">현재</th>
+    <th style="padding:7px 12px;font-size:10px;font-weight:400;color:#94a3b8;text-align:right;font-family:'Noto Sans KR',sans-serif;">이전</th>
+    <th style="padding:7px 12px;font-size:10px;font-weight:400;color:#94a3b8;text-align:right;font-family:'Noto Sans KR',sans-serif;">증감</th>
   </tr></thead>`;
 
   let html = `<table style="width:100%;border-collapse:collapse;font-family:'Noto Sans KR',sans-serif;table-layout:fixed;">
@@ -2543,9 +2540,9 @@ function _renderProdChangeTable() {
   </table>`;
 
   if (rest.length > 0) {
-    html += `<div id="prod-change-toggle" onclick="toggleProdMore()" data-count="${rest.length}" style="display:flex;align-items:center;justify-content:space-between;padding:9px 12px;margin-top:6px;cursor:pointer;background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0;user-select:none;">
-      <span style="font-size:12px;font-weight:500;color:#475569;font-family:'Noto Sans KR',sans-serif;">▼&nbsp; 나머지 ${rest.length}개 더보기</span>
-      <span style="font-size:14px;color:#94a3b8;line-height:1;">+</span>
+    html += `<div id="prod-change-toggle" onclick="toggleProdMore()" data-count="${rest.length}" style="display:flex;align-items:center;justify-content:center;gap:4px;padding:8px 12px;border-top:1px dashed #e2e8f0;cursor:pointer;user-select:none;">
+      <span style="font-size:11px;color:#94a3b8;font-family:'Noto Sans KR',sans-serif;">나머지 ${rest.length}개 더보기</span>
+      <span style="font-size:11px;color:#cbd5e1;margin-left:2px;">+</span>
     </div>
     <div id="prod-change-rest" style="display:none;">
       <table style="width:100%;border-collapse:collapse;font-family:'Noto Sans KR',sans-serif;table-layout:fixed;">

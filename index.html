@@ -517,8 +517,8 @@
       <div style="background:white; border-radius:16px; box-shadow:0 1px 4px rgba(0,0,0,0.06); padding:20px 24px; margin-bottom:20px;">
         <div style="font-size:14px; font-weight:700; color:#0f172a; margin-bottom:16px; font-family:'Noto Sans KR',sans-serif;">주요 상품 변화</div>
         <div style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:20px;">
-          <div><div style="font-size:12px; font-weight:700; color:#10b981; margin-bottom:10px; padding-bottom:6px; border-bottom:2px solid #d1fae5;">▲ 상승 TOP 5</div><div id="trend-media-prod-rise"></div></div>
-          <div><div style="font-size:12px; font-weight:700; color:#ef4444; margin-bottom:10px; padding-bottom:6px; border-bottom:2px solid #fee2e2;">▼ 하락 TOP 5</div><div id="trend-media-prod-fall"></div></div>
+          <div><div style="font-size:12px; font-weight:700; color:#10b981; margin-bottom:10px; padding-bottom:6px; border-bottom:2px solid #d1fae5;">▲ 주요 상승 상품</div><div id="trend-media-prod-rise"></div></div>
+          <div><div style="font-size:12px; font-weight:700; color:#ef4444; margin-bottom:10px; padding-bottom:6px; border-bottom:2px solid #fee2e2;">▼ 주요 하락 상품</div><div id="trend-media-prod-fall"></div></div>
           <div><div style="font-size:12px; font-weight:700; color:#3b82f6; margin-bottom:10px; padding-bottom:6px; border-bottom:2px solid #dbeafe;">✦ 신규 판매</div><div id="trend-media-prod-new"></div></div>
           <div><div style="font-size:12px; font-weight:700; color:#94a3b8; margin-bottom:10px; padding-bottom:6px; border-bottom:2px solid #f1f5f9;">✕ 판매 소멸</div><div id="trend-media-prod-gone"></div></div>
         </div>
@@ -2411,15 +2411,20 @@ function renderProductChanges(currRows, prevRows, riseId, fallId, newId, goneId)
   };
   const cMap = build(currRows), pMap = build(prevRows);
   const codes = Object.keys(cMap);
-  const risen  = codes.filter(c => pMap[c] && cMap[c].qty > pMap[c].qty).sort((a,b) => (cMap[b].qty-(pMap[b]||{qty:0}).qty)-(cMap[a].qty-(pMap[a]||{qty:0}).qty)).slice(0,5);
-  const fallen = codes.filter(c => pMap[c] && cMap[c].qty < pMap[c].qty).sort((a,b) => ((pMap[a]||{qty:0}).qty-cMap[a].qty)-((pMap[b]||{qty:0}).qty-cMap[b].qty)).slice(0,5);
-  const newP   = codes.filter(c => !pMap[c]).sort((a,b) => cMap[b].qty-cMap[a].qty).slice(0,5);
-  const goneC  = Object.keys(pMap).filter(c => !cMap[c]).sort((a,b) => (pMap[b]||{qty:0}).qty-(pMap[a]||{qty:0}).qty).slice(0,5);
+  const risen  = codes.filter(c => pMap[c] && cMap[c].amt > pMap[c].amt).sort((a,b) => (cMap[b].amt-(pMap[b]||{amt:0}).amt)-(cMap[a].amt-(pMap[a]||{amt:0}).amt));
+  const fallen = codes.filter(c => pMap[c] && cMap[c].amt < pMap[c].amt).sort((a,b) => ((pMap[a]||{amt:0}).amt-cMap[a].amt)-((pMap[b]||{amt:0}).amt-cMap[b].amt));
+  const newP   = codes.filter(c => !pMap[c]).sort((a,b) => cMap[b].amt-cMap[a].amt).slice(0,5);
+  const goneC  = Object.keys(pMap).filter(c => !cMap[c]).sort((a,b) => (pMap[b]||{amt:0}).amt-(pMap[a]||{amt:0}).amt).slice(0,5);
 
   const item = (code, isCurr, isGone) => {
     const d = isCurr ? cMap[code] : pMap[code];
     const cq = (cMap[code]||{qty:0}).qty, pq = (pMap[code]||{qty:0}).qty;
-    const sub = isGone ? `${pq.toLocaleString()}개 → 0개` : (!pMap[code] ? `${cq.toLocaleString()}개` : `${cq.toLocaleString()}개 (비교 ${pq.toLocaleString()})`);
+    const diff = cq - pq;
+    const dSign = diff >= 0 ? '▲' : '▼';
+    const dColor = diff >= 0 ? '#ef4444' : '#3b82f6';
+    const dBg    = diff >= 0 ? '#fef2f2' : '#eff6ff';
+    const diffBadge = `<span style="font-size:10px;font-weight:700;color:${dColor};background:${dBg};padding:2px 6px;border-radius:20px;">${dSign} ${Math.abs(diff).toLocaleString()}개</span>`;
+    const sub = isGone ? `${pq.toLocaleString()}개 → 0개` : (!pMap[code] ? `${cq.toLocaleString()}개` : `${cq.toLocaleString()}개 ${diffBadge}`);
     return `<div style="padding:7px 0; border-bottom:1px solid #f8fafc;">
       ${d.brand ? `<div style="font-size:10px; color:#a5b4fc; font-weight:600; margin-bottom:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${d.brand}</div>` : ''}
       <div style="font-size:12px; color:#1e293b; font-weight:500; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${d.name||code}">${d.name||code}</div>

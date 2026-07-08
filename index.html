@@ -403,9 +403,9 @@
       <!-- 2행: 기간 표시 + 필터 + 조회/초기화 -->
       <div style="display:flex; flex-wrap:wrap; align-items:center; gap:12px;">
 
-        <div style="display:flex; flex-direction:column; gap:2px; padding:6px 12px; background:#f0f4ff; border-radius:8px; border-left:3px solid #4f46e5;">
-          <span id="trend-period-label" style="font-size:11px; color:#4f46e5; font-weight:600;"></span>
-          <span id="trend-cmp-label"    style="font-size:11px; color:#64748b;"></span>
+        <div style="display:flex; flex-direction:column; gap:3px; padding:5px 14px; border-left:3px solid #2563eb;">
+          <span id="trend-period-label" style="font-size:11px; color:#1d4ed8; font-weight:600;"></span>
+          <span id="trend-cmp-label"    style="font-size:11px; color:#475569;"></span>
         </div>
 
         <div style="display:flex; align-items:center; gap:6px;">
@@ -438,10 +438,10 @@
     <!-- ── 전체 보기 ── -->
     <div id="trend-view-all">
 
-      <div style="background:white; border-radius:16px; box-shadow:0 2px 12px rgba(79,70,229,0.09); border:1px solid #ece9ff; padding:24px 28px; margin-bottom:20px; font-family:'Noto Sans KR',sans-serif;">
-        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:18px;">
-          <div style="font-size:15px; font-weight:700; color:#0f172a; letter-spacing:-0.3px;">인사이트 요약</div>
-          <button onclick="copyInsight()" style="display:flex; align-items:center; gap:5px; background:#4f46e5; color:white; border:none; border-radius:8px; padding:7px 14px; font-size:12px; font-weight:600; cursor:pointer; font-family:'Noto Sans KR',sans-serif; transition:opacity 0.15s;" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">📋 보고용 복사</button>
+      <div style="background:white; border-radius:12px; box-shadow:0 1px 4px rgba(0,0,0,0.06); border:1px solid #e2e8f0; padding:24px 28px; margin-bottom:20px; font-family:'Noto Sans KR',sans-serif;">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
+          <div style="font-size:15px; font-weight:700; color:#0f172a; letter-spacing:-0.3px;">분석 요약</div>
+          <button onclick="copyInsight()" style="display:flex; align-items:center; gap:5px; background:white; color:#374151; border:1px solid #e2e8f0; border-radius:8px; padding:6px 14px; font-size:12px; font-weight:500; cursor:pointer; font-family:'Noto Sans KR',sans-serif; transition:background 0.15s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='white'">📋 보고용 복사</button>
         </div>
         <div id="trend-all-insight-card"></div>
       </div>
@@ -2544,7 +2544,7 @@ function renderTrendAll() {
     const toStr       = fmtDate(_trendToD);
     const prevFromStr = _trendPrevFromD ? fmtDate(_trendPrevFromD) : null;
     const prevToStr   = _trendPrevToD   ? fmtDate(_trendPrevToD)   : null;
-    const periodStr   = `분석 ${fromStr} ~ ${toStr}${prevFromStr ? ` · 비교 ${prevFromStr} ~ ${prevToStr}` : ''}`;
+    const periodStr   = `분석 기간: ${fromStr} ~ ${toStr}${prevFromStr ? ` | 비교: ${prevFromStr} ~ ${prevToStr}` : ''}`;
     const G = '#10b981', R = '#ef4444';
 
     // KPI 그리드 (카드 안에 포함, 보고용 복사 plain 텍스트에는 미포함)
@@ -2565,7 +2565,7 @@ function renderTrendAll() {
       c += `</div>`;
       return c;
     };
-    const kpiHtml = `<div style="display:grid;grid-template-columns:repeat(4,1fr);background:#f8fafc;border-radius:12px;margin-bottom:18px;overflow:hidden;border:1px solid #f1f5f9;">${kpiItems.map((k,i)=>kpiCell(k,i===3)).join('')}</div>`;
+    const kpiHtml = `<div style="display:grid;grid-template-columns:repeat(4,1fr);background:white;border-radius:8px;margin-bottom:18px;overflow:hidden;border:1px solid #e2e8f0;">${kpiItems.map((k,i)=>kpiCell(k,i===3)).join('')}</div>`;
 
     let html = `<div style="font-size:11px; color:#94a3b8; font-weight:500; margin-bottom:14px; padding-bottom:12px; border-bottom:1px solid #f1f5f9;">${periodStr}</div>${kpiHtml}`;
     let plain = periodStr;
@@ -2603,10 +2603,9 @@ function renderTrendAll() {
       else                                  synth = `거래금액, 판매수량, 주문건수가 모두 감소해\n전반적인 하락 흐름입니다. 원인 파악이 필요합니다.`;
 
       html  += `<div style="font-size:13px; color:#374151; line-height:2.1; margin-bottom:14px;">${line1H}<br>${line2H}</div>`;
-      html  += `<div style="margin-top:4px; background:#1e1b4b; border-radius:14px; padding:18px 22px; position:relative; overflow:hidden;">
-        <div style="position:absolute; right:16px; top:50%; transform:translateY(-50%); font-size:52px; opacity:0.07; line-height:1; pointer-events:none;">💡</div>
-        <div style="font-size:10px; font-weight:800; color:#818cf8; letter-spacing:1px; margin-bottom:10px; text-transform:uppercase;">💡 종합 해석</div>
-        <div style="font-size:13px; color:#e0e7ff; line-height:1.95; font-weight:400;">${synth.replace(/\n/g,'<br>')}</div>
+      html  += `<div style="margin-top:4px; background:#f8fafc; border-radius:8px; padding:14px 18px; border-left:3px solid #3b82f6;">
+        <div style="font-size:10px; font-weight:700; color:#2563eb; letter-spacing:0.5px; margin-bottom:8px;">해석</div>
+        <div style="font-size:13px; color:#374151; line-height:1.85;">${synth.replace(/\n/g,'<br>')}</div>
       </div>`;
       plain += `\n\n${line1P}\n${line2P}\n\n${synth}`;
     } else {

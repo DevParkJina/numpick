@@ -2404,7 +2404,7 @@ function renderProductChanges(currRows, prevRows, riseId, fallId, newId, goneId)
     rows.forEach(r => {
       const code = String(col(r,'상품코드','공급사상품코드')||'').trim() || String(col(r,'상품명')||'').trim();
       if (!code) return;
-      if (!m[code]) m[code] = { name:String(col(r,'상품명')||'').trim(), amt:0, qty:0 };
+      if (!m[code]) m[code] = { name:String(col(r,'상품명')||'').trim(), brand:String(col(r,'브랜드')||'').trim(), amt:0, qty:0 };
       m[code].amt += rowAmt(r); m[code].qty += safeNum(col(r,'수량'));
     });
     return m;
@@ -2419,10 +2419,12 @@ function renderProductChanges(currRows, prevRows, riseId, fallId, newId, goneId)
   const item = (code, isCurr, isGone) => {
     const d = isCurr ? cMap[code] : pMap[code];
     const cq = (cMap[code]||{qty:0}).qty, pq = (pMap[code]||{qty:0}).qty;
-    const sub = isGone ? `${pq.toLocaleString()}개 → 0개` : (!pMap[code] ? `${cq.toLocaleString()}개` : `${cq.toLocaleString()}개 (전기 ${pq.toLocaleString()})`)
-    return `<div style="padding:6px 0; border-bottom:1px solid #f8fafc;">
+    const sub = isGone ? `${pq.toLocaleString()}개 → 0개` : (!pMap[code] ? `${cq.toLocaleString()}개` : `${cq.toLocaleString()}개 (비교 ${pq.toLocaleString()})`);
+    return `<div style="padding:7px 0; border-bottom:1px solid #f8fafc;">
+      ${d.brand ? `<div style="font-size:10px; color:#a5b4fc; font-weight:600; margin-bottom:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${d.brand}</div>` : ''}
       <div style="font-size:12px; color:#1e293b; font-weight:500; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${d.name||code}">${d.name||code}</div>
-      <div style="font-size:11px; color:#94a3b8; margin-top:1px;">${sub}</div></div>`;
+      <div style="font-size:11px; color:#94a3b8; margin-top:2px;">${sub}</div>
+    </div>`;
   };
   const setEl = (id, list, isCurr, isGone) => {
     const el = document.getElementById(id); if (!el) return;

@@ -514,15 +514,7 @@
         <div style="position:relative; height:220px;"><canvas id="trend-media-timeseries-chart"></canvas></div>
       </div>
 
-      <div style="background:white; border-radius:16px; box-shadow:0 1px 4px rgba(0,0,0,0.06); padding:20px 24px; margin-bottom:20px;">
-        <div style="font-size:14px; font-weight:700; color:#0f172a; margin-bottom:16px; font-family:'Noto Sans KR',sans-serif;">주요 상품 변화</div>
-        <div style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:20px;">
-          <div><div style="font-size:12px; font-weight:700; color:#10b981; margin-bottom:10px; padding-bottom:6px; border-bottom:2px solid #d1fae5;">▲ 주요 상승 상품</div><div id="trend-media-prod-rise"></div></div>
-          <div><div style="font-size:12px; font-weight:700; color:#ef4444; margin-bottom:10px; padding-bottom:6px; border-bottom:2px solid #fee2e2;">▼ 주요 하락 상품</div><div id="trend-media-prod-fall"></div></div>
-          <div><div style="font-size:12px; font-weight:700; color:#3b82f6; margin-bottom:10px; padding-bottom:6px; border-bottom:2px solid #dbeafe;">✦ 신규 판매</div><div id="trend-media-prod-new"></div></div>
-          <div><div style="font-size:12px; font-weight:700; color:#94a3b8; margin-bottom:10px; padding-bottom:6px; border-bottom:2px solid #f1f5f9;">✕ 판매 소멸</div><div id="trend-media-prod-gone"></div></div>
-        </div>
-      </div>
+      <div id="trend-media-prod-changes" style="background:white; border-radius:16px; box-shadow:0 1px 4px rgba(0,0,0,0.06); padding:20px 24px; margin-bottom:20px;"></div>
 
     </div>
 
@@ -2127,6 +2119,9 @@ let _trendToD        = null;
 let _trendPrevFromD  = null;
 let _trendPrevToD    = null;
 let _insightText     = '';
+let _prodChangeData  = null;
+let _prodChangeTab   = 'rise';
+let _prodChangeExpanded = false;
 
 function destroyTrendChart(id) {
   if (trendCharts[id]) { trendCharts[id].destroy(); delete trendCharts[id]; }
@@ -2398,7 +2393,7 @@ function renderGroupTable(currRows, prevRows, keyFn, elId, nameFn) {
     </table>`;
 }
 
-function renderProductChanges(currRows, prevRows, riseId, fallId, newId, goneId) {
+function renderProductChanges(currRows, prevRows) {
   const build = rows => {
     const m = {};
     rows.forEach(r => {
@@ -2411,35 +2406,152 @@ function renderProductChanges(currRows, prevRows, riseId, fallId, newId, goneId)
   };
   const cMap = build(currRows), pMap = build(prevRows);
   const codes = Object.keys(cMap);
-  const risen  = codes.filter(c => pMap[c] && cMap[c].amt > pMap[c].amt).sort((a,b) => (cMap[b].amt-(pMap[b]||{amt:0}).amt)-(cMap[a].amt-(pMap[a]||{amt:0}).amt));
-  const fallen = codes.filter(c => pMap[c] && cMap[c].amt < pMap[c].amt).sort((a,b) => ((pMap[a]||{amt:0}).amt-cMap[a].amt)-((pMap[b]||{amt:0}).amt-cMap[b].amt));
-  const newP   = codes.filter(c => !pMap[c]).sort((a,b) => cMap[b].amt-cMap[a].amt).slice(0,5);
-  const goneC  = Object.keys(pMap).filter(c => !cMap[c]).sort((a,b) => (pMap[b]||{amt:0}).amt-(pMap[a]||{amt:0}).amt).slice(0,5);
+  const risen  = codes.filter(c => pMap[c] && cMap[c].amt > pMap[c].amt)
+    .sort((a,b) => (cMap[b].amt - pMap[b].amt) - (cMap[a].amt - pMap[a].amt));
+  const fallen = codes.filter(c => pMap[c] && cMap[c].amt < pMap[c].amt)
+    .sort((a,b) => (pMap[a].amt - cMap[a].amt) - (pMap[b].amt - cMap[b].amt));
+  const newP   = codes.filter(c => !pMap[c]).sort((a,b) => cMap[b].amt - cMap[a].amt);
+  const goneC  = Object.keys(pMap).filter(c => !cMap[c]).sort((a,b) => pMap[b].amt - pMap[a].amt);
 
-  const item = (code, isCurr, isGone) => {
-    const d = isCurr ? cMap[code] : pMap[code];
-    const cq = (cMap[code]||{qty:0}).qty, pq = (pMap[code]||{qty:0}).qty;
-    const diff = cq - pq;
-    const dSign = diff >= 0 ? '▲' : '▼';
-    const dColor = diff >= 0 ? '#ef4444' : '#3b82f6';
-    const dBg    = diff >= 0 ? '#fef2f2' : '#eff6ff';
-    const diffBadge = `<span style="font-size:10px;font-weight:700;color:${dColor};background:${dBg};padding:2px 6px;border-radius:20px;">${dSign} ${Math.abs(diff).toLocaleString()}개</span>`;
-    const sub = isGone ? `${pq.toLocaleString()}개 → 0개` : (!pMap[code] ? `${cq.toLocaleString()}개` : `${cq.toLocaleString()}개 ${diffBadge}`);
-    return `<div style="padding:7px 0; border-bottom:1px solid #f8fafc;">
-      ${d.brand ? `<div style="font-size:10px; color:#a5b4fc; font-weight:600; margin-bottom:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${d.brand}</div>` : ''}
-      <div style="font-size:12px; color:#1e293b; font-weight:500; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${d.name||code}">${d.name||code}</div>
-      <div style="font-size:11px; color:#94a3b8; margin-top:2px;">${sub}</div>
+  _prodChangeData = { cMap, pMap, risen, fallen, newP, goneC, hasPrev: prevRows.length > 0 };
+  _prodChangeTab  = 'rise';
+  _prodChangeExpanded = false;
+
+  const wrap = document.getElementById('trend-media-prod-changes');
+  if (!wrap) return;
+
+  const tabDefs = [
+    { key:'rise', label:'▲ 상승 상품', color:'#10b981' },
+    { key:'fall', label:'▼ 하락 상품', color:'#ef4444' },
+    { key:'new',  label:'◆ 신규 판매', color:'#3b82f6' },
+    { key:'gone', label:'✕ 판매 중단', color:'#94a3b8' },
+  ];
+
+  const tabsHtml = tabDefs.map(t => {
+    const isActive = t.key === 'rise';
+    return `<button id="prod-tab-${t.key}" onclick="switchProdTab('${t.key}')" style="padding:9px 18px;border:none;background:transparent;cursor:pointer;font-size:13px;font-weight:600;font-family:'Noto Sans KR',sans-serif;color:${isActive ? t.color : '#94a3b8'};border-bottom:${isActive ? `2px solid ${t.color}` : '2px solid transparent'};margin-bottom:-1px;letter-spacing:-0.2px;">${t.label}</button>`;
+  }).join('');
+
+  wrap.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+      <div style="font-size:14px;font-weight:700;color:#0f172a;font-family:'Noto Sans KR',sans-serif;">주요 상품 변화</div>
+      <div style="font-size:11px;color:#94a3b8;font-family:'Noto Sans KR',sans-serif;">정렬 <span style="font-weight:600;color:#475569;">증감액순</span></div>
+    </div>
+    <div style="display:flex;border-bottom:1px solid #e2e8f0;margin-bottom:0;margin-top:8px;">${tabsHtml}</div>
+    <div id="prod-change-table"></div>
+  `;
+
+  _renderProdChangeTable();
+}
+
+function switchProdTab(tab) {
+  _prodChangeTab = tab;
+  _prodChangeExpanded = false;
+  const tabDefs = [
+    { key:'rise', color:'#10b981' },
+    { key:'fall', color:'#ef4444' },
+    { key:'new',  color:'#3b82f6' },
+    { key:'gone', color:'#94a3b8' },
+  ];
+  tabDefs.forEach(t => {
+    const btn = document.getElementById('prod-tab-' + t.key);
+    if (!btn) return;
+    const active = t.key === tab;
+    btn.style.color = active ? t.color : '#94a3b8';
+    btn.style.borderBottom = active ? `2px solid ${t.color}` : '2px solid transparent';
+  });
+  _renderProdChangeTable();
+}
+
+function toggleProdMore() {
+  _prodChangeExpanded = !_prodChangeExpanded;
+  _renderProdChangeTable();
+}
+
+function _renderProdChangeTable() {
+  const el = document.getElementById('prod-change-table');
+  if (!el || !_prodChangeData) return;
+  const { cMap, pMap, risen, fallen, newP, goneC, hasPrev } = _prodChangeData;
+
+  const lists = { rise: risen, fall: fallen, new: newP, gone: goneC };
+  const allItems = lists[_prodChangeTab] || [];
+  const isGone = _prodChangeTab === 'gone';
+  const isNew  = _prodChangeTab === 'new';
+  const tabColor = { rise:'#10b981', fall:'#ef4444', new:'#3b82f6', gone:'#94a3b8' }[_prodChangeTab];
+
+  if (!hasPrev && (_prodChangeTab === 'rise' || _prodChangeTab === 'fall')) {
+    el.innerHTML = `<div style="padding:28px 0;text-align:center;font-size:12px;color:#94a3b8;font-family:'Noto Sans KR',sans-serif;">비교기간이 없습니다.</div>`;
+    return;
+  }
+  if (allItems.length === 0) {
+    el.innerHTML = `<div style="padding:28px 0;text-align:center;font-size:12px;color:#94a3b8;font-family:'Noto Sans KR',sans-serif;">해당 없음</div>`;
+    return;
+  }
+
+  const makeRow = (code, rank) => {
+    const d = isGone ? pMap[code] : cMap[code];
+    const ca = (cMap[code]||{amt:0,qty:0}), pa = (pMap[code]||{amt:0,qty:0});
+    const diff = ca.amt - pa.amt;
+
+    const rankCircle = `<div style="width:22px;height:22px;border-radius:50%;background:${rank<=3?tabColor:'#e2e8f0'};color:${rank<=3?'white':'#64748b'};font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;margin:0 auto;flex-shrink:0;">${rank}</div>`;
+
+    const currVal = isGone ? '<span style="color:#cbd5e1;">-</span>' : fmtAmt(ca.amt);
+    const prevVal = isNew  ? '<span style="color:#cbd5e1;">-</span>' : fmtAmt(pa.amt);
+
+    let changeBadge;
+    if (isGone) {
+      changeBadge = `<span style="font-size:11px;font-weight:600;color:#94a3b8;background:#f1f5f9;padding:2px 8px;border-radius:20px;">소멸</span>`;
+    } else if (isNew) {
+      changeBadge = `<span style="font-size:11px;font-weight:600;color:#3b82f6;background:#eff6ff;padding:2px 8px;border-radius:20px;">신규</span>`;
+    } else {
+      const sign  = diff >= 0 ? '+' : '-';
+      const color = diff >= 0 ? '#10b981' : '#ef4444';
+      const bg    = diff >= 0 ? '#f0fdf4' : '#fef2f2';
+      changeBadge = `<span style="font-size:11px;font-weight:700;color:${color};background:${bg};padding:2px 8px;border-radius:20px;">${sign}${fmtAmt(Math.abs(diff))}</span>`;
+    }
+
+    return `<tr style="border-bottom:1px solid #f8fafc;">
+      <td style="padding:10px 8px;text-align:center;width:44px;">${rankCircle}</td>
+      <td style="padding:10px 12px;font-size:12px;font-weight:500;color:#1e293b;max-width:0;width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${(d.name||code).replace(/"/g,'&quot;')}">${d.name||code}</td>
+      <td style="padding:10px 12px;font-size:11px;color:#6366f1;font-weight:500;white-space:nowrap;">${d.brand||'<span style="color:#cbd5e1;">-</span>'}</td>
+      <td style="padding:10px 12px;font-size:12px;color:#475569;text-align:right;white-space:nowrap;">${currVal}</td>
+      <td style="padding:10px 12px;font-size:12px;color:#94a3b8;text-align:right;white-space:nowrap;">${prevVal}</td>
+      <td style="padding:10px 12px;text-align:right;white-space:nowrap;">${changeBadge}</td>
+    </tr>`;
+  };
+
+  const thead = `<thead><tr style="border-bottom:1px solid #e2e8f0;background:#fafafa;">
+    <th style="padding:8px 8px;font-size:10px;font-weight:600;color:#94a3b8;text-align:center;width:44px;letter-spacing:0.2px;">순위</th>
+    <th style="padding:8px 12px;font-size:10px;font-weight:600;color:#94a3b8;text-align:left;letter-spacing:0.2px;">상품명</th>
+    <th style="padding:8px 12px;font-size:10px;font-weight:600;color:#94a3b8;text-align:left;letter-spacing:0.2px;">브랜드</th>
+    <th style="padding:8px 12px;font-size:10px;font-weight:600;color:#94a3b8;text-align:right;letter-spacing:0.2px;">현재</th>
+    <th style="padding:8px 12px;font-size:10px;font-weight:600;color:#94a3b8;text-align:right;letter-spacing:0.2px;">이전</th>
+    <th style="padding:8px 12px;font-size:10px;font-weight:600;color:#94a3b8;text-align:right;letter-spacing:0.2px;">증감</th>
+  </tr></thead>`;
+
+  const top5 = allItems.slice(0, 5);
+  const rest  = allItems.slice(5);
+
+  let html = `<table style="width:100%;border-collapse:collapse;font-family:'Noto Sans KR',sans-serif;table-layout:fixed;">
+    ${thead}
+    <tbody>${top5.map((c,i) => makeRow(c, i+1)).join('')}</tbody>
+  </table>`;
+
+  if (rest.length > 0) {
+    html += `<div onclick="toggleProdMore()" style="display:flex;align-items:center;justify-content:space-between;padding:9px 12px;margin-top:6px;cursor:pointer;background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0;user-select:none;">
+      <span style="font-size:12px;font-weight:500;color:#475569;font-family:'Noto Sans KR',sans-serif;">${_prodChangeExpanded ? '▲' : '▼'}&nbsp; 나머지 ${rest.length}개 더보기</span>
+      <span style="font-size:14px;color:#94a3b8;line-height:1;">${_prodChangeExpanded ? '−' : '+'}</span>
     </div>`;
-  };
-  const setEl = (id, list, isCurr, isGone) => {
-    const el = document.getElementById(id); if (!el) return;
-    if (!prevRows.length && id !== newId) { el.innerHTML = '<div style="font-size:11px;color:#94a3b8;padding:8px 0;">비교기간 없음</div>'; return; }
-    el.innerHTML = list.length ? list.map(c => item(c, isCurr, isGone)).join('') : '<div style="font-size:11px;color:#94a3b8;padding:8px 0;">해당 없음</div>';
-  };
-  setEl(riseId, risen, true, false);
-  setEl(fallId, fallen, true, false);
-  setEl(newId,  newP,  true, false);
-  setEl(goneId, goneC, false, true);
+    if (_prodChangeExpanded) {
+      html += `<table style="width:100%;border-collapse:collapse;font-family:'Noto Sans KR',sans-serif;table-layout:fixed;margin-top:4px;">
+        <tbody>${rest.map((c,i) => makeRow(c, i+6)).join('')}</tbody>
+      </table>`;
+    }
+  }
+
+  html += `<div style="font-size:10px;color:#cbd5e1;margin-top:10px;font-family:'Noto Sans KR',sans-serif;">※ 기본 정렬은 거래금액 증감액 기준이며, 전체 항목을 펼쳐서 확인할 수 있습니다.</div>`;
+
+  el.innerHTML = html;
 }
 
 function buildTrendBuckets(rows, fromD, toD, unit) {
@@ -2731,7 +2843,7 @@ function renderTrendMediaDetail(mediaKey) {
   renderGroupTable(_trendRows, _trendPrevRows, r=>String(col(r,'브랜드')||'').trim(),  'trend-media-brand');
   renderGroupTable(_trendRows, _trendPrevRows, r=>String(col(r,'공급사')||'').trim(),  'trend-media-supplier');
   renderTimeseriesChart('trend-media-timeseries-chart', _trendRows, _trendPrevRows, _trendFromD, _trendToD);
-  renderProductChanges(_trendRows, _trendPrevRows, 'trend-media-prod-rise', 'trend-media-prod-fall', 'trend-media-prod-new', 'trend-media-prod-gone');
+  renderProductChanges(_trendRows, _trendPrevRows);
 }
 
 

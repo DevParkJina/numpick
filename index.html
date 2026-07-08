@@ -478,16 +478,6 @@
         </div>
       </div>
 
-      <div style="background:white; border-radius:16px; box-shadow:0 1px 4px rgba(0,0,0,0.06); padding:20px 24px; margin-bottom:20px;">
-        <div style="font-size:14px; font-weight:700; color:#0f172a; margin-bottom:16px; font-family:'Noto Sans KR',sans-serif;">주요 상품 변화</div>
-        <div style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:20px;">
-          <div><div style="font-size:12px; font-weight:700; color:#10b981; margin-bottom:10px; padding-bottom:6px; border-bottom:2px solid #d1fae5;">▲ 상승 TOP 5</div><div id="trend-prod-rise"></div></div>
-          <div><div style="font-size:12px; font-weight:700; color:#ef4444; margin-bottom:10px; padding-bottom:6px; border-bottom:2px solid #fee2e2;">▼ 하락 TOP 5</div><div id="trend-prod-fall"></div></div>
-          <div><div style="font-size:12px; font-weight:700; color:#3b82f6; margin-bottom:10px; padding-bottom:6px; border-bottom:2px solid #dbeafe;">✦ 신규 판매</div><div id="trend-prod-new"></div></div>
-          <div><div style="font-size:12px; font-weight:700; color:#94a3b8; margin-bottom:10px; padding-bottom:6px; border-bottom:2px solid #f1f5f9;">✕ 판매 소멸</div><div id="trend-prod-gone"></div></div>
-        </div>
-      </div>
-
     </div>
 
     <!-- ── 매체 상세 보기 ── -->
@@ -513,8 +503,15 @@
       </div>
 
       <div style="background:white; border-radius:16px; box-shadow:0 1px 4px rgba(0,0,0,0.06); padding:20px 24px; margin-bottom:20px;">
-        <div style="font-size:14px; font-weight:700; color:#0f172a; margin-bottom:16px; font-family:'Noto Sans KR',sans-serif;">기간별 매출 추이</div>
-        <div style="position:relative; height:200px;"><canvas id="trend-media-timeseries-chart"></canvas></div>
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
+          <div style="font-size:14px; font-weight:700; color:#0f172a; font-family:'Noto Sans KR',sans-serif;">기간별 매출 추이</div>
+          <div style="display:flex; gap:4px; background:#f8fafc; border-radius:10px; padding:3px;">
+            <button id="trend-period-btn-day-m"   onclick="setTrendTimeUnit('day')"   style="padding:4px 12px; border-radius:7px; font-size:12px; font-weight:600; border:none; cursor:pointer; background:#4f46e5; color:white; font-family:'Noto Sans KR',sans-serif;">일간</button>
+            <button id="trend-period-btn-week-m"  onclick="setTrendTimeUnit('week')"  style="padding:4px 12px; border-radius:7px; font-size:12px; font-weight:600; border:none; cursor:pointer; background:transparent; color:#64748b; font-family:'Noto Sans KR',sans-serif;">주간</button>
+            <button id="trend-period-btn-month-m" onclick="setTrendTimeUnit('month')" style="padding:4px 12px; border-radius:7px; font-size:12px; font-weight:600; border:none; cursor:pointer; background:transparent; color:#64748b; font-family:'Noto Sans KR',sans-serif;">월간</button>
+          </div>
+        </div>
+        <div style="position:relative; height:220px;"><canvas id="trend-media-timeseries-chart"></canvas></div>
       </div>
 
       <div style="background:white; border-radius:16px; box-shadow:0 1px 4px rgba(0,0,0,0.06); padding:20px 24px; margin-bottom:20px;">
@@ -2150,10 +2147,12 @@ function setTrendPeriod(mode) {
 function setTrendTimeUnit(unit) {
   _trendTimeUnit = unit;
   ['day','week','month'].forEach(u => {
-    const btn = document.getElementById('trend-period-btn-' + u);
-    if (!btn) return;
-    btn.style.background = u === unit ? '#4f46e5' : '#f1f5f9';
-    btn.style.color      = u === unit ? 'white'   : '#64748b';
+    ['trend-period-btn-'+u, 'trend-period-btn-'+u+'-m'].forEach(id => {
+      const btn = document.getElementById(id);
+      if (!btn) return;
+      btn.style.background = u === unit ? '#4f46e5' : 'transparent';
+      btn.style.color      = u === unit ? 'white'   : '#64748b';
+    });
   });
   renderTimeseriesChart('trend-timeseries-chart', _trendRows, _trendPrevRows, _trendFromD, _trendToD);
   renderTimeseriesChart('trend-media-timeseries-chart', _trendRows, _trendPrevRows, _trendFromD, _trendToD);
@@ -2593,7 +2592,6 @@ function renderTrendAll() {
   renderGroupTable(_trendRows, _trendPrevRows, r=>String(col(r,'브랜드')||'').trim(),  'trend-all-brand');
   renderSupplierMediaMatrix(_trendRows, 'trend-all-matrix');
   renderTimeseriesChart('trend-timeseries-chart', _trendRows, _trendPrevRows, _trendFromD, _trendToD);
-  renderProductChanges(_trendRows, _trendPrevRows, 'trend-prod-rise', 'trend-prod-fall', 'trend-prod-new', 'trend-prod-gone');
 }
 
 function renderSupplierMediaMatrix(rows, elId) {
@@ -2660,15 +2658,17 @@ function renderTrendMediaDetail(mediaKey) {
       { label:'평균주문단가',  val:kpiAvgUnit?fmtAmt(kpiAvgUnit):'-',  prev:kpiPAvgUnit?fmtAmt(kpiPAvgUnit):null,        chg:kpiPAvgUnit?fmtChange(kpiAvgUnit,kpiPAvgUnit):'' },
     ];
     const kpiCell = (k, last) => {
-      let c = `<div style="padding:14px 16px;${last?'':' border-right:1px solid #eef2f7;'}">`;
-      c += `<div style="font-size:10px;font-weight:600;color:#94a3b8;margin-bottom:5px;">${k.label}</div>`;
-      c += `<div style="font-size:18px;font-weight:700;color:#0f172a;line-height:1.2;">${k.val}</div>`;
-      if (k.chg) c += `<div style="font-size:11px;margin-top:3px;">${k.chg}</div>`;
-      if (k.prev) c += `<div style="font-size:10px;color:#94a3b8;margin-top:2px;">비교 ${k.prev}</div>`;
+      let c = `<div style="padding:18px 20px;${last ? '' : ' border-right:1px solid #f1f5f9;'}">`;
+      c += `<div style="font-size:11px;font-weight:600;color:#94a3b8;margin-bottom:10px;letter-spacing:0.2px;">${k.label}</div>`;
+      c += `<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:${k.prev ? '7' : '0'}px;">`;
+      c += `<div style="font-size:20px;font-weight:800;color:#0f172a;letter-spacing:-0.5px;line-height:1;">${k.val}</div>`;
+      if (k.chg) c += k.chg;
+      c += `</div>`;
+      if (k.prev) c += `<div style="font-size:11px;color:#94a3b8;">비교 ${k.prev}</div>`;
       c += `</div>`;
       return c;
     };
-    const kpiHtml = `<div style="display:grid;grid-template-columns:repeat(6,1fr);background:white;border-radius:8px;margin-bottom:18px;overflow:hidden;border:1px solid #e2e8f0;">${kpiItems.map((k,i)=>kpiCell(k,i===5)).join('')}</div>`;
+    const kpiHtml = `<div style="display:grid;grid-template-columns:repeat(6,1fr);background:white;border-radius:12px;margin-bottom:18px;overflow:hidden;border:1px solid #e2e8f0;">${kpiItems.map((k,i)=>kpiCell(k,i===5)).join('')}</div>`;
 
     let html = `<div style="font-size:11px; color:#94a3b8; font-weight:500; margin-bottom:14px; padding-bottom:12px; border-bottom:1px solid #f1f5f9;">${periodStr}</div>${kpiHtml}`;
     let plain = `[${mediaName}] ${periodStr}`;

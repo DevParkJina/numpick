@@ -2577,18 +2577,18 @@ function renderTrendAll() {
       const avgUnit = kpiAvgUnit ? fmtAmt(kpiAvgUnit) : '-';
 
       const amtStr  = `${s(dAmt)}${fmtAmt(Math.abs(dAmt))} ${dAmt>=0?'증가':'감소'}했습니다.`;
-      const line1H  = `거래금액은 <strong>${fmtAmt(cAgg.amt)}</strong>으로 비교기간 ${fmtAmt(pAgg.amt)} 대비 <span style="color:${amtUp?G:R};font-weight:600;">${amtStr}</span>`;
+      const line1H  = `거래금액은 <strong>${fmtAmt(cAgg.amt)}</strong>으로 비교기간 ${fmtAmt(pAgg.amt)} 대비 <strong>${amtStr}</strong>`;
       const line1P  = `거래금액은 ${fmtAmt(cAgg.amt)}으로 비교기간 ${fmtAmt(pAgg.amt)} 대비 ${s(dAmt)}${fmtAmt(Math.abs(dAmt))} ${dAmt>=0?'증가':'감소'}했습니다.`;
 
       const qtyStr  = `${s(dQty)}${Math.abs(dQty).toLocaleString()}개 ${qtyUp?'증가':'감소'}`;
       const ordStr  = `${s(dOrd)}${Math.abs(dOrd).toLocaleString()}건 ${ordUp?'증가':'감소'}했습니다.`;
       let line2H, line2P;
       if (qtyUp === ordUp) {
-        line2H = `판매수량은 <strong>${cAgg.qty.toLocaleString()}개</strong>로 <span style="color:${qtyUp?G:R};font-weight:600;">${qtyStr}</span>, 주문건수는 <strong>${cAgg.orders.toLocaleString()}건</strong>으로 <span style="color:${ordUp?G:R};font-weight:600;">${ordStr}</span>`;
+        line2H = `판매수량은 <strong>${cAgg.qty.toLocaleString()}개</strong>로 <strong>${qtyStr}</strong>, 주문건수는 <strong>${cAgg.orders.toLocaleString()}건</strong>으로 <strong>${ordStr}</strong>`;
         line2P = `판매수량은 ${cAgg.qty.toLocaleString()}개로 ${qtyStr}, 주문건수는 ${cAgg.orders.toLocaleString()}건으로 ${ordStr}`;
       } else {
         const qVerbJiman = qtyUp ? '증가했지만' : '감소했지만';
-        line2H = `판매수량은 <strong>${cAgg.qty.toLocaleString()}개</strong>로 <span style="color:${qtyUp?G:R};font-weight:600;">${qtyStr} ${qVerbJiman}</span>, 주문건수는 <strong>${cAgg.orders.toLocaleString()}건</strong>으로 <span style="color:${ordUp?G:R};font-weight:600;">${ordStr}</span>`;
+        line2H = `판매수량은 <strong>${cAgg.qty.toLocaleString()}개</strong>로 <strong>${qtyStr} ${qVerbJiman}</strong>, 주문건수는 <strong>${cAgg.orders.toLocaleString()}건</strong>으로 <strong>${ordStr}</strong>`;
         line2P = `판매수량은 ${cAgg.qty.toLocaleString()}개로 ${qtyStr} ${qVerbJiman}, 주문건수는 ${cAgg.orders.toLocaleString()}건으로 ${ordStr}`;
       }
 
@@ -2602,7 +2602,7 @@ function renderTrendAll() {
       else if (!amtUp &&  qtyUp && !ordUp) synth = `판매수량은 증가했지만 거래금액과 주문건수가 감소해,\n저단가 상품의 묶음 판매가 증가한 흐름으로 보입니다.`;
       else                                  synth = `거래금액, 판매수량, 주문건수가 모두 감소해\n전반적인 하락 흐름입니다. 원인 파악이 필요합니다.`;
 
-      html  += `<div style="font-size:13px; color:#374151; line-height:2.1; margin-bottom:14px;">${line1H}<br>${line2H}</div>`;
+      html  += `<div style="font-size:13px; color:#0f172a; line-height:2.1; margin-bottom:14px;">${line1H}<br>${line2H}</div>`;
       html  += `<div style="margin-top:4px; background:#f8fafc; border-radius:8px; padding:14px 18px; border-left:3px solid #3b82f6;">
         <div style="font-size:10px; font-weight:700; color:#2563eb; letter-spacing:0.5px; margin-bottom:8px;">해석</div>
         <div style="font-size:13px; color:#374151; line-height:1.85;">${synth.replace(/\n/g,'<br>')}</div>

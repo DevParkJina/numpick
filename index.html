@@ -502,6 +502,8 @@
         </div>
       </div>
 
+      <div id="trend-media-prod-changes" style="background:white; border-radius:16px; box-shadow:0 1px 4px rgba(0,0,0,0.06); padding:20px 24px; margin-bottom:20px;"></div>
+
       <div style="background:white; border-radius:16px; box-shadow:0 1px 4px rgba(0,0,0,0.06); padding:20px 24px; margin-bottom:20px;">
         <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
           <div style="font-size:14px; font-weight:700; color:#0f172a; font-family:'Noto Sans KR',sans-serif;">기간별 매출 추이</div>
@@ -513,8 +515,6 @@
         </div>
         <div style="position:relative; height:220px;"><canvas id="trend-media-timeseries-chart"></canvas></div>
       </div>
-
-      <div id="trend-media-prod-changes" style="background:white; border-radius:16px; box-shadow:0 1px 4px rgba(0,0,0,0.06); padding:20px 24px; margin-bottom:20px;"></div>
 
     </div>
 
@@ -2421,8 +2421,8 @@ function renderProductChanges(currRows, prevRows) {
   if (!wrap) return;
 
   const tabDefs = [
-    { key:'rise', label:'▲ 상승 상품', color:'#10b981' },
-    { key:'fall', label:'▼ 하락 상품', color:'#ef4444' },
+    { key:'rise', label:'▲ 상승 상품', color:'#ef4444' },
+    { key:'fall', label:'▼ 하락 상품', color:'#3b82f6' },
     { key:'new',  label:'◆ 신규 판매', color:'#3b82f6' },
     { key:'gone', label:'✕ 판매 중단', color:'#94a3b8' },
   ];
@@ -2448,8 +2448,8 @@ function switchProdTab(tab) {
   _prodChangeTab = tab;
   _prodChangeExpanded = false;
   const tabDefs = [
-    { key:'rise', color:'#10b981' },
-    { key:'fall', color:'#ef4444' },
+    { key:'rise', color:'#ef4444' },
+    { key:'fall', color:'#3b82f6' },
     { key:'new',  color:'#3b82f6' },
     { key:'gone', color:'#94a3b8' },
   ];
@@ -2485,7 +2485,7 @@ function _renderProdChangeTable() {
   const allItems = lists[_prodChangeTab] || [];
   const isGone = _prodChangeTab === 'gone';
   const isNew  = _prodChangeTab === 'new';
-  const tabColor = { rise:'#10b981', fall:'#ef4444', new:'#3b82f6', gone:'#94a3b8' }[_prodChangeTab];
+  const tabColor = { rise:'#ef4444', fall:'#3b82f6', new:'#10b981', gone:'#94a3b8' }[_prodChangeTab];
 
   if (!hasPrev && (_prodChangeTab === 'rise' || _prodChangeTab === 'fall')) {
     el.innerHTML = `<div style="padding:28px 0;text-align:center;font-size:12px;color:#94a3b8;font-family:'Noto Sans KR',sans-serif;">비교기간이 없습니다.</div>`;

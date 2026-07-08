@@ -2477,18 +2477,18 @@ function renderTimeseriesChart(chartId, currRows, prevRows, fromD, toD) {
   const pb = buildTrendBuckets(prevRows, _trendPrevFromD, _trendPrevToD, _trendTimeUnit).buckets;
   const datasets = [
     { label:'거래금액', data:buckets.map(b=>b.amt), type:'line', yAxisID:'y1',
-      borderColor:'#4f46e5', backgroundColor:'transparent', borderWidth:2, pointRadius:3, tension:0.3 },
+      borderColor:'#4f46e5', backgroundColor:'transparent', borderWidth:2, pointRadius:3, tension:0.3, pointStyle:'line' },
     { label:'판매수량', data:buckets.map(b=>b.qty), type:'bar', yAxisID:'y2',
-      backgroundColor:'#8b5cf680', borderColor:'#8b5cf6', borderWidth:1.5, borderRadius:3 },
+      backgroundColor:'#8b5cf680', borderColor:'#8b5cf6', borderWidth:1.5, borderRadius:3, pointStyle:'rect' },
     { label:'주문건수', data:buckets.map(b=>b.orders), type:'line', yAxisID:'y2',
-      borderColor:'#10b981', backgroundColor:'transparent', borderWidth:1.5, borderDash:[4,3], pointRadius:2, tension:0.3 },
+      borderColor:'#10b981', backgroundColor:'transparent', borderWidth:1.5, borderDash:[4,3], pointRadius:2, tension:0.3, pointStyle:'line' },
   ];
   if (prevRows.length) {
     datasets.push(
       { label:'비교 거래금액', data:pb.map(b=>b.amt), type:'line', yAxisID:'y1',
-        borderColor:'#94a3b8', backgroundColor:'transparent', borderWidth:1.5, borderDash:[5,4], pointRadius:2, tension:0.3 },
+        borderColor:'#94a3b8', backgroundColor:'transparent', borderWidth:1.5, borderDash:[5,4], pointRadius:2, tension:0.3, pointStyle:'line' },
       { label:'비교 수량', data:pb.map(b=>b.qty), type:'bar', yAxisID:'y2',
-        backgroundColor:'#94a3b820', borderColor:'#94a3b8', borderWidth:1, borderRadius:3 }
+        backgroundColor:'#94a3b820', borderColor:'#94a3b8', borderWidth:1, borderRadius:3, pointStyle:'rect' }
     );
   }
   trendCharts[chartId] = new Chart(canvas, {
@@ -2496,7 +2496,7 @@ function renderTimeseriesChart(chartId, currRows, prevRows, fromD, toD) {
     options: {
       responsive:true, maintainAspectRatio:false,
       plugins: {
-        legend:{ position:'top', labels:{ font:{family:'Noto Sans KR',size:11}, boxWidth:12, padding:10 } },
+        legend:{ position:'top', labels:{ font:{family:'Noto Sans KR',size:11}, boxWidth:16, padding:10, usePointStyle:true } },
         tooltip:{ callbacks:{ label:ctx => ctx.dataset.label.includes('매출') ? `${ctx.dataset.label}: ${fmtAmt(ctx.raw)}` : `${ctx.dataset.label}: ${(ctx.raw||0).toLocaleString()}` } }
       },
       scales: {
@@ -2603,8 +2603,8 @@ function renderTrendAll() {
   renderGroupTable(_trendRows, _trendPrevRows, r=>String(col(r,'공급사')||'').trim(), 'trend-all-supplier');
   renderGroupTable(_trendRows, _trendPrevRows, r=>String(col(r,'브랜드')||'').trim(),  'trend-all-brand');
   renderSupplierMediaMatrix(_trendRows, 'trend-all-matrix');
-  renderTimeseriesChart('trend-timeseries-chart', _trendRows, _prevRowsEff, _trendFromD, _trendToD);
-  renderProductChanges(_trendRows, _prevRowsEff, 'trend-prod-rise', 'trend-prod-fall', 'trend-prod-new', 'trend-prod-gone');
+  renderTimeseriesChart('trend-timeseries-chart', _trendRows, _trendPrevRows, _trendFromD, _trendToD);
+  renderProductChanges(_trendRows, _trendPrevRows, 'trend-prod-rise', 'trend-prod-fall', 'trend-prod-new', 'trend-prod-gone');
 }
 
 function renderSupplierMediaMatrix(rows, elId) {

@@ -604,6 +604,7 @@ let mediaData    = [];
 let mediaChanData = [];
 let sortBy       = 'qty';
 let groupBy      = 'media';
+let _brandSortBy = 'qty';
 let selectedMedias = new Set();
 let charts       = {};
 let filterPtype  = '';
@@ -770,6 +771,7 @@ async function resetSales() {
 
 function setSortBy(type) {
   sortBy = type;
+  if (type !== 'brand') _brandSortBy = 'qty';
   document.querySelectorAll('#sort-qty, #sort-amt, #sort-brand').forEach(b => {
     b.className = 'tog-btn off';
     b.style.background = 'transparent';
@@ -777,6 +779,11 @@ function setSortBy(type) {
   const btn = document.getElementById('sort-' + type);
   btn.className = 'tog-btn on';
   btn.style.background = '';
+  renderSalesDashboard();
+}
+
+function setBrandSortBy(type) {
+  _brandSortBy = type;
   renderSalesDashboard();
 }
 
@@ -1182,7 +1189,11 @@ function renderSalesDashboard() {
         brandAgg[bk].qty += p.qty;
         brandAgg[bk].amt += p.amt;
       });
-      sorted = Object.values(brandAgg).sort((a,b) => sortBy==='amt' ? b.amt - a.amt : b.qty - a.qty).slice(0, 10);
+      sorted = Object.values(brandAgg).sort((a,b) => {
+        if (_brandSortBy === 'amt') return b.amt - a.amt;
+        if (_brandSortBy === 'avg') return (b.qty > 0 ? b.amt/b.qty : 0) - (a.qty > 0 ? a.amt/a.qty : 0);
+        return b.qty - a.qty;
+      }).slice(0, 10);
     } else {
       sorted = Object.values(mData.prods)
         .sort((a,b) => sortBy === 'qty' ? b.qty - a.qty : b.amt - a.amt)
@@ -1220,9 +1231,13 @@ function renderSalesDashboard() {
               <th style="text-align:left; padding:6px 4px; font-size:10px; font-weight:600; color:#94a3b8; letter-spacing:0.4px;">${sortBy==='brand' ? '브랜드' : '상품'}</th>
               ${(()=>{
                 const isBrandView = groupBy==='media' && sortBy==='brand';
-                return `<th ${isBrandView?"onclick=\"setSortBy('qty')\" style=\"text-align:right; padding:6px 4px; font-size:10px; font-weight:600; color:#94a3b8; letter-spacing:0.4px; cursor:pointer; user-select:none;\"":"style=\"text-align:right; padding:6px 4px; font-size:10px; font-weight:600; color:#94a3b8; letter-spacing:0.4px;\""}>수량</th>
-                <th ${isBrandView?"onclick=\"setSortBy('amt')\" style=\"text-align:right; padding:6px 4px; font-size:10px; font-weight:600; color:#94a3b8; letter-spacing:0.4px; cursor:pointer; user-select:none;\"":"style=\"text-align:right; padding:6px 4px; font-size:10px; font-weight:600; color:#94a3b8; letter-spacing:0.4px;\""}>거래금액</th>
-                ${isBrandView ? '<th style="text-align:right; padding:6px 4px; font-size:10px; font-weight:600; color:#94a3b8; letter-spacing:0.4px;">평균단가</th>' : ''}`;
+                const thBase = 'text-align:right; padding:6px 4px; font-size:10px; font-weight:600; letter-spacing:0.4px;';
+                if (isBrandView) {
+                  return `<th onclick="setBrandSortBy('qty')" style="${thBase} color:${_brandSortBy==='qty'?'#4f46e5':'#94a3b8'}; cursor:pointer; user-select:none;">수량${_brandSortBy==='qty'?' ▼':''}</th>
+                  <th onclick="setBrandSortBy('amt')" style="${thBase} color:${_brandSortBy==='amt'?'#4f46e5':'#94a3b8'}; cursor:pointer; user-select:none;">거래금액${_brandSortBy==='amt'?' ▼':''}</th>
+                  <th onclick="setBrandSortBy('avg')" style="${thBase} color:${_brandSortBy==='avg'?'#4f46e5':'#94a3b8'}; cursor:pointer; user-select:none;">평균단가${_brandSortBy==='avg'?' ▼':''}</th>`;
+                }
+                return `<th style="${thBase} color:#94a3b8;">수량</th><th style="${thBase} color:#94a3b8;">거래금액</th>`;
               })()}
             </tr>
           </thead>

@@ -125,11 +125,11 @@
         <span style="font-size:12px; font-weight:500; color:#94a3b8;">정렬기준</span>
         <div style="display:flex; background:#f1f5f9; border-radius:8px; padding:3px; gap:2px;">
           <button id="sort-qty" onclick="setSortBy('qty')" class="tog-btn on"
-            style="padding:4px 14px; border-radius:6px; font-size:12px; font-weight:500; border:none;">수량</button>
+            style="padding:4px 14px; border-radius:6px; font-size:12px; font-weight:500; border:none;">수량순</button>
           <button id="sort-amt" onclick="setSortBy('amt')" class="tog-btn off"
-            style="padding:4px 14px; border-radius:6px; font-size:12px; font-weight:500; border:none; background:transparent;">거래금액</button>
+            style="padding:4px 14px; border-radius:6px; font-size:12px; font-weight:500; border:none; background:transparent;">금액순</button>
           <button id="sort-brand" onclick="setSortBy('brand')" class="tog-btn off"
-            style="padding:4px 14px; border-radius:6px; font-size:12px; font-weight:500; border:none; background:transparent;">브랜드별</button>
+            style="padding:4px 14px; border-radius:6px; font-size:12px; font-weight:500; border:none; background:transparent;">매트릭스</button>
         </div>
       </div>
 
@@ -515,6 +515,8 @@
         </div>
         <div style="position:relative; height:220px;"><canvas id="trend-media-timeseries-chart"></canvas></div>
       </div>
+
+      <div id="trend-media-ium-section" style="display:none;"></div>
 
     </div>
 
@@ -1177,7 +1179,7 @@ function renderSalesDashboard() {
         brandAgg[bk].qty += p.qty;
         brandAgg[bk].amt += p.amt;
       });
-      sorted = Object.values(brandAgg).sort((a,b) => b.qty - a.qty).slice(0, 10);
+      sorted = Object.values(brandAgg).sort((a,b) => sortBy==='amt' ? b.amt - a.amt : b.qty - a.qty).slice(0, 10);
     } else {
       sorted = Object.values(mData.prods)
         .sort((a,b) => sortBy === 'qty' ? b.qty - a.qty : b.amt - a.amt)
@@ -1202,8 +1204,8 @@ function renderSalesDashboard() {
           <div style="font-size:11px; font-weight:400; color:#94a3b8; margin-top:1px;">${isAllCard ? '전체 매체 합산' : groupBy === 'media' ? mediaCode : groupBy === 'brand' ? '브랜드' : '공급사'}</div>
         </div>
         <div style="text-align:right; flex-shrink:0;">
-          <div class="num" style="font-size:14px; font-weight:700; color:#4f46e5;">${mData.total.qty.toLocaleString()}개</div>
-          <div class="num" style="font-size:11px; font-weight:400; color:#94a3b8;">${fmtAmt(mData.total.amt)}</div>
+          <div class="num" style="font-size:14px; font-weight:700; color:${sortBy==='amt'?'#94a3b8':'#4f46e5'};">${mData.total.qty.toLocaleString()}개</div>
+          <div class="num" style="font-size:${sortBy==='amt'?'14':'11'}px; font-weight:${sortBy==='amt'?'700':'400'}; color:${sortBy==='amt'?'#4f46e5':'#94a3b8'};">${fmtAmt(mData.total.amt)}</div>
         </div>
       </div>
       <div style="padding:16px 20px;">
@@ -1211,10 +1213,10 @@ function renderSalesDashboard() {
         <table style="width:100%; border-collapse:collapse; margin-top:16px;">
           <thead>
             <tr style="border-bottom:1px solid #f1f5f9;">
-              <th style="text-align:left; padding:6px 4px; font-size:10px; font-weight:600; color:#94a3b8; text-transform:uppercase; letter-spacing:0.4px; width:28px;">순위</th>
-              <th style="text-align:left; padding:6px 4px; font-size:10px; font-weight:600; color:#94a3b8; text-transform:uppercase; letter-spacing:0.4px;">${sortBy==='brand' ? '브랜드' : '상품'}</th>
-              <th style="text-align:right; padding:6px 4px; font-size:10px; font-weight:600; color:#94a3b8; text-transform:uppercase; letter-spacing:0.4px;">수량</th>
-              <th style="text-align:right; padding:6px 4px; font-size:10px; font-weight:600; color:#94a3b8; text-transform:uppercase; letter-spacing:0.4px;">거래금액</th>
+              <th style="text-align:left; padding:6px 4px; font-size:10px; font-weight:600; color:#94a3b8; letter-spacing:0.4px; width:28px;">순위</th>
+              <th style="text-align:left; padding:6px 4px; font-size:10px; font-weight:600; color:#94a3b8; letter-spacing:0.4px;">${sortBy==='brand' ? '브랜드' : '상품'}</th>
+              <th onclick="setSortBy('qty')" style="text-align:right; padding:6px 4px; font-size:10px; font-weight:600; color:${sortBy==='qty'?'#4f46e5':'#94a3b8'}; letter-spacing:0.4px; cursor:pointer; user-select:none;">수량${sortBy==='qty'?' ▼':''}</th>
+              <th onclick="setSortBy('amt')" style="text-align:right; padding:6px 4px; font-size:10px; font-weight:600; color:${sortBy==='amt'?'#4f46e5':'#94a3b8'}; letter-spacing:0.4px; cursor:pointer; user-select:none;">거래금액${sortBy==='amt'?' ▼':''}</th>
             </tr>
           </thead>
           <tbody>
@@ -2122,6 +2124,8 @@ let _insightText     = '';
 let _prodChangeData  = null;
 let _prodChangeTab   = 'rise';
 let _prodChangeExpanded = false;
+let _iumData = null;
+const _iumCharts = {};
 
 function destroyTrendChart(id) {
   if (trendCharts[id]) { trendCharts[id].destroy(); delete trendCharts[id]; }
@@ -2847,6 +2851,214 @@ function renderTrendMediaDetail(mediaKey) {
   renderGroupTable(_trendRows, _trendPrevRows, r=>String(col(r,'공급사')||'').trim(),  'trend-media-supplier');
   renderTimeseriesChart('trend-media-timeseries-chart', _trendRows, _trendPrevRows, _trendFromD, _trendToD);
   renderProductChanges(_trendRows, _trendPrevRows);
+  renderIumSection(mediaKey);
+}
+
+// ── 이음기프트 기업 분석 ──────────────────────────────
+
+function destroyIumChart(id) {
+  if (_iumCharts[id]) { _iumCharts[id].destroy(); delete _iumCharts[id]; }
+}
+
+function parseIumFile(file) {
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const wb = XLSX.read(e.target.result, { type:'array' });
+    const ws = wb.Sheets[wb.SheetNames[0]];
+    _iumData = XLSX.utils.sheet_to_json(ws, { defval:'' });
+    renderIumAnalysis();
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function renderIumSection(mediaKey) {
+  const sec = document.getElementById('trend-media-ium-section');
+  if (!sec) return;
+  if (mediaKey !== 'ium') { sec.style.display = 'none'; return; }
+  sec.style.display = '';
+  if (!_iumData) {
+    sec.innerHTML = `
+      <div style="background:white;border-radius:16px;box-shadow:0 1px 4px rgba(0,0,0,0.06);padding:20px 24px;margin-bottom:20px;font-family:'Noto Sans KR',sans-serif;">
+        <div style="font-size:13px;font-weight:600;color:#1e293b;margin-bottom:16px;">이음기프트 기업 분석</div>
+        <div style="border:1.5px dashed #e2e8f0;border-radius:10px;padding:28px;text-align:center;">
+          <div style="font-size:12px;color:#94a3b8;margin-bottom:14px;line-height:1.8;">이음 어드민에서 내보낸 주문 파일을 업로드하면<br>기업별 분석이 표시됩니다.</div>
+          <label style="display:inline-flex;align-items:center;gap:6px;padding:8px 18px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;cursor:pointer;font-size:12px;color:#475569;">
+            이음 파일 업로드
+            <input type="file" accept=".xlsx,.xls,.csv" onchange="parseIumFile(this.files[0])" style="display:none;">
+          </label>
+          <div style="font-size:10px;color:#cbd5e1;margin-top:10px;">iumOrderList 파일 형식을 지원합니다</div>
+        </div>
+      </div>`;
+  } else {
+    renderIumAnalysis();
+  }
+}
+
+function renderIumAnalysis() {
+  const sec = document.getElementById('trend-media-ium-section');
+  if (!sec || !_iumData) return;
+
+  const IUM_COLORS = ['#4f46e5','#10b981','#f59e0b','#ef4444','#8b5cf6','#06b6d4','#f97316','#ec4899','#14b8a6','#64748b'];
+
+  // 주문번호 → 브랜드 매핑 (현재 트렌드 데이터 기준)
+  const orderBrandMap = {};
+  (_trendRows || []).forEach(r => {
+    const on = String(col(r,'주문번호')||'').trim();
+    const br = String(col(r,'브랜드')||'').trim();
+    if (on && br) orderBrandMap[on] = br;
+  });
+
+  // 이음 데이터 집계
+  const companyBrand = {};
+  const purposeCount = {};
+  let totalAmt = 0;
+  const companies = new Set();
+
+  _iumData.forEach(r => {
+    const on      = String(col(r,'주문번호')||'').trim();
+    const company = String(col(r,'기업명')||'').trim() || '(기업명 없음)';
+    const purpose = String(col(r,'발송목적')||'').trim() || '기타';
+    const rawAmt  = String(col(r,'거래금액')||'0').replace(/,/g,'');
+    const amt     = parseFloat(rawAmt) || 0;
+    const brand   = orderBrandMap[on] || '(미매칭)';
+
+    companies.add(company);
+    totalAmt += amt;
+    purposeCount[purpose] = (purposeCount[purpose] || 0) + 1;
+    if (!companyBrand[company]) companyBrand[company] = {};
+    companyBrand[company][brand] = (companyBrand[company][brand] || 0) + amt;
+  });
+
+  const companyList = Object.keys(companyBrand).sort((a,b) =>
+    Object.values(companyBrand[b]).reduce((s,v)=>s+v,0) -
+    Object.values(companyBrand[a]).reduce((s,v)=>s+v,0)
+  );
+
+  const allBrands = [...new Set(Object.values(companyBrand).flatMap(m => Object.keys(m)))].sort();
+  const brandColorMap = {};
+  allBrands.forEach((b,i) => brandColorMap[b] = IUM_COLORS[i % IUM_COLORS.length]);
+
+  const purposes = Object.entries(purposeCount).sort((a,b)=>b[1]-a[1]);
+  const chartH   = Math.max(160, companyList.length * 34 + 50);
+
+  // 기업별 합계 (테이블용)
+  const companyTotal = c => Object.values(companyBrand[c]).reduce((s,v)=>s+v,0);
+  const companyTopBrand = c => {
+    const e = Object.entries(companyBrand[c]).sort((a,b)=>b[1]-a[1]);
+    return e.length ? e[0][0] : '-';
+  };
+
+  sec.innerHTML = `
+    <div style="background:white;border-radius:16px;box-shadow:0 1px 4px rgba(0,0,0,0.06);padding:20px 24px;margin-bottom:20px;font-family:'Noto Sans KR',sans-serif;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+        <div style="font-size:13px;font-weight:600;color:#1e293b;">이음기프트 기업 분석</div>
+        <label style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;cursor:pointer;font-size:10px;color:#94a3b8;">
+          파일 재업로드<input type="file" accept=".xlsx,.xls,.csv" onchange="parseIumFile(this.files[0])" style="display:none;">
+        </label>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;">
+        <div style="background:#f8fafc;border-radius:10px;padding:14px 16px;border:1px solid #f1f5f9;">
+          <div style="font-size:10px;color:#94a3b8;margin-bottom:6px;">참여 기업</div>
+          <div style="font-size:20px;font-weight:700;color:#1e293b;">${companies.size}<span style="font-size:12px;font-weight:400;color:#94a3b8;margin-left:2px;">곳</span></div>
+        </div>
+        <div style="background:#f8fafc;border-radius:10px;padding:14px 16px;border:1px solid #f1f5f9;">
+          <div style="font-size:10px;color:#94a3b8;margin-bottom:6px;">총 거래금액</div>
+          <div style="font-size:20px;font-weight:700;color:#1e293b;">${fmtAmt(totalAmt)}</div>
+        </div>
+        <div style="background:#f8fafc;border-radius:10px;padding:14px 16px;border:1px solid #f1f5f9;">
+          <div style="font-size:10px;color:#94a3b8;margin-bottom:6px;">발송목적 유형</div>
+          <div style="font-size:20px;font-weight:700;color:#1e293b;">${purposes.length}<span style="font-size:12px;font-weight:400;color:#94a3b8;margin-left:2px;">종</span></div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 260px;gap:20px;align-items:start;margin-bottom:20px;">
+        <div>
+          <div style="font-size:11px;font-weight:500;color:#94a3b8;margin-bottom:8px;">기업별 브랜드 현황</div>
+          <div style="position:relative;height:${chartH}px;"><canvas id="ium-brand-chart"></canvas></div>
+        </div>
+        <div>
+          <div style="font-size:11px;font-weight:500;color:#94a3b8;margin-bottom:8px;">발송목적 분포</div>
+          <div style="position:relative;height:200px;"><canvas id="ium-purpose-chart"></canvas></div>
+        </div>
+      </div>
+
+      <div style="border-top:1px solid #f1f5f9;padding-top:16px;">
+        <div style="font-size:11px;font-weight:500;color:#94a3b8;margin-bottom:8px;">기업별 상세</div>
+        <table style="width:100%;border-collapse:collapse;font-size:11px;">
+          <thead><tr style="background:#f8fafc;border-top:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0;">
+            <th style="padding:7px 12px;font-weight:400;color:#94a3b8;text-align:left;">기업명</th>
+            <th style="padding:7px 12px;font-weight:400;color:#94a3b8;text-align:left;">주요 브랜드</th>
+            <th style="padding:7px 12px;font-weight:400;color:#94a3b8;text-align:right;">거래금액</th>
+            <th style="padding:7px 12px;font-weight:400;color:#94a3b8;text-align:right;">브랜드 수</th>
+          </tr></thead>
+          <tbody>
+            ${companyList.map(c => `<tr style="border-bottom:1px solid #f1f5f9;">
+              <td style="padding:8px 12px;color:#1e293b;font-weight:500;">${c}</td>
+              <td style="padding:8px 12px;color:#475569;">${companyTopBrand(c)}</td>
+              <td style="padding:8px 12px;color:#475569;text-align:right;">${fmtAmt(companyTotal(c))}</td>
+              <td style="padding:8px 12px;color:#94a3b8;text-align:right;">${Object.keys(companyBrand[c]).length}</td>
+            </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>`;
+
+  // 스택 바 차트 (기업별 브랜드)
+  destroyIumChart('ium-brand-chart');
+  const barCtx = document.getElementById('ium-brand-chart');
+  if (barCtx) {
+    _iumCharts['ium-brand-chart'] = new Chart(barCtx, {
+      type: 'bar',
+      data: {
+        labels: companyList,
+        datasets: allBrands.map((brand, i) => ({
+          label: brand,
+          data: companyList.map(c => companyBrand[c][brand] || 0),
+          backgroundColor: IUM_COLORS[i % IUM_COLORS.length] + 'cc',
+          borderColor: IUM_COLORS[i % IUM_COLORS.length],
+          borderWidth: 0,
+          borderRadius: 2,
+        }))
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position:'top', labels:{ font:{family:'Noto Sans KR',size:10}, boxWidth:10, padding:8 } },
+          tooltip: { callbacks: { label: ctx => `${ctx.dataset.label}: ${fmtAmt(ctx.raw)}` } }
+        },
+        scales: {
+          x: { stacked:true, grid:{color:'#f1f5f9'}, ticks:{ font:{family:'Noto Sans KR',size:10}, callback:v=>fmtAmt(v) } },
+          y: { stacked:true, grid:{display:false}, ticks:{ font:{family:'Noto Sans KR',size:10} } }
+        }
+      }
+    });
+  }
+
+  // 도넛 차트 (발송목적)
+  destroyIumChart('ium-purpose-chart');
+  const donutCtx = document.getElementById('ium-purpose-chart');
+  if (donutCtx) {
+    _iumCharts['ium-purpose-chart'] = new Chart(donutCtx, {
+      type: 'doughnut',
+      data: {
+        labels: purposes.map(p=>p[0]),
+        datasets: [{ data: purposes.map(p=>p[1]), backgroundColor: IUM_COLORS.slice(0, purposes.length), borderWidth: 2, borderColor: 'white' }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '60%',
+        plugins: {
+          legend: { position:'bottom', labels:{ font:{family:'Noto Sans KR',size:10}, boxWidth:10, padding:6 } },
+          tooltip: { callbacks: { label: ctx => `${ctx.label}: ${ctx.raw}건` } }
+        }
+      }
+    });
+  }
 }
 
 

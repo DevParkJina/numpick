@@ -1233,9 +1233,9 @@ function renderSalesDashboard() {
                 const isBrandView = groupBy==='media' && sortBy==='brand';
                 const thBase = 'text-align:right; padding:6px 4px; font-size:10px; font-weight:600; letter-spacing:0.4px;';
                 if (isBrandView) {
-                  return `<th onclick="setBrandSortBy('qty')" style="${thBase} color:${_brandSortBy==='qty'?'#4f46e5':'#94a3b8'}; cursor:pointer; user-select:none;">수량${_brandSortBy==='qty'?' ▼':''}</th>
-                  <th onclick="setBrandSortBy('amt')" style="${thBase} color:${_brandSortBy==='amt'?'#4f46e5':'#94a3b8'}; cursor:pointer; user-select:none;">거래금액${_brandSortBy==='amt'?' ▼':''}</th>
-                  <th onclick="setBrandSortBy('avg')" style="${thBase} color:${_brandSortBy==='avg'?'#4f46e5':'#94a3b8'}; cursor:pointer; user-select:none;">평균단가${_brandSortBy==='avg'?' ▼':''}</th>`;
+                  return `<th onclick="setBrandSortBy('qty')" style="${thBase} color:${_brandSortBy==='qty'?'#4f46e5':'#94a3b8'}; cursor:pointer; user-select:none;">수량${_brandSortBy==='qty'?' ▲':''}</th>
+                  <th onclick="setBrandSortBy('amt')" style="${thBase} color:${_brandSortBy==='amt'?'#4f46e5':'#94a3b8'}; cursor:pointer; user-select:none;">거래금액${_brandSortBy==='amt'?' ▲':''}</th>
+                  <th onclick="setBrandSortBy('avg')" style="${thBase} color:${_brandSortBy==='avg'?'#4f46e5':'#94a3b8'}; cursor:pointer; user-select:none;">평균단가${_brandSortBy==='avg'?' ▲':''}</th>`;
                 }
                 return `<th style="${thBase} color:#94a3b8;">수량</th><th style="${thBase} color:#94a3b8;">거래금액</th>`;
               })()}
@@ -1276,7 +1276,13 @@ function renderSalesDashboard() {
 
     // Chart
     const labels = sorted.map(p => p.name.length > 9 ? p.name.slice(0,9)+'…' : p.name);
-    const vals   = sorted.map(p => sortBy === 'brand' ? p.qty : sortBy === 'qty' ? p.qty : p.amt);
+    const isBrandMode = sortBy === 'brand';
+    const chartMetric = isBrandMode ? _brandSortBy : sortBy;
+    const vals = sorted.map(p => {
+      if (chartMetric === 'amt') return p.amt;
+      if (chartMetric === 'avg') return p.qty > 0 ? Math.round(p.amt / p.qty) : 0;
+      return p.qty;
+    });
 
     charts[cid] = new Chart(document.getElementById(cid), {
       type: 'bar',
@@ -1298,15 +1304,17 @@ function renderSalesDashboard() {
           legend: { display: false },
           tooltip: {
             callbacks: {
-              label: ctx => sortBy==='qty'
+              label: ctx => chartMetric === 'qty'
                 ? ctx.raw.toLocaleString() + '개'
-                : fmtAmt(ctx.raw)
+                : chartMetric === 'avg'
+                  ? ctx.raw.toLocaleString() + '원'
+                  : fmtAmt(ctx.raw)
             }
           }
         },
         scales: {
           x: { grid: { display: false }, ticks: { font: { size: 9, family:'Noto Sans KR' }, maxRotation: 30 } },
-          y: { grid: { color: '#f8fafc' }, ticks: { font: { size: 9, family:'Noto Sans KR' }, callback: v => sortBy==='qty' ? v.toLocaleString() : fmtAmt(v) } }
+          y: { grid: { color: '#f8fafc' }, ticks: { font: { size: 9, family:'Noto Sans KR' }, callback: v => chartMetric === 'qty' ? v.toLocaleString() : chartMetric === 'avg' ? v.toLocaleString() + '원' : fmtAmt(v) } }
         }
       }
     });

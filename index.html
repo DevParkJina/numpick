@@ -129,7 +129,7 @@
           <button id="sort-amt" onclick="setSortBy('amt')" class="tog-btn off"
             style="padding:4px 14px; border-radius:6px; font-size:12px; font-weight:500; border:none; background:transparent;">금액순</button>
           <button id="sort-brand" onclick="setSortBy('brand')" class="tog-btn off"
-            style="padding:4px 14px; border-radius:6px; font-size:12px; font-weight:500; border:none; background:transparent;">매트릭스</button>
+            style="padding:4px 14px; border-radius:6px; font-size:12px; font-weight:500; border:none; background:transparent;">브랜드별</button>
         </div>
       </div>
 
@@ -826,6 +826,9 @@ function setGroupBy(type) {
   const btn = document.getElementById('group-' + type);
   btn.className = 'tog-btn on';
   btn.style.background = '';
+  const sortBrandBtn = document.getElementById('sort-brand');
+  if (sortBrandBtn) sortBrandBtn.style.display = type === 'media' ? '' : 'none';
+  if (type !== 'media' && sortBy === 'brand') setSortBy('qty');
   renderSalesDashboard();
 }
 
@@ -1215,8 +1218,11 @@ function renderSalesDashboard() {
             <tr style="border-bottom:1px solid #f1f5f9;">
               <th style="text-align:left; padding:6px 4px; font-size:10px; font-weight:600; color:#94a3b8; letter-spacing:0.4px; width:28px;">순위</th>
               <th style="text-align:left; padding:6px 4px; font-size:10px; font-weight:600; color:#94a3b8; letter-spacing:0.4px;">${sortBy==='brand' ? '브랜드' : '상품'}</th>
-              <th onclick="setSortBy('qty')" style="text-align:right; padding:6px 4px; font-size:10px; font-weight:600; color:${sortBy==='qty'?'#4f46e5':'#94a3b8'}; letter-spacing:0.4px; cursor:pointer; user-select:none;">수량${sortBy==='qty'?' ▼':''}</th>
-              <th onclick="setSortBy('amt')" style="text-align:right; padding:6px 4px; font-size:10px; font-weight:600; color:${sortBy==='amt'?'#4f46e5':'#94a3b8'}; letter-spacing:0.4px; cursor:pointer; user-select:none;">거래금액${sortBy==='amt'?' ▼':''}</th>
+              ${(()=>{
+                const isBrandView = groupBy==='media' && sortBy==='brand';
+                return `<th ${isBrandView?"onclick=\"setSortBy('qty')\" style=\"text-align:right; padding:6px 4px; font-size:10px; font-weight:600; color:#94a3b8; letter-spacing:0.4px; cursor:pointer; user-select:none;\"":"style=\"text-align:right; padding:6px 4px; font-size:10px; font-weight:600; color:#94a3b8; letter-spacing:0.4px;\""}>수량</th>
+                <th ${isBrandView?"onclick=\"setSortBy('amt')\" style=\"text-align:right; padding:6px 4px; font-size:10px; font-weight:600; color:#94a3b8; letter-spacing:0.4px; cursor:pointer; user-select:none;\"":"style=\"text-align:right; padding:6px 4px; font-size:10px; font-weight:600; color:#94a3b8; letter-spacing:0.4px;\""}>거래금액</th>`;
+              })()}
             </tr>
           </thead>
           <tbody>

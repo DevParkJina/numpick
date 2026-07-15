@@ -891,6 +891,15 @@ async function clearDB(tab) {
 
 function isLocked(tab) { return localStorage.getItem(_SK[tab].lock) === '1'; }
 
+const _TAB_LABELS = { sales:'매출', products:'상품', media:'매체' };
+window.addEventListener('beforeunload', e => {
+  const locked = Object.keys(_SK).filter(isLocked);
+  if (locked.length === 0) return;
+  const names = locked.map(t => _TAB_LABELS[t]).join(', ');
+  e.preventDefault();
+  e.returnValue = `[${names}] 탭이 잠김 상태입니다. 창을 닫겠습니까?`;
+});
+
 async function toggleLock(tab) {
   if (isLocked(tab)) {
     localStorage.removeItem(_SK[tab].lock);
@@ -2967,9 +2976,16 @@ function renderIumAnalysis() {
   });
 
   const companyList = Object.keys(companyData).sort((a,b) => companyData[b].amt - companyData[a].amt);
-  const allBrands   = [...new Set(companyList.flatMap(c => Object.keys(companyData[c].brands)))].sort();
   const purposes    = Object.entries(purposeCount).sort((a,b) => b[1]-a[1]);
-  const chartH      = Math.max(160, companyList.length * 36 + 60);
+
+  // 전체 브랜드별 거래금액 집계
+  const brandTotals = {};
+  companyList.forEach(c => {
+    Object.entries(companyData[c].brands).forEach(([b, a]) => {
+      brandTotals[b] = (brandTotals[b] || 0) + a;
+    });
+  });
+  const brandDist = Object.entries(brandTotals).sort((a,b) => b[1]-a[1]);
 
   const topBrand = c => {
     const e = Object.entries(companyData[c].brands).sort((a,b)=>b[1]-a[1]);
@@ -3041,14 +3057,14 @@ function renderIumAnalysis() {
           </div>`).join('')}
       </div>
 
-      <div style="display:grid;grid-template-columns:1fr 260px;gap:20px;align-items:start;margin-bottom:20px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start;margin-bottom:20px;">
         <div>
-          <div style="font-size:11px;font-weight:500;color:#94a3b8;margin-bottom:8px;">기업별 브랜드 현황</div>
-          <div style="position:relative;height:${chartH}px;"><canvas id="ium-brand-chart"></canvas></div>
+          <div style="font-size:11px;font-weight:500;color:#94a3b8;margin-bottom:8px;">브랜드 분포</div>
+          <div style="position:relative;height:220px;"><canvas id="ium-brand-chart"></canvas></div>
         </div>
         <div>
           <div style="font-size:11px;font-weight:500;color:#94a3b8;margin-bottom:8px;">발송목적 분포</div>
-          <div style="position:relative;height:200px;"><canvas id="ium-purpose-chart"></canvas></div>
+          <div style="position:relative;height:220px;"><canvas id="ium-purpose-chart"></canvas></div>
         </div>
       </div>
 
@@ -3086,29 +3102,18 @@ function renderIumAnalysis() {
   const barCtx = document.getElementById('ium-brand-chart');
   if (barCtx) {
     _iumCharts['ium-brand-chart'] = new Chart(barCtx, {
-      type: 'bar',
+      type: 'doughnut',
       data: {
-        labels: companyList,
-        datasets: allBrands.map((brand, i) => ({
-          label: brand,
-          data: companyList.map(c => companyData[c].brands[brand] || 0),
-          backgroundColor: IUM_COLORS[i % IUM_COLORS.length] + 'cc',
-          borderColor: IUM_COLORS[i % IUM_COLORS.length],
-          borderWidth: 0,
-          borderRadius: 2,
-        }))
+        labels: brandDist.map(b=>b[0]),
+        datasets: [{ data: brandDist.map(b=>b[1]), backgroundColor: IUM_COLORS.slice(0, brandDist.length), borderWidth: 2, borderColor: 'white' }]
       },
       options: {
-        indexAxis: 'y',
         responsive: true,
         maintainAspectRatio: false,
+        cutout: '60%',
         plugins: {
-          legend: { position:'top', labels:{ font:{family:'Noto Sans KR',size:10}, boxWidth:10, padding:8 } },
-          tooltip: { callbacks: { label: ctx => `${ctx.dataset.label}: ${fmtAmt(ctx.raw)}` } }
-        },
-        scales: {
-          x: { stacked:true, grid:{color:'#f1f5f9'}, ticks:{ font:{family:'Noto Sans KR',size:10}, callback:v=>fmtAmt(v) } },
-          y: { stacked:true, grid:{display:false}, ticks:{ font:{family:'Noto Sans KR',size:10} } }
+          legend: { position:'bottom', labels:{ font:{family:'Noto Sans KR',size:10}, boxWidth:10, padding:6 } },
+          tooltip: { callbacks: { label: ctx => `${ctx.label}: ${fmtAmt(ctx.raw)}` } }
         }
       }
     });

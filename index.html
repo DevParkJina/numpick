@@ -451,7 +451,7 @@
         </div>
         <div style="background:white; border-radius:16px; box-shadow:0 1px 4px rgba(0,0,0,0.06); padding:20px 24px;">
           <div style="font-size:14px; font-weight:700; color:#0f172a; margin-bottom:4px; font-family:'Noto Sans KR',sans-serif;">공급사 × 매체 매출 매트릭스</div>
-          <div style="font-size:11px; color:#94a3b8; margin-bottom:14px; font-family:'Noto Sans KR',sans-serif;">색상이 진할수록 매출 높음 (최대 10×8 표시)</div>
+          <div style="font-size:11px; color:#94a3b8; margin-bottom:14px; font-family:'Noto Sans KR',sans-serif;">색상이 진할수록 매출 높음 · 좌우 스크롤 가능</div>
           <div id="trend-all-matrix" style="overflow-x:auto;"></div>
         </div>
         <div style="background:white; border-radius:16px; box-shadow:0 1px 4px rgba(0,0,0,0.06); padding:20px 24px;">
@@ -2795,7 +2795,7 @@ function renderSupplierMediaMatrix(rows, elId) {
   const maxAmt=Math.max(...allAmts)||1;
   const bg=v=>v?`rgba(79,70,229,${Math.min((v/maxAmt*0.85+0.1),1).toFixed(2)})`:'#f8fafc';
   const tc=v=>v?(v/maxAmt>0.5?'white':'#1e293b'):'#cbd5e1';
-  el.innerHTML=`<div style="overflow-x:auto;"><table style="border-collapse:collapse;font-size:11px;font-family:'Noto Sans KR',sans-serif;min-width:100%;">
+  el.innerHTML=`<table style="border-collapse:collapse;font-size:11px;font-family:'Noto Sans KR',sans-serif;">
     <thead><tr>
       <th style="padding:6px 10px;text-align:left;background:#f8fafc;font-weight:600;color:#64748b;white-space:nowrap;border:1px solid #f1f5f9;">공급사 \\ 매체</th>
       ${topM.map(m=>`<th style="padding:6px 8px;text-align:center;background:#f8fafc;font-weight:600;color:#64748b;white-space:nowrap;border:1px solid #f1f5f9;min-width:72px;">${MEDIA_MAP[m]||m}</th>`).join('')}
@@ -2804,7 +2804,7 @@ function renderSupplierMediaMatrix(rows, elId) {
       <td style="padding:6px 10px;font-weight:600;color:#374151;white-space:nowrap;background:#f8fafc;border:1px solid #f1f5f9;">${s}</td>
       ${topM.map(m=>{const v=(matrix[s]||{})[m]||0;return`<td style="padding:6px 8px;text-align:center;background:${bg(v)};color:${tc(v)};border:1px solid #f1f5f9;font-weight:${v?'600':'400'};">${v?fmtAmt(v):'-'}</td>`;}).join('')}
     </tr>`).join('')}</tbody>
-  </table></div>`;
+  </table>`;
 }
 
 // ── 매체 상세 보기 ──────────────────────────────────────

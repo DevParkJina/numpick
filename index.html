@@ -2815,6 +2815,13 @@ function renderTrendMediaDetail(mediaKey) {
   const activeBrands = new Set(_trendRows.map(r=>String(col(r,'브랜드')||'').trim()).filter(Boolean)).size;
   const activeProds  = new Set(_trendRows.map(r=>String(col(r,'상품코드','공급사상품코드')||'').trim()).filter(Boolean)).size;
 
+  // 해당 매체 전체 누적 (기간 필터 없음)
+  const allMediaRows = salesData.filter(r =>
+    !String(col(r,'주문상태')||'').trim().includes('취소') &&
+    String(col(r,'매체명')||'').trim() === mediaKey
+  );
+  const totalMediaAgg = aggRows(allMediaRows);
+
   const titleEl = document.getElementById('trend-media-card-title');
   if (titleEl) titleEl.textContent = `${mediaName} · 분석 요약`;
 
@@ -2829,25 +2836,28 @@ function renderTrendMediaDetail(mediaKey) {
     const kpiAvgUnit  = cAgg.orders ? Math.round(cAgg.amt / cAgg.orders) : 0;
     const kpiPAvgUnit = pAgg && pAgg.orders ? Math.round(pAgg.amt / pAgg.orders) : 0;
     const kpiItems = [
-      { label:'거래금액',     val:fmtAmt(cAgg.amt),                   prev:pAgg?fmtAmt(pAgg.amt):null,                   chg:pAgg?fmtChange(cAgg.amt,pAgg.amt):'' },
-      { label:'주문건수',     val:cAgg.orders.toLocaleString()+'건',   prev:pAgg?pAgg.orders.toLocaleString()+'건':null,  chg:pAgg?fmtChange(cAgg.orders,pAgg.orders):'' },
-      { label:'판매수량',     val:cAgg.qty.toLocaleString()+'개',      prev:pAgg?pAgg.qty.toLocaleString()+'개':null,     chg:pAgg?fmtChange(cAgg.qty,pAgg.qty):'' },
-      { label:'판매 상품 수',  val:activeProds+'개',                   prev:null,                                         chg:'' },
-      { label:'주요 브랜드',   val:activeBrands+'개',                  prev:null,                                         chg:'' },
-      { label:'평균주문단가',  val:kpiAvgUnit?fmtAmt(kpiAvgUnit):'-',  prev:kpiPAvgUnit?fmtAmt(kpiPAvgUnit):null,        chg:kpiPAvgUnit?fmtChange(kpiAvgUnit,kpiPAvgUnit):'' },
+      { label:'거래금액',       val:cAgg.amt.toLocaleString()+'원',                                                        prev:pAgg?pAgg.amt.toLocaleString()+'원':null,      chg:pAgg?fmtChange(cAgg.amt,pAgg.amt):'' },
+      { label:'주문건수',       val:cAgg.orders.toLocaleString()+'건',   prev:pAgg?pAgg.orders.toLocaleString()+'건':null,  chg:pAgg?fmtChange(cAgg.orders,pAgg.orders):'' },
+      { label:'판매수량',       val:cAgg.qty.toLocaleString()+'개',      prev:pAgg?pAgg.qty.toLocaleString()+'개':null,     chg:pAgg?fmtChange(cAgg.qty,pAgg.qty):'' },
+      { label:'판매 상품 수',   val:activeProds+'개',                    prev:null,                                         chg:'' },
+      { label:'주요 브랜드',    val:activeBrands+'개',                   prev:null,                                         chg:'' },
+      { label:'평균주문단가',   val:kpiAvgUnit?fmtAmt(kpiAvgUnit):'-',   prev:kpiPAvgUnit?fmtAmt(kpiPAvgUnit):null,        chg:kpiPAvgUnit?fmtChange(kpiAvgUnit,kpiPAvgUnit):'' },
+      { label:'전체 누적금액',  val:fmtAmt(totalMediaAgg.amt),           full:totalMediaAgg.amt.toLocaleString()+'원',      prev:null,                                         chg:'', total:true },
     ];
     const kpiCell = (k, last) => {
-      let c = `<div style="padding:18px 20px;${last ? '' : ' border-right:1px solid #f1f5f9;'}">`;
-      c += `<div style="font-size:11px;font-weight:600;color:#94a3b8;margin-bottom:10px;letter-spacing:0.2px;">${k.label}</div>`;
+      let c = `<div style="padding:18px 20px;${last ? '' : ' border-right:1px solid #f1f5f9;'}${k.total ? ' background:#f8faff;' : ''}">`;
+      c += `<div style="font-size:11px;font-weight:600;color:${k.total?'#6366f1':'#94a3b8'};margin-bottom:10px;letter-spacing:0.2px;">${k.label}</div>`;
       c += `<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:${k.prev ? '7' : '0'}px;">`;
       c += `<div style="font-size:20px;font-weight:800;color:#0f172a;letter-spacing:-0.5px;line-height:1;">${k.val}</div>`;
       if (k.chg) c += k.chg;
       c += `</div>`;
+      if (k.full) c += `<div style="font-size:10px;color:#94a3b8;margin-top:4px;">${k.full}</div>`;
       if (k.prev) c += `<div style="font-size:11px;color:#94a3b8;">비교 ${k.prev}</div>`;
+      if (k.total) c += `<div style="font-size:10px;color:#94a3b8;margin-top:2px;">${totalMediaAgg.orders.toLocaleString()}건 · ${totalMediaAgg.qty.toLocaleString()}개</div>`;
       c += `</div>`;
       return c;
     };
-    const kpiHtml = `<div style="display:grid;grid-template-columns:repeat(6,1fr);background:white;border-radius:12px;margin-bottom:18px;overflow:hidden;border:1px solid #e2e8f0;">${kpiItems.map((k,i)=>kpiCell(k,i===5)).join('')}</div>`;
+    const kpiHtml = `<div style="display:grid;grid-template-columns:repeat(7,1fr);background:white;border-radius:12px;margin-bottom:18px;overflow:hidden;border:1px solid #e2e8f0;">${kpiItems.map((k,i)=>kpiCell(k,i===6)).join('')}</div>`;
 
     let html = `<div style="font-size:11px; color:#94a3b8; font-weight:500; margin-bottom:14px; padding-bottom:12px; border-bottom:1px solid #f1f5f9;">${periodStr}</div>${kpiHtml}`;
     let plain = `[${mediaName}] ${periodStr}`;

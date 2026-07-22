@@ -379,19 +379,47 @@
     <!-- 공통 설정 -->
     <div class="card" style="margin-bottom:14px;">
       <div style="font-size:13px; font-weight:700; color:#0f172a; margin-bottom:12px;">⚙️ 공통 설정 <span style="font-size:11px; font-weight:400; color:#94a3b8;">— 붙여넣은 전체 상품에 동일 적용</span></div>
-      <div style="display:grid; grid-template-columns:1fr 1fr auto auto auto; gap:10px 14px; align-items:end;">
+      <!-- 1행: 공급사 / 공급수수료 / 카테고리 -->
         <div style="display:flex; flex-direction:column; gap:4px;">
-          <label style="font-size:11px; font-weight:600; color:#64748b;">공급사</label>
-          <input type="text" id="rm-c-supplier" placeholder="공급사명" style="padding:8px 10px; border:1px solid #e2e8f0; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:12px; outline:none;">
+          <label style="font-size:11px; font-weight:600; color:#64748b;">공급사 <span style="font-size:10px; font-weight:400; color:#94a3b8;">(영문)</span></label>
+          <input type="text" id="rm-c-supplier" placeholder="KT / MST / MNC" style="padding:8px 10px; border:1px solid #e2e8f0; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:12px; outline:none;">
         </div>
         <div style="display:flex; flex-direction:column; gap:4px;">
-          <label style="font-size:11px; font-weight:600; color:#64748b;">공급수수료 <span style="color:#ef4444;">*</span></label>
-          <div style="display:flex; gap:6px;">
-            <button id="rm-fee-disc" onclick="rmSetFee(-2)" style="flex:1; padding:8px 6px; border-radius:7px; border:1px solid #10b981; background:#dcfce7; color:#065f46; font-family:'Noto Sans KR',sans-serif; font-size:12px; font-weight:600; cursor:pointer;">할인 −2%</button>
-            <button id="rm-fee-chrg" onclick="rmSetFee(2)" style="flex:1; padding:8px 6px; border-radius:7px; border:1px solid #e2e8f0; background:white; color:#64748b; font-family:'Noto Sans KR',sans-serif; font-size:12px; font-weight:600; cursor:pointer;">과금 +2%</button>
-            <input type="number" id="rm-fee-custom" placeholder="직접%" step="0.1" oninput="rmSetFeeCustom()" style="width:72px; padding:8px 8px; border:1px solid #e2e8f0; border-radius:7px; font-family:'Noto Sans KR',sans-serif; font-size:12px; outline:none;">
+          <label style="font-size:11px; font-weight:600; color:#64748b;">공급수수료 % <span style="font-size:10px; font-weight:400; color:#94a3b8;">음수=할인 양수=과금</span></label>
+          <div style="display:flex; align-items:center; gap:6px;">
+            <input type="number" id="rm-fee-input" step="0.1" placeholder="예: -2"
+              oninput="_rmFee=parseFloat(this.value)||0; rmUpdateFeeHint(this.value);"
+              style="flex:1; padding:8px 10px; border:1px solid #e2e8f0; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:13px; font-weight:700; outline:none; text-align:center;">
+            <span id="rm-fee-hint" style="font-size:11px; color:#94a3b8; white-space:nowrap;"></span>
           </div>
         </div>
+        <div style="display:flex; flex-direction:column; gap:4px;">
+          <label style="font-size:11px; font-weight:600; color:#64748b;">카테고리 <span style="font-size:10px; font-weight:400; color:#94a3b8;">(공급사 데이터에 없을 때 적용)</span></label>
+          <select id="rm-c-category" style="padding:8px 10px; border:1px solid #e2e8f0; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:12px; outline:none; background:white;">
+            <option value="">— 선택 안 함 —</option>
+            <option value="문화/생활">문화/생활</option>
+            <option value="배송상품">배송상품</option>
+            <option value="버거 / 아이스크림">버거 / 아이스크림</option>
+            <option value="베이커리 / 도넛">베이커리 / 도넛</option>
+            <option value="베이커리/도넛">베이커리/도넛</option>
+            <option value="빵/아이스크림">빵/아이스크림</option>
+            <option value="상품권">상품권</option>
+            <option value="상품권 / 마트">상품권 / 마트</option>
+            <option value="상품권/마트">상품권/마트</option>
+            <option value="아이스크림">아이스크림</option>
+            <option value="영화 / 외식">영화 / 외식</option>
+            <option value="외식">외식</option>
+            <option value="치킨 / 피자">치킨 / 피자</option>
+            <option value="치킨/피자">치킨/피자</option>
+            <option value="커피 / 음료">커피 / 음료</option>
+            <option value="커피/음료">커피/음료</option>
+            <option value="패스트푸드">패스트푸드</option>
+            <option value="편의점">편의점</option>
+          </select>
+        </div>
+      </div>
+      <!-- 2행: 상품상태 / 보증타입 / 배송상품여부 -->
+      <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px 14px;">
         <div style="display:flex; flex-direction:column; gap:4px;">
           <label style="font-size:11px; font-weight:600; color:#64748b;">상품상태</label>
           <select id="rm-c-status" style="padding:8px 10px; border:1px solid #e2e8f0; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:12px; outline:none; background:white;">
@@ -414,6 +442,10 @@
             <option value="Y">Y</option>
           </select>
         </div>
+      </div>
+      <div style="margin-top:10px; display:flex; flex-direction:column; gap:4px;">
+        <label style="font-size:11px; font-weight:600; color:#64748b;">유의사항 <span style="font-size:10px; font-weight:400; color:#94a3b8;">— 모든 상품 상품설명에 자동 추가 (선택)</span></label>
+        <textarea id="rm-c-notes" rows="2" placeholder="사용 시 유의사항, 교환 조건 등 공통 안내 문구" style="width:100%; padding:8px 10px; border:1px solid #e2e8f0; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:12px; outline:none; resize:vertical; line-height:1.5;"></textarea>
       </div>
     </div>
 
@@ -497,11 +529,12 @@
           <input type="number" id="rp-c-discount" placeholder="ex. 20.00" step="0.01" style="padding:8px 10px; border:1px solid #e2e8f0; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:12px; outline:none;">
         </div>
         <div style="display:flex; flex-direction:column; gap:4px;">
-          <label style="font-size:11px; font-weight:600; color:#64748b;">공급수수료 <span style="font-size:10px; color:#94a3b8;">(새 붙여넣기 시 공급단가 계산용)</span></label>
-          <div style="display:flex; gap:6px;">
-            <button id="rp-fee-disc" onclick="rpSetFee(-2)" style="flex:1; padding:8px 6px; border-radius:7px; border:1px solid #10b981; background:#dcfce7; color:#065f46; font-family:'Noto Sans KR',sans-serif; font-size:12px; font-weight:600; cursor:pointer;">할인 −2%</button>
-            <button id="rp-fee-chrg" onclick="rpSetFee(2)" style="flex:1; padding:8px 6px; border-radius:7px; border:1px solid #e2e8f0; background:white; color:#64748b; font-family:'Noto Sans KR',sans-serif; font-size:12px; font-weight:600; cursor:pointer;">과금 +2%</button>
-            <input type="number" id="rp-fee-custom" placeholder="직접%" step="0.1" oninput="rpSetFeeCustom()" style="width:72px; padding:8px 8px; border:1px solid #e2e8f0; border-radius:7px; font-family:'Noto Sans KR',sans-serif; font-size:12px; outline:none;">
+          <label style="font-size:11px; font-weight:600; color:#64748b;">공급수수료 % <span style="font-size:10px; font-weight:400; color:#94a3b8;">새 붙여넣기 시 공급단가 계산용 · 음수=할인 양수=과금</span></label>
+          <div style="display:flex; align-items:center; gap:6px;">
+            <input type="number" id="rp-fee-input" step="0.1" placeholder="예: -2"
+              oninput="_rpFee=parseFloat(this.value)||0; rpUpdateFeeHint(this.value);"
+              style="flex:1; padding:8px 10px; border:1px solid #e2e8f0; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:13px; font-weight:700; outline:none; text-align:center;">
+            <span id="rp-fee-hint" style="font-size:11px; color:#94a3b8; white-space:nowrap;"></span>
           </div>
         </div>
       </div>
@@ -3425,8 +3458,8 @@ function toggleIumCompany(ci) {
 // ════════════════════════════════════════════════════
 const _rmMocheList = [];
 const _rpMediaList = [];
-let   _rmFee = -2;
-let   _rpFee = -2;
+let   _rmFee = 0;
+let   _rpFee = 0;
 let   _rpSource = 'moche';
 
 function switchRegTab(t) {
@@ -3439,22 +3472,27 @@ function switchRegTab(t) {
   if (t === 'media') rpUpdateMocheSummary();
 }
 
-// ── 공급수수료 버튼 (모체/매체 공용)
-function _setFeeButtons(prefix, v) {
-  const disc = document.getElementById(prefix + '-fee-disc');
-  const chrg = document.getElementById(prefix + '-fee-chrg');
-  if (!disc) return;
-  disc.style.cssText = v <= 0
-    ? 'flex:1; padding:8px 6px; border-radius:7px; border:1px solid #10b981; background:#dcfce7; color:#065f46; font-family:\'Noto Sans KR\',sans-serif; font-size:12px; font-weight:600; cursor:pointer;'
-    : 'flex:1; padding:8px 6px; border-radius:7px; border:1px solid #e2e8f0; background:white; color:#64748b; font-family:\'Noto Sans KR\',sans-serif; font-size:12px; font-weight:600; cursor:pointer;';
-  chrg.style.cssText = v > 0
-    ? 'flex:1; padding:8px 6px; border-radius:7px; border:1px solid #ef4444; background:#fee2e2; color:#991b1b; font-family:\'Noto Sans KR\',sans-serif; font-size:12px; font-weight:600; cursor:pointer;'
-    : 'flex:1; padding:8px 6px; border-radius:7px; border:1px solid #e2e8f0; background:white; color:#64748b; font-family:\'Noto Sans KR\',sans-serif; font-size:12px; font-weight:600; cursor:pointer;';
+// ── 공급수수료 힌트 (모체 탭)
+function rmUpdateFeeHint(raw) {
+  const v = parseFloat(raw);
+  const el = document.getElementById('rm-fee-hint');
+  if (!el) return;
+  if (isNaN(v) || raw === '' || raw == null) { el.textContent = ''; return; }
+  _rmFee = v;
+  if (v < 0) { el.style.color = '#10b981'; el.textContent = `할인 ${v}%`; }
+  else if (v > 0) { el.style.color = '#ef4444'; el.textContent = `과금 +${v}%`; }
+  else { el.style.color = '#94a3b8'; el.textContent = '수수료 없음'; }
 }
-function rmSetFee(v) { _rmFee = v; document.getElementById('rm-fee-custom').value = ''; _setFeeButtons('rm', v); }
-function rmSetFeeCustom() { const v=parseFloat(document.getElementById('rm-fee-custom').value); if(!isNaN(v)){_rmFee=v; _setFeeButtons('rm',v);} }
-function rpSetFee(v) { _rpFee = v; document.getElementById('rp-fee-custom').value = ''; _setFeeButtons('rp', v); }
-function rpSetFeeCustom() { const v=parseFloat(document.getElementById('rp-fee-custom').value); if(!isNaN(v)){_rpFee=v; _setFeeButtons('rp',v);} }
+function rpUpdateFeeHint(raw) {
+  const v = parseFloat(raw);
+  const el = document.getElementById('rp-fee-hint');
+  if (!el) return;
+  if (isNaN(v) || raw === '' || raw == null) { el.textContent = ''; return; }
+  _rpFee = v;
+  if (v < 0) { el.style.color = '#10b981'; el.textContent = `할인 ${v}%`; }
+  else if (v > 0) { el.style.color = '#ef4444'; el.textContent = `과금 +${v}%`; }
+  else { el.style.color = '#94a3b8'; el.textContent = '수수료 없음'; }
+}
 
 // ── 공급사별 포맷 정의
 const _SUPPLIER_FORMATS = {
@@ -3473,7 +3511,7 @@ const _SUPPLIER_FORMATS = {
       '유효일수':'유효일', '유효일':'유효일',
       '공급사코드':'공급사발급코드',
       '교환처':'교환처',
-      '특이사항':'상품설명', '비고':'상품설명',
+      '특이사항':'상품설명', '비고':'상품설명', '유의사항':'상품설명',
     },
     skipRow: cells => false,
     postProcess: item => {
@@ -3491,6 +3529,7 @@ const _SUPPLIER_FORMATS = {
       '판매가':'소비자가', '판매가격':'소비자가',
       '유효기간':'유효일', '유효일수':'유효일',
       '교환처명':'교환처', '교환처':'교환처',
+      '유의사항':'상품설명', '비고':'상품설명', '특이사항':'상품설명',
     },
     skipRow: cells => false,
     postProcess: item => {
@@ -3507,11 +3546,12 @@ const _SUPPLIER_FORMATS = {
     detect: hdrs => hdrs.some(h => /제휴사명/.test(h) || /발급코드/.test(h)),
     // 헤더 부분 매칭 (발급코드 (발급일 포함) 처리)
     mapFn: hdr => {
-      if (/제휴사명/.test(hdr))   return '_brand';
-      if (/상품명|제품명/.test(hdr)) return '상품명';
-      if (/상품가격|판매가격|상품가격/.test(hdr)) return '소비자가';
-      if (/발급코드/.test(hdr))   return '공급사발급코드';
-      if (/상품코드/.test(hdr))   return '공급사상품코드';
+      if (/제휴사명/.test(hdr))              return '_brand';
+      if (/상품명|제품명/.test(hdr))          return '상품명';
+      if (/상품가격|판매가격/.test(hdr))      return '소비자가';
+      if (/발급코드/.test(hdr))              return '공급사발급코드';
+      if (/상품코드/.test(hdr))              return '공급사상품코드';
+      if (/유의사항|비고|안내|특이사항/.test(hdr)) return '상품설명';
       return null;
     },
     // "30일" 등의 서브헤더 행 건너뜀
@@ -3561,14 +3601,22 @@ function _parseTSV(text, forceFmt) {
     if (mapped) colIdx[mapped] = i;
   });
 
+  // 서브헤더에서 유효일 추출 (MNC는 "30일" 등을 서브헤더 행에 적음)
+  let subHeaderValid = '';
   const rows = [];
   for (let i = 1; i < lines.length; i++) {
     const cells = lines[i].split('\t').map(c => c.trim());
-    if (fmt.skipRow(cells)) continue;
+    if (fmt.skipRow(cells)) {
+      if (!subHeaderValid) {
+        const v = cells.find(c => /^\d+일$/.test(c));
+        if (v) subHeaderValid = v;
+      }
+      continue;
+    }
     const get = key => colIdx[key] !== undefined ? (cells[colIdx[key]] || '') : '';
     rows.push({ _get: get, _brand: get('_brand') });
   }
-  return { rows, fmtKey, fmtName: fmt.name, fmtColor: fmt.color, fmtTextColor: fmt.textColor };
+  return { rows, fmtKey, fmtName: fmt.name, fmtColor: fmt.color, fmtTextColor: fmt.textColor, subHeaderValid };
 }
 
 // ── 모체코드 파싱
@@ -3581,36 +3629,43 @@ function rmParsePaste() {
 
   // 감지된 포맷 배지 표시
   const badge = document.getElementById('rm-fmt-badge');
-  badge.textContent = parsed.fmtName + ' 포맷 감지됨';
+  const validHint = parsed.subHeaderValid ? ` · 유효일 ${parsed.subHeaderValid} 자동 적용` : '';
+  badge.textContent = parsed.fmtName + ' 포맷 감지됨' + validHint;
   badge.style.background  = parsed.fmtColor;
   badge.style.color       = parsed.fmtTextColor;
   badge.style.display     = 'inline-block';
 
-  const fmt      = _SUPPLIER_FORMATS[parsed.fmtKey];
-  const supplier = document.getElementById('rm-c-supplier').value.trim();
-  const status   = document.getElementById('rm-c-status').value;
-  const warranty = document.getElementById('rm-c-warranty').value;
-  const delivery = document.getElementById('rm-c-delivery').value;
-  const fee      = _rmFee;
+  const fmt           = _SUPPLIER_FORMATS[parsed.fmtKey];
+  const supplier      = document.getElementById('rm-c-supplier').value.trim();
+  const status        = document.getElementById('rm-c-status').value;
+  const warranty      = document.getElementById('rm-c-warranty').value;
+  const delivery      = document.getElementById('rm-c-delivery').value;
+  const notes         = (document.getElementById('rm-c-notes').value || '').trim();
+  const categoryCommon= document.getElementById('rm-c-category').value;
+  const feeRaw        = document.getElementById('rm-fee-input').value;
+  _rmFee = parseFloat(feeRaw) || 0;
+  const fee           = _rmFee;
   let added = 0;
 
   parsed.rows.forEach(({ _get, _brand }) => {
     const code = _get('공급사상품코드');
     if (!code) return;
     const rawName = _get('상품명');
+    const baseDesc = _get('상품설명');
+    const 상품설명 = [baseDesc, notes].filter(Boolean).join('\n');
     const item = {
       '공급사상품코드': code,
       '공급사발급코드': _get('공급사발급코드'),
       '교환처':         _get('교환처'),
-      '카테고리':       _get('카테고리'),
+      '카테고리':       _get('카테고리') || categoryCommon,
       '상품명':         _stripBrand(rawName, _brand) || rawName,
       '상품정상가':     _parsePrice(_get('상품정상가')) || _parsePrice(_get('소비자가')),
       '소비자가':       _parsePrice(_get('소비자가'))   || _parsePrice(_get('상품정상가')),
-      '유효일':         _get('유효일'),
+      '유효일':         _get('유효일') || parsed.subHeaderValid || '',
       'RM':             '',
       '상품상태':       status,
       '판매타입':       _get('판매타입'),
-      '상품설명':       _get('상품설명'),
+      '상품설명':       상품설명,
       '공급사':         supplier,
       '보증타입':       warranty,
       '공급가':         0,
@@ -3735,9 +3790,11 @@ function rpParsePaste() {
   badge.style.color      = parsed.fmtTextColor;
   badge.style.display    = 'inline-block';
 
-  const fmt = _SUPPLIER_FORMATS[parsed.fmtKey];
-  const fee = _rpFee;
-  let added = 0;
+  const fmt    = _SUPPLIER_FORMATS[parsed.fmtKey];
+  const feeEl  = document.getElementById('rp-fee-input');
+  if (feeEl) _rpFee = parseFloat(feeEl.value) || 0;
+  const fee    = _rpFee;
+  let added    = 0;
   parsed.rows.forEach(({ _get, _brand }) => {
     const code = _get('공급사상품코드');
     if (!code) return;

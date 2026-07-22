@@ -3809,8 +3809,8 @@ function _showPreviewModal() {
     if (fmt.postProcess) fmt.postProcess(item);
     // 교환처 없으면 브랜드로 폴백 (모든 포맷 공통)
     if (!item['교환처'] && _brand) item['교환처'] = _brand;
-    const consumer = item['소비자가'] || item['상품정상가'] || 0;
-    item['공급가'] = Math.round(consumer * (1 + fee / 100));
+    const consumer = item['소비자가'] || 0;
+    item['공급가'] = consumer * (1 + fee / 100);
     delete item['_brand'];
     previewItems.push(item);
   }

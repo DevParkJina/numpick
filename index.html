@@ -358,7 +358,7 @@
 <div id="panel-register" class="tab-panel" style="display:none; max-width:1160px; margin:0 auto; padding:28px 24px;">
 
   <div style="background:#f0f9ff; border:1px solid #bae6fd; border-radius:10px; padding:12px 16px; font-size:12px; color:#0369a1; margin-bottom:18px;">
-    💡 업체 상품 정보를 입력하면 <strong>newGoodsSample.xlsx</strong> / <strong>newPlatformGoodsSample.xlsx</strong> 형식으로 자동 생성됩니다. 공급가·판매가는 자동 계산됩니다.
+    💡 공급사 Excel에서 데이터를 복사(Ctrl+C) 후 붙여넣기(Ctrl+V)하면 한 번에 처리됩니다. 지원 컬럼: <strong>NO / 브랜드명 / 상품유형 / 카테고리 / 상품코드 / 상품명 / 판매가격 / 소비자가격 / 유효일수 / 공급사코드 / 특이사항</strong>
   </div>
 
   <!-- 서브탭 -->
@@ -375,125 +375,82 @@
 
   <!-- ── 모체코드 등록 ── -->
   <div id="reg-panel-moche">
-    <div class="card" style="margin-bottom:18px;">
-      <div style="font-size:14px; font-weight:700; color:#0f172a; margin-bottom:16px;">📋 모체상품 정보 입력</div>
 
-      <div style="font-size:10px; font-weight:700; color:#94a3b8; letter-spacing:0.8px; text-transform:uppercase; margin-bottom:10px; padding-bottom:6px; border-bottom:1px solid #f1f5f9;">핵심 정보</div>
-      <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:10px 14px;">
-        <div style="display:flex; flex-direction:column; gap:4px;">
-          <label style="font-size:11px; font-weight:600; color:#64748b;">공급사상품코드 <span style="color:#ef4444;">*</span></label>
-          <input type="text" id="rm-code" placeholder="공급사 제공 코드" style="padding:8px 10px; border:1px solid #e2e8f0; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:12px; outline:none;">
-        </div>
-        <div style="display:flex; flex-direction:column; gap:4px;">
-          <label style="font-size:11px; font-weight:600; color:#64748b;">공급사발급코드 <span style="font-size:10px; color:#94a3b8; font-weight:400;">(머니콘만)</span></label>
-          <input type="text" id="rm-issue-code" placeholder="해당시만 입력" style="padding:8px 10px; border:1px solid #e2e8f0; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:12px; outline:none;">
-        </div>
+    <!-- 공통 설정 -->
+    <div class="card" style="margin-bottom:14px;">
+      <div style="font-size:13px; font-weight:700; color:#0f172a; margin-bottom:12px;">⚙️ 공통 설정 <span style="font-size:11px; font-weight:400; color:#94a3b8;">— 붙여넣은 전체 상품에 동일 적용</span></div>
+      <div style="display:grid; grid-template-columns:1fr 1fr auto auto auto; gap:10px 14px; align-items:end;">
         <div style="display:flex; flex-direction:column; gap:4px;">
           <label style="font-size:11px; font-weight:600; color:#64748b;">공급사</label>
-          <input type="text" id="rm-supplier" placeholder="공급사명" style="padding:8px 10px; border:1px solid #e2e8f0; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:12px; outline:none;">
-        </div>
-        <div style="display:flex; flex-direction:column; gap:4px;">
-          <label style="font-size:11px; font-weight:600; color:#64748b;">교환처</label>
-          <input type="text" id="rm-exchange" placeholder="교환처" style="padding:8px 10px; border:1px solid #e2e8f0; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:12px; outline:none;">
-        </div>
-
-        <div style="display:flex; flex-direction:column; gap:4px; grid-column:span 2;">
-          <label style="font-size:11px; font-weight:600; color:#64748b;">상품명 <span style="color:#ef4444;">*</span> <span style="font-size:10px; color:#94a3b8; font-weight:400;">브랜드명 포함시 아래에 입력</span></label>
-          <input type="text" id="rm-name" placeholder="상품명 입력" oninput="rmUpdateNamePreview()" style="padding:8px 10px; border:1px solid #e2e8f0; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:12px; outline:none;">
-          <div id="rm-name-preview" style="font-size:10px; color:#6366f1; font-weight:600; display:none;"></div>
-        </div>
-        <div style="display:flex; flex-direction:column; gap:4px;">
-          <label style="font-size:11px; font-weight:600; color:#64748b;">브랜드명 <span style="font-size:10px; color:#94a3b8; font-weight:400;">입력시 자동 제거</span></label>
-          <input type="text" id="rm-brand" placeholder="브랜드명" oninput="rmUpdateNamePreview()" style="padding:8px 10px; border:1px solid #e2e8f0; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:12px; outline:none;">
-        </div>
-        <div style="display:flex; flex-direction:column; gap:4px;">
-          <label style="font-size:11px; font-weight:600; color:#64748b;">카테고리</label>
-          <input type="text" id="rm-category" placeholder="카테고리" style="padding:8px 10px; border:1px solid #e2e8f0; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:12px; outline:none;">
-        </div>
-
-        <div style="display:flex; flex-direction:column; gap:4px;">
-          <label style="font-size:11px; font-weight:600; color:#64748b;">상품정상가 <span style="color:#ef4444;">*</span></label>
-          <input type="number" id="rm-normal-price" placeholder="10000" oninput="rmOnNormalPrice()" style="padding:8px 10px; border:1px solid #e2e8f0; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:12px; outline:none;">
-        </div>
-        <div style="display:flex; flex-direction:column; gap:4px;">
-          <label style="font-size:11px; font-weight:600; color:#64748b;">소비자가 <span style="font-size:10px; color:#10b981; background:#d1fae5; padding:1px 5px; border-radius:3px; font-weight:500;">정상가 자동반영</span></label>
-          <input type="number" id="rm-consumer-price" placeholder="자동입력" oninput="rmOnConsumerPrice()" style="padding:8px 10px; border:1px solid #e2e8f0; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:12px; outline:none;">
+          <input type="text" id="rm-c-supplier" placeholder="공급사명" style="padding:8px 10px; border:1px solid #e2e8f0; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:12px; outline:none;">
         </div>
         <div style="display:flex; flex-direction:column; gap:4px;">
           <label style="font-size:11px; font-weight:600; color:#64748b;">공급수수료 <span style="color:#ef4444;">*</span></label>
-          <div style="display:flex; gap:6px; align-items:center;">
+          <div style="display:flex; gap:6px;">
             <button id="rm-fee-disc" onclick="rmSetFee(-2)" style="flex:1; padding:8px 6px; border-radius:7px; border:1px solid #10b981; background:#dcfce7; color:#065f46; font-family:'Noto Sans KR',sans-serif; font-size:12px; font-weight:600; cursor:pointer;">할인 −2%</button>
             <button id="rm-fee-chrg" onclick="rmSetFee(2)" style="flex:1; padding:8px 6px; border-radius:7px; border:1px solid #e2e8f0; background:white; color:#64748b; font-family:'Noto Sans KR',sans-serif; font-size:12px; font-weight:600; cursor:pointer;">과금 +2%</button>
-            <input type="number" id="rm-fee-custom" placeholder="직접" step="0.1" oninput="rmSetFeeCustom()" style="width:70px; padding:8px 8px; border:1px solid #e2e8f0; border-radius:7px; font-family:'Noto Sans KR',sans-serif; font-size:12px; outline:none;">
+            <input type="number" id="rm-fee-custom" placeholder="직접%" step="0.1" oninput="rmSetFeeCustom()" style="width:72px; padding:8px 8px; border:1px solid #e2e8f0; border-radius:7px; font-family:'Noto Sans KR',sans-serif; font-size:12px; outline:none;">
           </div>
         </div>
         <div style="display:flex; flex-direction:column; gap:4px;">
-          <label style="font-size:11px; font-weight:600; color:#64748b;">공급가 <span style="font-size:10px; color:#10b981; background:#d1fae5; padding:1px 5px; border-radius:3px; font-weight:500;">자동계산</span></label>
-          <input type="text" id="rm-supply-price" readonly placeholder="자동계산" style="padding:8px 10px; border:1px solid #86efac; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:12px; background:#f0fdf4; color:#166534; font-weight:700; outline:none; cursor:default;">
-          <div id="rm-fee-formula" style="font-size:10px; color:#10b981; font-weight:500; margin-top:1px;"></div>
-        </div>
-      </div>
-
-      <div style="font-size:10px; font-weight:700; color:#94a3b8; letter-spacing:0.8px; text-transform:uppercase; margin:18px 0 10px; padding-bottom:6px; border-bottom:1px solid #f1f5f9;">부가 정보</div>
-      <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:10px 14px;">
-        <div style="display:flex; flex-direction:column; gap:4px;">
-          <label style="font-size:11px; font-weight:600; color:#64748b;">유효일</label>
-          <input type="text" id="rm-valid" placeholder="365일 / 2026-12-31" style="padding:8px 10px; border:1px solid #e2e8f0; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:12px; outline:none;">
-        </div>
-        <div style="display:flex; flex-direction:column; gap:4px;">
-          <label style="font-size:11px; font-weight:600; color:#64748b;">RM</label>
-          <input type="text" id="rm-rm" placeholder="" style="padding:8px 10px; border:1px solid #e2e8f0; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:12px; outline:none;">
-        </div>
-        <div style="display:flex; flex-direction:column; gap:4px;">
           <label style="font-size:11px; font-weight:600; color:#64748b;">상품상태</label>
-          <select id="rm-status" style="padding:8px 10px; border:1px solid #e2e8f0; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:12px; outline:none; background:white;">
+          <select id="rm-c-status" style="padding:8px 10px; border:1px solid #e2e8f0; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:12px; outline:none; background:white;">
             <option value="1">1 - 판매중</option>
             <option value="2">2 - 판매중단</option>
             <option value="5">5 - 공급사중단</option>
           </select>
         </div>
         <div style="display:flex; flex-direction:column; gap:4px;">
-          <label style="font-size:11px; font-weight:600; color:#64748b;">판매타입</label>
-          <input type="text" id="rm-sale-type" placeholder="" style="padding:8px 10px; border:1px solid #e2e8f0; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:12px; outline:none;">
-        </div>
-        <div style="display:flex; flex-direction:column; gap:4px;">
           <label style="font-size:11px; font-weight:600; color:#64748b;">보증타입</label>
-          <select id="rm-warranty" style="padding:8px 10px; border:1px solid #e2e8f0; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:12px; outline:none; background:white;">
+          <select id="rm-c-warranty" style="padding:8px 10px; border:1px solid #e2e8f0; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:12px; outline:none; background:white;">
             <option value="1">1 - 사용분</option>
             <option value="2">2 - 발행분</option>
           </select>
         </div>
         <div style="display:flex; flex-direction:column; gap:4px;">
           <label style="font-size:11px; font-weight:600; color:#64748b;">배송상품여부</label>
-          <select id="rm-delivery" style="padding:8px 10px; border:1px solid #e2e8f0; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:12px; outline:none; background:white;">
+          <select id="rm-c-delivery" style="padding:8px 10px; border:1px solid #e2e8f0; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:12px; outline:none; background:white;">
             <option value="N">N</option>
             <option value="Y">Y</option>
           </select>
         </div>
-        <div style="display:flex; flex-direction:column; gap:4px;">
-          <label style="font-size:11px; font-weight:600; color:#94a3b8;">판매시작일 <span style="font-size:10px; font-weight:400;">(비워두기)</span></label>
-          <input type="text" id="rm-sale-start" placeholder="(비움)" style="padding:8px 10px; border:1px solid #e2e8f0; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:12px; color:#94a3b8; outline:none;">
-        </div>
-        <div style="display:flex; flex-direction:column; gap:4px;">
-          <label style="font-size:11px; font-weight:600; color:#94a3b8;">판매종료일 <span style="font-size:10px; font-weight:400;">(비워두기)</span></label>
-          <input type="text" id="rm-sale-end" placeholder="(비움)" style="padding:8px 10px; border:1px solid #e2e8f0; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:12px; color:#94a3b8; outline:none;">
-        </div>
-        <div style="display:flex; flex-direction:column; gap:4px; grid-column:span 4;">
-          <label style="font-size:11px; font-weight:600; color:#64748b;">상품설명</label>
-          <textarea id="rm-desc" rows="2" placeholder="상품 설명 (선택사항)" style="padding:8px 10px; border:1px solid #e2e8f0; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:12px; outline:none; resize:vertical;"></textarea>
-        </div>
-      </div>
-
-      <div style="display:flex; gap:10px; margin-top:14px;">
-        <button onclick="rmAddMoche()" style="padding:9px 18px; background:#6366f1; color:white; border:none; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:13px; font-weight:600; cursor:pointer;">+ 상품 추가</button>
-        <button onclick="rmClearMoche()" style="padding:9px 18px; background:transparent; border:1px solid #e2e8f0; color:#64748b; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:13px; font-weight:600; cursor:pointer;">초기화</button>
       </div>
     </div>
 
+    <!-- 붙여넣기 영역 -->
+    <div class="card" style="margin-bottom:14px;">
+      <div style="font-size:13px; font-weight:700; color:#0f172a; margin-bottom:6px;">📋 데이터 붙여넣기</div>
+      <div style="display:flex; gap:8px; margin-bottom:10px; align-items:center; flex-wrap:wrap;">
+        <div style="display:flex; align-items:center; gap:6px;">
+          <span style="font-size:11px; font-weight:600; color:#64748b; white-space:nowrap;">공급사 포맷</span>
+          <select id="rm-supplier-fmt" style="padding:7px 10px; border:1px solid #e2e8f0; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:12px; outline:none; background:white; font-weight:600;">
+            <option value="auto">🔍 자동 감지</option>
+            <option value="KT">KT</option>
+            <option value="MST">MST (미스틱)</option>
+            <option value="MNC">MNC</option>
+          </select>
+        </div>
+        <div id="rm-fmt-badge" style="display:none; font-size:11px; font-weight:700; padding:4px 10px; border-radius:20px; background:#dbeafe; color:#1d4ed8;"></div>
+        <div style="flex:1; font-size:11px; color:#94a3b8; line-height:1.5;">
+          헤더 포함 전체 행 선택 → Ctrl+C → 아래 Ctrl+V · 브랜드명 포함 시 상품명 자동 제거 · 판매시작일·종료일 자동 비움
+        </div>
+      </div>
+      <textarea id="rm-paste-area" rows="10"
+        placeholder="여기에 붙여넣기 (Ctrl+V)&#10;&#10;· KT 예시: NO  브랜드명  상품유형  카테고리  상품코드  상품명  판매가격  소비자가격  유효일수  공급사코드  특이사항&#10;· MST 예시: 미스틱상품코드  상품명  판매가  유효기간  교환처명&#10;· MNC 예시: 제휴사명  상품명  상품가격  발급코드(발급일 포함)  상품코드"
+        style="width:100%; padding:10px 12px; border:1px solid #e2e8f0; border-radius:8px; font-family:'Noto Sans KR',monospace; font-size:12px; outline:none; resize:vertical; line-height:1.5; color:#374151;"></textarea>
+      <div style="display:flex; gap:10px; margin-top:10px; align-items:center;">
+        <button onclick="rmParsePaste()" style="padding:9px 22px; background:#6366f1; color:white; border:none; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:13px; font-weight:600; cursor:pointer;">파싱하기 →</button>
+        <button onclick="document.getElementById('rm-paste-area').value=''; document.getElementById('rm-fmt-badge').style.display='none';" style="padding:9px 16px; background:transparent; border:1px solid #e2e8f0; color:#64748b; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:13px; font-weight:600; cursor:pointer;">초기화</button>
+        <div id="rm-parse-hint" style="font-size:12px; color:#94a3b8; flex:1;"></div>
+      </div>
+    </div>
+
+    <!-- 등록 목록 -->
     <div class="card">
       <div style="font-size:14px; font-weight:700; color:#0f172a; margin-bottom:14px; display:flex; align-items:center; gap:8px;">
         등록 목록 <span id="rm-moche-count" style="background:#6366f1; color:white; border-radius:20px; padding:1px 8px; font-size:11px; font-weight:700;">0</span>
         <div style="flex:1;"></div>
+        <button onclick="_rmMocheList.length=0; rmRenderMoche();" style="padding:7px 14px; background:transparent; border:1px solid #fca5a5; color:#dc2626; border-radius:7px; font-family:'Noto Sans KR',sans-serif; font-size:12px; font-weight:600; cursor:pointer; margin-right:8px;">전체 삭제</button>
         <button onclick="rmExportMoche()" style="padding:8px 16px; background:#10b981; color:white; border:none; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:12px; font-weight:600; cursor:pointer;">📥 newGoodsSample.xlsx</button>
       </div>
       <div style="overflow-x:auto;">
@@ -510,14 +467,14 @@
               <th style="padding:8px 12px; text-align:left; font-size:11px; color:#64748b; white-space:nowrap;">공급수수료</th>
               <th style="padding:8px 12px; text-align:left; font-size:11px; color:#64748b; white-space:nowrap;">공급가</th>
               <th style="padding:8px 12px; text-align:left; font-size:11px; color:#64748b; white-space:nowrap;">공급사</th>
+              <th style="padding:8px 12px; text-align:left; font-size:11px; color:#64748b; white-space:nowrap;">유효일</th>
               <th style="padding:8px 12px; text-align:left; font-size:11px; color:#64748b; white-space:nowrap;">상태</th>
               <th style="padding:8px 12px; text-align:left; font-size:11px; color:#64748b; white-space:nowrap;">보증</th>
-              <th style="padding:8px 12px; text-align:left; font-size:11px; color:#64748b; white-space:nowrap;">배송</th>
               <th style="padding:8px 12px;"></th>
             </tr>
           </thead>
           <tbody id="rm-moche-tbody">
-            <tr><td colspan="14" style="text-align:center; padding:36px; color:#94a3b8; font-size:13px;">추가된 상품이 없습니다</td></tr>
+            <tr><td colspan="14" style="text-align:center; padding:36px; color:#94a3b8; font-size:13px;">붙여넣기 후 파싱하기를 클릭하세요</td></tr>
           </tbody>
         </table>
       </div>
@@ -526,65 +483,89 @@
 
   <!-- ── 매체상품 등록 ── -->
   <div id="reg-panel-media" style="display:none;">
-    <div class="card" style="margin-bottom:18px;">
-      <div style="font-size:14px; font-weight:700; color:#0f172a; margin-bottom:16px;">📡 매체상품 정보 입력</div>
-      <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:10px 14px;">
-        <div style="display:flex; flex-direction:column; gap:4px;">
-          <label style="font-size:11px; font-weight:600; color:#64748b;">공급사상품코드 <span style="color:#ef4444;">*</span></label>
-          <input type="text" id="rp-code" placeholder="모체코드" oninput="rpFillFromMoche()" style="padding:8px 10px; border:1px solid #e2e8f0; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:12px; outline:none;">
-        </div>
-        <div style="display:flex; flex-direction:column; gap:4px;">
-          <label style="font-size:11px; font-weight:600; color:#64748b;">공급사발급코드</label>
-          <input type="text" id="rp-issue-code" placeholder="자동입력" style="padding:8px 10px; border:1px solid #e2e8f0; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:12px; outline:none;">
-        </div>
-        <div style="display:flex; flex-direction:column; gap:4px;">
-          <label style="font-size:11px; font-weight:600; color:#64748b;">공급단가 <span style="color:#ef4444;">*</span></label>
-          <input type="number" id="rp-supply" placeholder="공급가" oninput="rpCalcSalePrice()" style="padding:8px 10px; border:1px solid #e2e8f0; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:12px; outline:none;">
-        </div>
-        <div style="display:flex; flex-direction:column; gap:4px;">
-          <label style="font-size:11px; font-weight:600; color:#64748b;">상품명</label>
-          <input type="text" id="rp-name" placeholder="자동입력 또는 직접입력" style="padding:8px 10px; border:1px solid #e2e8f0; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:12px; outline:none;">
-        </div>
+
+    <!-- 공통 설정 -->
+    <div class="card" style="margin-bottom:14px;">
+      <div style="font-size:13px; font-weight:700; color:#0f172a; margin-bottom:12px;">⚙️ 공통 설정</div>
+      <div style="display:grid; grid-template-columns:1fr 160px 1fr; gap:14px; align-items:end;">
         <div style="display:flex; flex-direction:column; gap:4px;">
           <label style="font-size:11px; font-weight:600; color:#64748b;">매체명 <span style="color:#ef4444;">*</span></label>
-          <input type="text" id="rp-media" placeholder="매체명" style="padding:8px 10px; border:1px solid #e2e8f0; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:12px; outline:none;">
+          <input type="text" id="rp-c-media" placeholder="ex. 카카오, 네이버" style="padding:8px 10px; border:1px solid #e2e8f0; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:12px; outline:none;">
         </div>
         <div style="display:flex; flex-direction:column; gap:4px;">
           <label style="font-size:11px; font-weight:600; color:#64748b;">할인율 <span style="color:#ef4444;">*</span></label>
-          <input type="number" id="rp-discount" placeholder="20.00" step="0.01" oninput="rpCalcSalePrice()" style="padding:8px 10px; border:1px solid #e2e8f0; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:12px; outline:none;">
+          <input type="number" id="rp-c-discount" placeholder="ex. 20.00" step="0.01" style="padding:8px 10px; border:1px solid #e2e8f0; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:12px; outline:none;">
         </div>
         <div style="display:flex; flex-direction:column; gap:4px;">
-          <label style="font-size:11px; font-weight:600; color:#64748b;">판매가 <span style="font-size:10px; color:#10b981; background:#d1fae5; padding:1px 5px; border-radius:3px; font-weight:500;">자동계산</span></label>
-          <input type="text" id="rp-sale-price" readonly placeholder="자동계산" style="padding:8px 10px; border:1px solid #86efac; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:12px; background:#f0fdf4; color:#166534; font-weight:700; outline:none; cursor:default;">
-          <div id="rp-formula" style="font-size:10px; color:#10b981; font-weight:500; margin-top:1px;"></div>
-        </div>
-        <div style="display:flex; flex-direction:column; gap:4px; align-self:center; padding-top:12px;">
-          <div style="background:#f8fafc; border-radius:8px; padding:10px 12px; font-size:11px; color:#64748b; line-height:1.8;">
-            <strong style="color:#0f172a;">판매가 = 공급단가 × (1 − 할인율%)</strong><br>
-            ex. 10,400 × (1−20%) = 8,320
+          <label style="font-size:11px; font-weight:600; color:#64748b;">공급수수료 <span style="font-size:10px; color:#94a3b8;">(새 붙여넣기 시 공급단가 계산용)</span></label>
+          <div style="display:flex; gap:6px;">
+            <button id="rp-fee-disc" onclick="rpSetFee(-2)" style="flex:1; padding:8px 6px; border-radius:7px; border:1px solid #10b981; background:#dcfce7; color:#065f46; font-family:'Noto Sans KR',sans-serif; font-size:12px; font-weight:600; cursor:pointer;">할인 −2%</button>
+            <button id="rp-fee-chrg" onclick="rpSetFee(2)" style="flex:1; padding:8px 6px; border-radius:7px; border:1px solid #e2e8f0; background:white; color:#64748b; font-family:'Noto Sans KR',sans-serif; font-size:12px; font-weight:600; cursor:pointer;">과금 +2%</button>
+            <input type="number" id="rp-fee-custom" placeholder="직접%" step="0.1" oninput="rpSetFeeCustom()" style="width:72px; padding:8px 8px; border:1px solid #e2e8f0; border-radius:7px; font-family:'Noto Sans KR',sans-serif; font-size:12px; outline:none;">
           </div>
         </div>
       </div>
-      <div style="display:flex; gap:10px; margin-top:14px;">
-        <button onclick="rpAddMedia()" style="padding:9px 18px; background:#6366f1; color:white; border:none; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:13px; font-weight:600; cursor:pointer;">+ 상품 추가</button>
-        <button onclick="rpClearMedia()" style="padding:9px 18px; background:transparent; border:1px solid #e2e8f0; color:#64748b; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:13px; font-weight:600; cursor:pointer;">초기화</button>
+    </div>
+
+    <!-- 데이터 소스 -->
+    <div class="card" style="margin-bottom:14px;">
+      <div style="font-size:13px; font-weight:700; color:#0f172a; margin-bottom:12px;">📂 데이터 소스</div>
+      <div style="display:flex; gap:8px; margin-bottom:14px;">
+        <button id="rp-src-moche" onclick="rpSetSource('moche')"
+          style="padding:8px 18px; border-radius:8px; font-size:12px; font-weight:600; border:none; cursor:pointer; background:#6366f1; color:white; font-family:'Noto Sans KR',sans-serif;">
+          모체 목록 사용
+        </button>
+        <button id="rp-src-paste" onclick="rpSetSource('paste')"
+          style="padding:8px 18px; border-radius:8px; font-size:12px; font-weight:600; border:1px solid #e2e8f0; cursor:pointer; background:transparent; color:#64748b; font-family:'Noto Sans KR',sans-serif;">
+          새로 붙여넣기
+        </button>
+      </div>
+
+      <!-- 모체 목록 사용 -->
+      <div id="rp-from-moche-wrap">
+        <div id="rp-moche-summary" style="background:#f8fafc; border-radius:8px; padding:12px 16px; font-size:12px; color:#64748b; line-height:1.8;">
+          모체코드 등록 탭에서 먼저 상품을 파싱해 주세요.
+        </div>
+        <div style="margin-top:10px;">
+          <button onclick="rpGenerateFromMoche()" style="padding:9px 22px; background:#6366f1; color:white; border:none; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:13px; font-weight:600; cursor:pointer;">생성하기 →</button>
+        </div>
+      </div>
+
+      <!-- 새로 붙여넣기 -->
+      <div id="rp-paste-wrap" style="display:none;">
+        <div style="display:flex; gap:8px; margin-bottom:8px; align-items:center;">
+          <span style="font-size:11px; font-weight:600; color:#64748b; white-space:nowrap;">공급사 포맷</span>
+          <select id="rp-supplier-fmt" style="padding:7px 10px; border:1px solid #e2e8f0; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:12px; outline:none; background:white; font-weight:600;">
+            <option value="auto">🔍 자동 감지</option>
+            <option value="KT">KT</option>
+            <option value="MST">MST (미스틱)</option>
+            <option value="MNC">MNC</option>
+          </select>
+          <div id="rp-fmt-badge" style="display:none; font-size:11px; font-weight:700; padding:4px 10px; border-radius:20px; background:#dbeafe; color:#1d4ed8;"></div>
+        </div>
+        <textarea id="rp-paste-area" rows="10"
+          placeholder="여기에 붙여넣기 (Ctrl+V)"
+          style="width:100%; padding:10px 12px; border:1px solid #e2e8f0; border-radius:8px; font-family:'Noto Sans KR',monospace; font-size:12px; outline:none; resize:vertical; line-height:1.5;"></textarea>
+        <div style="display:flex; gap:10px; margin-top:10px; align-items:center;">
+          <button onclick="rpParsePaste()" style="padding:9px 22px; background:#6366f1; color:white; border:none; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:13px; font-weight:600; cursor:pointer;">파싱하기 →</button>
+          <button onclick="document.getElementById('rp-paste-area').value=''; document.getElementById('rp-fmt-badge').style.display='none';" style="padding:9px 16px; background:transparent; border:1px solid #e2e8f0; color:#64748b; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:13px; font-weight:600; cursor:pointer;">초기화</button>
+          <div id="rp-parse-hint" style="font-size:12px; color:#94a3b8; flex:1;"></div>
+        </div>
       </div>
     </div>
 
-    <div style="background:#fffbeb; border:1px solid #fde68a; border-radius:10px; padding:14px 18px; font-size:12px; color:#78350f; margin-bottom:18px;">
-      <div style="font-size:13px; font-weight:700; color:#92400e; margin-bottom:8px;">📌 엑셀 업로드 후 처리 순서</div>
-      <ol style="line-height:2.2; padding-left:18px;">
-        <li>아래 <strong>newPlatformGoodsSample.xlsx</strong> 다운로드 후 시스템 업로드</li>
-        <li><strong>자체답례 / 플랫폼상품관리</strong> 메뉴 이동</li>
-        <li>등록된 <strong>매체상품코드</strong> 확인 (모체코드 아님)</li>
-        <li>수정 클릭 → <strong>매체 판매가</strong> (할인 적용 금액) 입력</li>
-      </ol>
+    <!-- 처리 순서 -->
+    <div style="background:#fffbeb; border:1px solid #fde68a; border-radius:10px; padding:12px 18px; font-size:12px; color:#78350f; margin-bottom:14px;">
+      <strong style="font-size:12px; color:#92400e;">📌 업로드 후:</strong>
+      자체답례/플랫폼상품관리 → 등록된 <strong>매체상품코드</strong>(모체 아님) 확인 → 수정 → <strong>매체 판매가</strong> 입력
     </div>
 
+    <!-- 등록 목록 -->
     <div class="card">
       <div style="font-size:14px; font-weight:700; color:#0f172a; margin-bottom:14px; display:flex; align-items:center; gap:8px;">
         등록 목록 <span id="rp-media-count" style="background:#6366f1; color:white; border-radius:20px; padding:1px 8px; font-size:11px; font-weight:700;">0</span>
         <div style="flex:1;"></div>
+        <button onclick="_rpMediaList.length=0; rpRenderMedia();" style="padding:7px 14px; background:transparent; border:1px solid #fca5a5; color:#dc2626; border-radius:7px; font-family:'Noto Sans KR',sans-serif; font-size:12px; font-weight:600; cursor:pointer; margin-right:8px;">전체 삭제</button>
         <button onclick="rpExportMedia()" style="padding:8px 16px; background:#10b981; color:white; border:none; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:12px; font-weight:600; cursor:pointer;">📥 newPlatformGoodsSample.xlsx</button>
       </div>
       <div style="overflow-x:auto;">
@@ -602,7 +583,7 @@
             </tr>
           </thead>
           <tbody id="rp-media-tbody">
-            <tr><td colspan="8" style="text-align:center; padding:36px; color:#94a3b8; font-size:13px;">추가된 상품이 없습니다</td></tr>
+            <tr><td colspan="8" style="text-align:center; padding:36px; color:#94a3b8; font-size:13px;">데이터를 소스에서 생성하거나 붙여넣기 후 파싱하세요</td></tr>
           </tbody>
         </table>
       </div>
@@ -3445,6 +3426,8 @@ function toggleIumCompany(ci) {
 const _rmMocheList = [];
 const _rpMediaList = [];
 let   _rmFee = -2;
+let   _rpFee = -2;
+let   _rpSource = 'moche';
 
 function switchRegTab(t) {
   document.getElementById('reg-panel-moche').style.display = t === 'moche' ? 'block' : 'none';
@@ -3453,139 +3436,232 @@ function switchRegTab(t) {
   const off = 'padding:8px 20px; border-radius:8px; font-size:13px; font-weight:600; border:1px solid #e2e8f0; cursor:pointer; background:transparent; color:#64748b; font-family:\'Noto Sans KR\',sans-serif;';
   document.getElementById('reg-tab-moche').style.cssText = t === 'moche' ? on : off;
   document.getElementById('reg-tab-media').style.cssText = t === 'media' ? on : off;
+  if (t === 'media') rpUpdateMocheSummary();
 }
 
-function rmSetFee(v) {
-  _rmFee = v;
-  document.getElementById('rm-fee-custom').value = '';
-  const disc = document.getElementById('rm-fee-disc');
-  const chrg = document.getElementById('rm-fee-chrg');
-  disc.style.cssText = v === -2
+// ── 공급수수료 버튼 (모체/매체 공용)
+function _setFeeButtons(prefix, v) {
+  const disc = document.getElementById(prefix + '-fee-disc');
+  const chrg = document.getElementById(prefix + '-fee-chrg');
+  if (!disc) return;
+  disc.style.cssText = v <= 0
     ? 'flex:1; padding:8px 6px; border-radius:7px; border:1px solid #10b981; background:#dcfce7; color:#065f46; font-family:\'Noto Sans KR\',sans-serif; font-size:12px; font-weight:600; cursor:pointer;'
     : 'flex:1; padding:8px 6px; border-radius:7px; border:1px solid #e2e8f0; background:white; color:#64748b; font-family:\'Noto Sans KR\',sans-serif; font-size:12px; font-weight:600; cursor:pointer;';
-  chrg.style.cssText = v === 2
+  chrg.style.cssText = v > 0
     ? 'flex:1; padding:8px 6px; border-radius:7px; border:1px solid #ef4444; background:#fee2e2; color:#991b1b; font-family:\'Noto Sans KR\',sans-serif; font-size:12px; font-weight:600; cursor:pointer;'
     : 'flex:1; padding:8px 6px; border-radius:7px; border:1px solid #e2e8f0; background:white; color:#64748b; font-family:\'Noto Sans KR\',sans-serif; font-size:12px; font-weight:600; cursor:pointer;';
-  rmCalcSupplyPrice();
 }
-function rmSetFeeCustom() {
-  const v = parseFloat(document.getElementById('rm-fee-custom').value);
-  if (!isNaN(v)) { _rmFee = v; rmCalcSupplyPrice(); }
-}
-function rmOnNormalPrice() {
-  const np = document.getElementById('rm-normal-price').value;
-  const cp = document.getElementById('rm-consumer-price');
-  if (!cp.dataset.edited) cp.value = np;
-  rmCalcSupplyPrice();
-}
-function rmOnConsumerPrice() {
-  document.getElementById('rm-consumer-price').dataset.edited = '1';
-  rmCalcSupplyPrice();
-}
-function rmCalcSupplyPrice() {
-  const consumer = parseFloat(document.getElementById('rm-consumer-price').value)
-                || parseFloat(document.getElementById('rm-normal-price').value) || 0;
-  if (consumer && !isNaN(_rmFee)) {
-    const supply = Math.round(consumer * (1 + _rmFee / 100));
-    document.getElementById('rm-supply-price').value = supply.toLocaleString() + '원';
-    document.getElementById('rm-fee-formula').textContent =
-      `${consumer.toLocaleString()} × (1 ${_rmFee >= 0 ? '+' : ''}${_rmFee}%) = ${supply.toLocaleString()}`;
-  } else {
-    document.getElementById('rm-supply-price').value = '';
-    document.getElementById('rm-fee-formula').textContent = '';
+function rmSetFee(v) { _rmFee = v; document.getElementById('rm-fee-custom').value = ''; _setFeeButtons('rm', v); }
+function rmSetFeeCustom() { const v=parseFloat(document.getElementById('rm-fee-custom').value); if(!isNaN(v)){_rmFee=v; _setFeeButtons('rm',v);} }
+function rpSetFee(v) { _rpFee = v; document.getElementById('rp-fee-custom').value = ''; _setFeeButtons('rp', v); }
+function rpSetFeeCustom() { const v=parseFloat(document.getElementById('rp-fee-custom').value); if(!isNaN(v)){_rpFee=v; _setFeeButtons('rp',v);} }
+
+// ── 공급사별 포맷 정의
+const _SUPPLIER_FORMATS = {
+  KT: {
+    name: 'KT',
+    color: '#dbeafe', textColor: '#1d4ed8',
+    detect: hdrs => hdrs.some(h => /^NO$/i.test(h) || /브랜드명/.test(h) || /^공급사코드$/.test(h)),
+    map: {
+      '브랜드명':'_brand', '브랜드':'_brand',
+      '상품유형':'판매타입', '유형':'판매타입',
+      '카테고리':'카테고리',
+      '상품코드':'공급사상품코드', '공급사상품코드':'공급사상품코드',
+      '상품명':'상품명', '제품명':'상품명',
+      '판매가격':'상품정상가', '정상가':'상품정상가',
+      '소비자가격':'소비자가',
+      '유효일수':'유효일', '유효일':'유효일',
+      '공급사코드':'공급사발급코드',
+      '교환처':'교환처',
+      '특이사항':'상품설명', '비고':'상품설명',
+    },
+    skipRow: cells => false,
+    postProcess: item => {
+      if (!item['소비자가']) item['소비자가'] = item['상품정상가'];
+      if (!item['상품정상가']) item['상품정상가'] = item['소비자가'];
+    },
+  },
+  MST: {
+    name: 'MST (미스틱)',
+    color: '#d1fae5', textColor: '#065f46',
+    detect: hdrs => hdrs.some(h => /미스틱상품코드/i.test(h) || /교환처명/.test(h)),
+    map: {
+      '미스틱상품코드':'공급사상품코드',
+      '상품명':'상품명', '제품명':'상품명',
+      '판매가':'소비자가', '판매가격':'소비자가',
+      '유효기간':'유효일', '유효일수':'유효일',
+      '교환처명':'교환처', '교환처':'교환처',
+    },
+    skipRow: cells => false,
+    postProcess: item => {
+      item['상품정상가'] = item['소비자가'];
+      // "D/30" → "30일" 변환
+      if (item['유효일'] && /^[A-Za-z]\/(\d+)/.test(item['유효일'])) {
+        item['유효일'] = item['유효일'].replace(/^[A-Za-z]\/(\d+).*/, '$1일');
+      }
+    },
+  },
+  MNC: {
+    name: 'MNC',
+    color: '#fce7f3', textColor: '#9d174d',
+    detect: hdrs => hdrs.some(h => /제휴사명/.test(h) || /발급코드/.test(h)),
+    // 헤더 부분 매칭 (발급코드 (발급일 포함) 처리)
+    mapFn: hdr => {
+      if (/제휴사명/.test(hdr))   return '_brand';
+      if (/상품명|제품명/.test(hdr)) return '상품명';
+      if (/상품가격|판매가격|상품가격/.test(hdr)) return '소비자가';
+      if (/발급코드/.test(hdr))   return '공급사발급코드';
+      if (/상품코드/.test(hdr))   return '공급사상품코드';
+      return null;
+    },
+    // "30일" 등의 서브헤더 행 건너뜀
+    skipRow: cells => cells.every(c => /^\s*(\d+일)?\s*$/.test(c)),
+    postProcess: item => {
+      item['상품정상가'] = item['소비자가'];
+      if (item['_brand']) item['교환처'] = item['_brand'];
+      // [브랜드명] 형태도 상품명에서 제거
+      if (item['_brand'] && item['상품명']) {
+        item['상품명'] = item['상품명']
+          .replace(new RegExp(`\\[${item['_brand']}\\]\\s*`, 'g'), '')
+          .replace(new RegExp(item['_brand'], 'g'), '')
+          .trim().replace(/^[\s\-_\[\]]+|[\s\-_\[\]]+$/g, '').trim();
+      }
+    },
+  },
+};
+
+function _detectSupplierFmt(headers, forceFmt) {
+  if (forceFmt && forceFmt !== 'auto' && _SUPPLIER_FORMATS[forceFmt]) return forceFmt;
+  for (const key of ['MST','MNC','KT']) {
+    if (_SUPPLIER_FORMATS[key].detect(headers)) return key;
   }
+  return 'KT'; // fallback
 }
-function rmUpdateNamePreview() {
-  const name  = document.getElementById('rm-name').value.trim();
-  const brand = document.getElementById('rm-brand').value.trim();
-  const el    = document.getElementById('rm-name-preview');
-  if (brand && name.includes(brand)) {
-    const clean = name.replace(brand, '').trim().replace(/^[\s\-_]+|[\s\-_]+$/g, '');
-    el.textContent = `→ 등록명: "${clean}"`;
-    el.style.display = 'block';
-  } else { el.style.display = 'none'; }
+
+function _parsePrice(v) {
+  if (v == null) return 0;
+  return parseFloat(String(v).replace(/[,\s₩원]/g,'')) || 0;
 }
-function rmGetCleanName() {
-  let name = document.getElementById('rm-name').value.trim();
-  const brand = document.getElementById('rm-brand').value.trim();
-  if (brand && name.includes(brand))
-    name = name.replace(brand, '').trim().replace(/^[\s\-_]+|[\s\-_]+$/g, '');
-  return name;
+function _stripBrand(name, brand) {
+  if (!brand || !name.includes(brand)) return name.trim();
+  return name.replace(brand,'').trim().replace(/^[\s\-_]+|[\s\-_]+$/g,'').trim();
 }
-function rmAddMoche() {
-  const code = document.getElementById('rm-code').value.trim();
-  if (!code) return _regToast('공급사상품코드를 입력하세요', 1);
-  const name = rmGetCleanName();
-  if (!name) return _regToast('상품명을 입력하세요', 1);
-  const normalPrice = parseFloat(document.getElementById('rm-normal-price').value);
-  if (!normalPrice) return _regToast('상품정상가를 입력하세요', 1);
-  const consumerPrice = parseFloat(document.getElementById('rm-consumer-price').value) || normalPrice;
-  const supplyPrice   = Math.round(consumerPrice * (1 + _rmFee / 100));
-  _rmMocheList.push({
-    '공급사상품코드': code,
-    '공급사발급코드': document.getElementById('rm-issue-code').value.trim(),
-    '교환처':         document.getElementById('rm-exchange').value.trim(),
-    '카테고리':       document.getElementById('rm-category').value.trim(),
-    '상품명':         name,
-    '상품정상가':     normalPrice,
-    '소비자가':       consumerPrice,
-    '유효일':         document.getElementById('rm-valid').value.trim(),
-    'RM':             document.getElementById('rm-rm').value.trim(),
-    '상품상태':       document.getElementById('rm-status').value,
-    '판매타입':       document.getElementById('rm-sale-type').value.trim(),
-    '상품설명':       document.getElementById('rm-desc').value.trim(),
-    '공급사':         document.getElementById('rm-supplier').value.trim(),
-    '보증타입':       document.getElementById('rm-warranty').value,
-    '공급가':         supplyPrice,
-    '공급수수료':     _rmFee,
-    '판매시작일':     '',
-    '판매종료일':     '',
-    '배송상품여부':   document.getElementById('rm-delivery').value,
+
+function _parseTSV(text, forceFmt) {
+  const lines = text.trim().split('\n').filter(l => l.trim());
+  if (lines.length < 2) return null;
+  const headers = lines[0].split('\t').map(h => h.trim());
+  const fmtKey  = _detectSupplierFmt(headers, forceFmt);
+  const fmt     = _SUPPLIER_FORMATS[fmtKey];
+
+  // 컬럼 인덱스 빌드
+  const colIdx = {};
+  headers.forEach((h, i) => {
+    const mapped = fmt.mapFn ? fmt.mapFn(h) : (fmt.map[h] || null);
+    if (mapped) colIdx[mapped] = i;
   });
-  rmRenderMoche(); rmClearMoche(); _regToast('상품이 추가되었습니다');
+
+  const rows = [];
+  for (let i = 1; i < lines.length; i++) {
+    const cells = lines[i].split('\t').map(c => c.trim());
+    if (fmt.skipRow(cells)) continue;
+    const get = key => colIdx[key] !== undefined ? (cells[colIdx[key]] || '') : '';
+    rows.push({ _get: get, _brand: get('_brand') });
+  }
+  return { rows, fmtKey, fmtName: fmt.name, fmtColor: fmt.color, fmtTextColor: fmt.textColor };
+}
+
+// ── 모체코드 파싱
+function rmParsePaste() {
+  const text = document.getElementById('rm-paste-area').value;
+  if (!text.trim()) return _regToast('데이터를 먼저 붙여넣어 주세요', 1);
+  const forceFmt = document.getElementById('rm-supplier-fmt').value;
+  const parsed   = _parseTSV(text, forceFmt);
+  if (!parsed) return _regToast('헤더 포함 2행 이상 필요합니다', 1);
+
+  // 감지된 포맷 배지 표시
+  const badge = document.getElementById('rm-fmt-badge');
+  badge.textContent = parsed.fmtName + ' 포맷 감지됨';
+  badge.style.background  = parsed.fmtColor;
+  badge.style.color       = parsed.fmtTextColor;
+  badge.style.display     = 'inline-block';
+
+  const fmt      = _SUPPLIER_FORMATS[parsed.fmtKey];
+  const supplier = document.getElementById('rm-c-supplier').value.trim();
+  const status   = document.getElementById('rm-c-status').value;
+  const warranty = document.getElementById('rm-c-warranty').value;
+  const delivery = document.getElementById('rm-c-delivery').value;
+  const fee      = _rmFee;
+  let added = 0;
+
+  parsed.rows.forEach(({ _get, _brand }) => {
+    const code = _get('공급사상품코드');
+    if (!code) return;
+    const rawName = _get('상품명');
+    const item = {
+      '공급사상품코드': code,
+      '공급사발급코드': _get('공급사발급코드'),
+      '교환처':         _get('교환처'),
+      '카테고리':       _get('카테고리'),
+      '상품명':         _stripBrand(rawName, _brand) || rawName,
+      '상품정상가':     _parsePrice(_get('상품정상가')) || _parsePrice(_get('소비자가')),
+      '소비자가':       _parsePrice(_get('소비자가'))   || _parsePrice(_get('상품정상가')),
+      '유효일':         _get('유효일'),
+      'RM':             '',
+      '상품상태':       status,
+      '판매타입':       _get('판매타입'),
+      '상품설명':       _get('상품설명'),
+      '공급사':         supplier,
+      '보증타입':       warranty,
+      '공급가':         0,
+      '공급수수료':     fee,
+      '판매시작일':     '',
+      '판매종료일':     '',
+      '배송상품여부':   delivery,
+      '_brand':         _brand,
+    };
+    if (fmt.postProcess) fmt.postProcess(item);
+    const consumer = item['소비자가'] || item['상품정상가'] || 0;
+    item['공급가'] = Math.round(consumer * (1 + fee / 100));
+    delete item['_brand'];
+    _rmMocheList.push(item);
+    added++;
+  });
+
+  rmRenderMoche();
+  const hint = document.getElementById('rm-parse-hint');
+  hint.textContent = `✅ ${parsed.fmtName} 포맷 · ${added}개 파싱 완료 (총 ${_rmMocheList.length}개)`;
+  hint.style.color = '#10b981';
+  _regToast(`${parsed.fmtName} · ${added}개 상품 파싱 완료`);
 }
 function rmRenderMoche() {
   document.getElementById('rm-moche-count').textContent = _rmMocheList.length;
   const tbody = document.getElementById('rm-moche-tbody');
   if (!_rmMocheList.length) {
-    tbody.innerHTML = '<tr><td colspan="14" style="text-align:center;padding:36px;color:#94a3b8;font-size:13px;">추가된 상품이 없습니다</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="14" style="text-align:center;padding:36px;color:#94a3b8;font-size:13px;">붙여넣기 후 파싱하기를 클릭하세요</td></tr>';
     return;
   }
   const sLabel = {'1':'판매중','2':'판매중단','5':'공급사중단'};
   tbody.innerHTML = _rmMocheList.map((p,i) => `
     <tr style="border-bottom:1px solid #f1f5f9;">
-      <td style="padding:9px 12px;"><span style="background:#dbeafe;color:#1d4ed8;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;">${p['공급사상품코드']}</span></td>
-      <td style="padding:9px 12px;">${p['공급사발급코드']||'–'}</td>
-      <td style="padding:9px 12px;">${p['교환처']||'–'}</td>
-      <td style="padding:9px 12px;">${p['카테고리']||'–'}</td>
-      <td style="padding:9px 12px;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${p['상품명']}">${p['상품명']}</td>
-      <td style="padding:9px 12px;">${p['상품정상가'].toLocaleString()}</td>
-      <td style="padding:9px 12px;">${p['소비자가'].toLocaleString()}</td>
-      <td style="padding:9px 12px;"><span style="background:${p['공급수수료']<=0?'#d1fae5':'#fee2e2'};color:${p['공급수수료']<=0?'#065f46':'#991b1b'};padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;">${p['공급수수료']>0?'+':''}${p['공급수수료']}%</span></td>
-      <td style="padding:9px 12px;font-weight:700;">${p['공급가'].toLocaleString()}</td>
-      <td style="padding:9px 12px;">${p['공급사']||'–'}</td>
-      <td style="padding:9px 12px;">${sLabel[p['상품상태']]||p['상품상태']}</td>
-      <td style="padding:9px 12px;">${p['보증타입']==='1'?'사용분':'발행분'}</td>
-      <td style="padding:9px 12px;">${p['배송상품여부']}</td>
-      <td style="padding:9px 12px;"><button onclick="_rmMocheList.splice(${i},1);rmRenderMoche();" style="background:#fee2e2;color:#dc2626;border:none;padding:4px 10px;font-size:11px;border-radius:5px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-weight:600;">삭제</button></td>
+      <td style="padding:8px 12px;"><span style="background:#dbeafe;color:#1d4ed8;padding:2px 7px;border-radius:20px;font-size:11px;font-weight:600;">${p['공급사상품코드']}</span></td>
+      <td style="padding:8px 12px;font-size:11px;">${p['공급사발급코드']||'–'}</td>
+      <td style="padding:8px 12px;font-size:11px;">${p['교환처']||'–'}</td>
+      <td style="padding:8px 12px;font-size:11px;">${p['카테고리']||'–'}</td>
+      <td style="padding:8px 12px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;" title="${p['상품명']}">${p['상품명']}</td>
+      <td style="padding:8px 12px;font-size:11px;">${(p['상품정상가']||0).toLocaleString()}</td>
+      <td style="padding:8px 12px;font-size:11px;">${(p['소비자가']||0).toLocaleString()}</td>
+      <td style="padding:8px 12px;"><span style="background:${p['공급수수료']<=0?'#d1fae5':'#fee2e2'};color:${p['공급수수료']<=0?'#065f46':'#991b1b'};padding:2px 7px;border-radius:20px;font-size:11px;font-weight:600;">${p['공급수수료']>0?'+':''}${p['공급수수료']}%</span></td>
+      <td style="padding:8px 12px;font-weight:700;font-size:12px;">${(p['공급가']||0).toLocaleString()}</td>
+      <td style="padding:8px 12px;font-size:11px;">${p['공급사']||'–'}</td>
+      <td style="padding:8px 12px;font-size:11px;">${p['유효일']||'–'}</td>
+      <td style="padding:8px 12px;font-size:11px;">${sLabel[p['상품상태']]||p['상품상태']}</td>
+      <td style="padding:8px 12px;font-size:11px;">${p['보증타입']==='1'?'사용분':'발행분'}</td>
+      <td style="padding:8px 12px;"><button onclick="_rmMocheList.splice(${i},1);rmRenderMoche();" style="background:#fee2e2;color:#dc2626;border:none;padding:3px 9px;font-size:11px;border-radius:5px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-weight:600;">삭제</button></td>
     </tr>`).join('');
 }
-function rmClearMoche() {
-  ['rm-code','rm-issue-code','rm-exchange','rm-category','rm-name','rm-brand',
-   'rm-normal-price','rm-valid','rm-rm','rm-sale-type','rm-desc','rm-supplier'].forEach(id => {
-    const el = document.getElementById(id); el.value = ''; delete el.dataset.edited;
-  });
-  const cp = document.getElementById('rm-consumer-price'); cp.value = ''; delete cp.dataset.edited;
-  document.getElementById('rm-supply-price').value = '';
-  document.getElementById('rm-fee-formula').textContent = '';
-  document.getElementById('rm-name-preview').style.display = 'none';
-  document.getElementById('rm-status').value = '1';
-  document.getElementById('rm-warranty').value = '1';
-  document.getElementById('rm-delivery').value = 'N';
-  _rmFee = -2; rmSetFee(-2);
-}
 function rmExportMoche() {
-  if (!_rmMocheList.length) return _regToast('추가된 상품이 없습니다', 1);
+  if (!_rmMocheList.length) return _regToast('등록 목록이 비어있습니다', 1);
   const COLS = ['공급사상품코드','공급사발급코드','교환처','카테고리','상품명',
     '상품정상가','소비자가','유효일','RM','상품상태','판매타입','상품설명',
     '공급사','보증타입','공급가','공급수수료','판매시작일','판매종료일','배송상품여부'];
@@ -3595,81 +3671,123 @@ function rmExportMoche() {
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
   XLSX.writeFile(wb, 'newGoodsSample.xlsx');
-  _regToast('newGoodsSample.xlsx 다운로드 완료!');
+  _regToast(`newGoodsSample.xlsx (${_rmMocheList.length}개) 다운로드 완료!`);
 }
 
-function rpFillFromMoche() {
-  const code = document.getElementById('rp-code').value.trim();
-  const found = _rmMocheList.find(p => p['공급사상품코드'] === code);
-  if (found) {
-    document.getElementById('rp-issue-code').value = found['공급사발급코드'] || '';
-    document.getElementById('rp-supply').value = found['공급가'] || '';
-    document.getElementById('rp-name').value = found['상품명'] || '';
-    rpCalcSalePrice();
-    _regToast(`"${found['상품명']}" 자동 반영됨`);
-  }
+// ── 매체상품 등록
+function rpSetSource(s) {
+  _rpSource = s;
+  document.getElementById('rp-from-moche-wrap').style.display = s === 'moche' ? 'block' : 'none';
+  document.getElementById('rp-paste-wrap').style.display       = s === 'paste' ? 'block' : 'none';
+  const on  = 'padding:8px 18px; border-radius:8px; font-size:12px; font-weight:600; border:none; cursor:pointer; background:#6366f1; color:white; font-family:\'Noto Sans KR\',sans-serif;';
+  const off = 'padding:8px 18px; border-radius:8px; font-size:12px; font-weight:600; border:1px solid #e2e8f0; cursor:pointer; background:transparent; color:#64748b; font-family:\'Noto Sans KR\',sans-serif;';
+  document.getElementById('rp-src-moche').style.cssText = s === 'moche' ? on : off;
+  document.getElementById('rp-src-paste').style.cssText  = s === 'paste' ? on : off;
+  if (s === 'moche') rpUpdateMocheSummary();
 }
-function rpCalcSalePrice() {
-  const supply = parseFloat(document.getElementById('rp-supply').value) || 0;
-  const disc   = parseFloat(document.getElementById('rp-discount').value);
-  if (supply && !isNaN(disc)) {
-    const sale = Math.round(supply * (1 - disc / 100));
-    document.getElementById('rp-sale-price').value = sale.toLocaleString() + '원';
-    document.getElementById('rp-formula').textContent =
-      `${supply.toLocaleString()} × (1−${disc}%) = ${sale.toLocaleString()}`;
+function rpUpdateMocheSummary() {
+  const el = document.getElementById('rp-moche-summary');
+  if (!el) return;
+  if (!_rmMocheList.length) {
+    el.innerHTML = '<span style="color:#94a3b8;">모체코드 등록 탭에서 먼저 상품을 파싱해 주세요.</span>';
   } else {
-    document.getElementById('rp-sale-price').value = '';
-    document.getElementById('rp-formula').textContent = '';
+    el.innerHTML = `<strong style="color:#0f172a;">${_rmMocheList.length}개 상품</strong>이 모체코드 등록에 있습니다.<br>
+      <span style="font-size:11px; color:#94a3b8;">${_rmMocheList.slice(0,3).map(p=>p['공급사상품코드']).join(', ')}${_rmMocheList.length>3?' …':''}  →  공급단가·상품명 자동 반영</span>`;
   }
 }
-function rpAddMedia() {
-  const code = document.getElementById('rp-code').value.trim();
-  if (!code) return _regToast('공급사상품코드를 입력하세요', 1);
-  const supply = parseFloat(document.getElementById('rp-supply').value);
-  if (!supply) return _regToast('공급단가를 입력하세요', 1);
-  const media = document.getElementById('rp-media').value.trim();
+function rpGenerateFromMoche() {
+  if (!_rmMocheList.length) return _regToast('모체 목록이 비어있습니다. 모체코드 탭에서 먼저 파싱하세요', 1);
+  const media = document.getElementById('rp-c-media').value.trim();
   if (!media) return _regToast('매체명을 입력하세요', 1);
-  const disc = parseFloat(document.getElementById('rp-discount').value);
+  const disc = parseFloat(document.getElementById('rp-c-discount').value);
   if (isNaN(disc)) return _regToast('할인율을 입력하세요', 1);
-  _rpMediaList.push({
-    '공급사상품코드': code,
-    '공급사발급코드': document.getElementById('rp-issue-code').value.trim(),
-    '공급단가':       supply,
-    '상품명':         document.getElementById('rp-name').value.trim(),
-    '매체명':         media,
-    '판매가':         Math.round(supply * (1 - disc / 100)),
-    '할인율':         parseFloat(disc.toFixed(2)),
+  _rpMediaList.length = 0;
+  _rmMocheList.forEach(p => {
+    const consumer  = p['소비자가'] || p['상품정상가'] || 0;
+    const salePrice = Math.round(consumer * (1 - disc / 100));
+    _rpMediaList.push({
+      '공급사상품코드': p['공급사상품코드'],
+      '공급사발급코드': p['공급사발급코드'] || '',
+      '공급단가':       p['공급가'] || 0,
+      '상품명':         p['상품명'] || '',
+      '매체명':         media,
+      '판매가':         salePrice,
+      '할인율':         parseFloat(disc.toFixed(2)),
+    });
   });
-  rpRenderMedia(); rpClearMedia(); _regToast('상품이 추가되었습니다');
+  rpRenderMedia();
+  _regToast(`${_rpMediaList.length}개 매체상품 생성 완료`);
+}
+function rpParsePaste() {
+  const text = document.getElementById('rp-paste-area').value;
+  if (!text.trim()) return _regToast('데이터를 먼저 붙여넣어 주세요', 1);
+  const media = document.getElementById('rp-c-media').value.trim();
+  if (!media) return _regToast('공통 설정에서 매체명을 입력하세요', 1);
+  const disc = parseFloat(document.getElementById('rp-c-discount').value);
+  if (isNaN(disc)) return _regToast('공통 설정에서 할인율을 입력하세요', 1);
+  const forceFmt = document.getElementById('rp-supplier-fmt').value;
+  const parsed   = _parseTSV(text, forceFmt);
+  if (!parsed) return _regToast('헤더 포함 2행 이상 필요합니다', 1);
+
+  const badge = document.getElementById('rp-fmt-badge');
+  badge.textContent = parsed.fmtName + ' 포맷 감지됨';
+  badge.style.background = parsed.fmtColor;
+  badge.style.color      = parsed.fmtTextColor;
+  badge.style.display    = 'inline-block';
+
+  const fmt = _SUPPLIER_FORMATS[parsed.fmtKey];
+  const fee = _rpFee;
+  let added = 0;
+  parsed.rows.forEach(({ _get, _brand }) => {
+    const code = _get('공급사상품코드');
+    if (!code) return;
+    const rawName = _get('상품명');
+    const item = {
+      '상품명':   _stripBrand(rawName, _brand) || rawName,
+      '소비자가': _parsePrice(_get('소비자가')) || _parsePrice(_get('상품정상가')),
+      '상품정상가': _parsePrice(_get('상품정상가')) || _parsePrice(_get('소비자가')),
+      '_brand': _brand,
+    };
+    if (fmt.postProcess) fmt.postProcess(item);
+    const consumer = item['소비자가'] || item['상품정상가'] || 0;
+    _rpMediaList.push({
+      '공급사상품코드': code,
+      '공급사발급코드': _get('공급사발급코드'),
+      '공급단가':       Math.round(consumer * (1 + fee / 100)),
+      '상품명':         item['상품명'],
+      '매체명':         media,
+      '판매가':         Math.round(consumer * (1 - disc / 100)),
+      '할인율':         parseFloat(disc.toFixed(2)),
+    });
+    added++;
+  });
+  rpRenderMedia();
+  const hint = document.getElementById('rp-parse-hint');
+  hint.textContent = `✅ ${parsed.fmtName} 포맷 · ${added}개 파싱 완료 (총 ${_rpMediaList.length}개)`;
+  hint.style.color = '#10b981';
+  _regToast(`${parsed.fmtName} · ${added}개 매체상품 파싱 완료`);
 }
 function rpRenderMedia() {
   document.getElementById('rp-media-count').textContent = _rpMediaList.length;
   const tbody = document.getElementById('rp-media-tbody');
   if (!_rpMediaList.length) {
-    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:36px;color:#94a3b8;font-size:13px;">추가된 상품이 없습니다</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:36px;color:#94a3b8;font-size:13px;">생성하기 또는 파싱하기를 클릭하세요</td></tr>';
     return;
   }
   tbody.innerHTML = _rpMediaList.map((p,i) => `
     <tr style="border-bottom:1px solid #f1f5f9;">
-      <td style="padding:9px 12px;"><span style="background:#dbeafe;color:#1d4ed8;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;">${p['공급사상품코드']}</span></td>
-      <td style="padding:9px 12px;">${p['공급사발급코드']||'–'}</td>
-      <td style="padding:9px 12px;">${p['공급단가'].toLocaleString()}</td>
-      <td style="padding:9px 12px;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${p['상품명']}">${p['상품명']||'–'}</td>
-      <td style="padding:9px 12px;"><span style="background:#ede9fe;color:#5b21b6;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;">${p['매체명']}</span></td>
-      <td style="padding:9px 12px;font-weight:700;">${p['판매가'].toLocaleString()}</td>
-      <td style="padding:9px 12px;"><span style="background:#fee2e2;color:#991b1b;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;">${p['할인율']}%</span></td>
-      <td style="padding:9px 12px;"><button onclick="_rpMediaList.splice(${i},1);rpRenderMedia();" style="background:#fee2e2;color:#dc2626;border:none;padding:4px 10px;font-size:11px;border-radius:5px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-weight:600;">삭제</button></td>
+      <td style="padding:8px 12px;"><span style="background:#dbeafe;color:#1d4ed8;padding:2px 7px;border-radius:20px;font-size:11px;font-weight:600;">${p['공급사상품코드']}</span></td>
+      <td style="padding:8px 12px;font-size:11px;">${p['공급사발급코드']||'–'}</td>
+      <td style="padding:8px 12px;font-size:11px;">${(p['공급단가']||0).toLocaleString()}</td>
+      <td style="padding:8px 12px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;" title="${p['상품명']}">${p['상품명']||'–'}</td>
+      <td style="padding:8px 12px;"><span style="background:#ede9fe;color:#5b21b6;padding:2px 7px;border-radius:20px;font-size:11px;font-weight:600;">${p['매체명']}</span></td>
+      <td style="padding:8px 12px;font-weight:700;font-size:12px;">${(p['판매가']||0).toLocaleString()}</td>
+      <td style="padding:8px 12px;"><span style="background:#fee2e2;color:#991b1b;padding:2px 7px;border-radius:20px;font-size:11px;font-weight:600;">${p['할인율']}%</span></td>
+      <td style="padding:8px 12px;"><button onclick="_rpMediaList.splice(${i},1);rpRenderMedia();" style="background:#fee2e2;color:#dc2626;border:none;padding:3px 9px;font-size:11px;border-radius:5px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-weight:600;">삭제</button></td>
     </tr>`).join('');
 }
-function rpClearMedia() {
-  ['rp-code','rp-issue-code','rp-supply','rp-name','rp-media','rp-discount'].forEach(id => {
-    document.getElementById(id).value = '';
-  });
-  document.getElementById('rp-sale-price').value = '';
-  document.getElementById('rp-formula').textContent = '';
-}
 function rpExportMedia() {
-  if (!_rpMediaList.length) return _regToast('추가된 상품이 없습니다', 1);
+  if (!_rpMediaList.length) return _regToast('등록 목록이 비어있습니다', 1);
   const COLS = ['공급사상품코드','공급사발급코드','공급단가','상품명','매체명','판매가','할인율'];
   const data = [COLS, ..._rpMediaList.map(p => COLS.map(c => p[c] ?? ''))];
   const ws = XLSX.utils.aoa_to_sheet(data);
@@ -3677,7 +3795,7 @@ function rpExportMedia() {
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
   XLSX.writeFile(wb, 'newPlatformGoodsSample.xlsx');
-  _regToast('newPlatformGoodsSample.xlsx 다운로드 완료!');
+  _regToast(`newPlatformGoodsSample.xlsx (${_rpMediaList.length}개) 다운로드 완료!`);
 }
 function _regToast(msg, err) {
   let t = document.getElementById('_reg-toast');
@@ -3695,6 +3813,7 @@ function _regToast(msg, err) {
 }
 // 초기 상태
 rmSetFee(-2);
+rpSetFee(-2);
 </script>
 </body>
 </html>

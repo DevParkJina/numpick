@@ -420,8 +420,8 @@
       </div>
       <!-- 구분선 -->
       <div style="height:1px; background:#f1f5f9; margin:0 -28px 14px;"></div>
-      <!-- 2행: 상품상태 / 보증타입 / 배송상품여부 -->
-      <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px 20px; margin-bottom:14px;">
+      <!-- 2행: 상품상태 / 보증타입 / 배송상품여부 / RM / 판매타입 -->
+      <div style="display:grid; grid-template-columns:repeat(5,1fr); gap:12px 16px; margin-bottom:14px;">
         <div style="display:flex; flex-direction:column; gap:6px;">
           <label style="font-size:11px; font-weight:600; color:#64748b; letter-spacing:0.3px;">상품상태</label>
           <select id="rm-c-status" style="padding:10px 12px; border:1px solid #e2e8f0; border-radius:9px; font-family:'Noto Sans KR',sans-serif; font-size:13px; outline:none; background:white;">
@@ -442,6 +442,20 @@
           <select id="rm-c-delivery" style="padding:10px 12px; border:1px solid #e2e8f0; border-radius:9px; font-family:'Noto Sans KR',sans-serif; font-size:13px; outline:none; background:white;">
             <option value="N">N</option>
             <option value="Y">Y</option>
+          </select>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:6px;">
+          <label style="font-size:11px; font-weight:600; color:#64748b; letter-spacing:0.3px;">RM</label>
+          <select id="rm-c-rm" style="padding:10px 12px; border:1px solid #e2e8f0; border-radius:9px; font-family:'Noto Sans KR',sans-serif; font-size:13px; outline:none; background:white;">
+            <option value="N" selected>N</option>
+            <option value="Y">Y</option>
+          </select>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:6px;">
+          <label style="font-size:11px; font-weight:600; color:#64748b; letter-spacing:0.3px;">판매타입</label>
+          <select id="rm-c-saletype" style="padding:10px 12px; border:1px solid #e2e8f0; border-radius:9px; font-family:'Noto Sans KR',sans-serif; font-size:13px; outline:none; background:white;">
+            <option value="B2B" selected>B2B</option>
+            <option value="B2C">B2C</option>
           </select>
         </div>
       </div>
@@ -3761,6 +3775,8 @@ function _showPreviewModal() {
   const status     = document.getElementById('rm-c-status').value;
   const warranty   = document.getElementById('rm-c-warranty').value;
   const delivery   = document.getElementById('rm-c-delivery').value;
+  const rmVal      = document.getElementById('rm-c-rm').value;
+  const saleType   = document.getElementById('rm-c-saletype').value;
   const notes      = (document.getElementById('rm-c-notes').value || '').trim();
   const catCommon  = document.getElementById('rm-c-category').value;
   const fee        = parseFloat(document.getElementById('rm-fee-input').value) || 0;
@@ -3784,13 +3800,15 @@ function _showPreviewModal() {
       '상품정상가':     _parsePrice(get('상품정상가')) || _parsePrice(get('소비자가')),
       '소비자가':       _parsePrice(get('소비자가'))   || _parsePrice(get('상품정상가')),
       '유효일':         get('유효일') || subHeaderValid || '',
-      'RM': '', '상품상태': status, '판매타입': get('판매타입'),
+      'RM': rmVal, '상품상태': status, '판매타입': get('판매타입') || saleType,
       '상품설명':       [get('상품설명'), notes].filter(Boolean).join('\n'),
       '공급사': supplier, '보증타입': warranty, '공급가': 0,
       '공급수수료': fee, '판매시작일': '', '판매종료일': '',
       '배송상품여부': delivery, '_brand': _brand,
     };
     if (fmt.postProcess) fmt.postProcess(item);
+    // 교환처 없으면 브랜드로 폴백 (모든 포맷 공통)
+    if (!item['교환처'] && _brand) item['교환처'] = _brand;
     const consumer = item['소비자가'] || item['상품정상가'] || 0;
     item['공급가'] = Math.round(consumer * (1 + fee / 100));
     delete item['_brand'];
@@ -3899,7 +3917,10 @@ function rmExportMoche() {
   const COLS = ['공급사상품코드','공급사발급코드','교환처','카테고리','상품명',
     '상품정상가','소비자가','유효일','RM','상품상태','판매타입','상품설명',
     '공급사','보증타입','공급가','공급수수료','판매시작일','판매종료일','배송상품여부'];
-  const data = [COLS, ..._rmMocheList.map(p => COLS.map(c => p[c] ?? ''))];
+  const data = [COLS, ..._rmMocheList.map(p => COLS.map(c => {
+    if (c === '유효일' && p[c]) return String(p[c]).replace(/[^0-9]/g, '');
+    return p[c] ?? '';
+  }))];
   const ws = XLSX.utils.aoa_to_sheet(data);
   ws['!cols'] = COLS.map(c => ({ wch: Math.max(c.length * 1.8, 12) }));
   const wb = XLSX.utils.book_new();

@@ -406,19 +406,12 @@
             <option value="">— 선택 안 함 —</option>
             <option value="문화/생활">문화/생활</option>
             <option value="배송상품">배송상품</option>
-            <option value="버거 / 아이스크림">버거 / 아이스크림</option>
-            <option value="베이커리 / 도넛">베이커리 / 도넛</option>
             <option value="베이커리/도넛">베이커리/도넛</option>
             <option value="빵/아이스크림">빵/아이스크림</option>
             <option value="상품권">상품권</option>
-            <option value="상품권 / 마트">상품권 / 마트</option>
             <option value="상품권/마트">상품권/마트</option>
             <option value="아이스크림">아이스크림</option>
-            <option value="영화 / 외식">영화 / 외식</option>
-            <option value="외식">외식</option>
-            <option value="치킨 / 피자">치킨 / 피자</option>
             <option value="치킨/피자">치킨/피자</option>
-            <option value="커피 / 음료">커피 / 음료</option>
             <option value="커피/음료">커피/음료</option>
             <option value="패스트푸드">패스트푸드</option>
             <option value="편의점">편의점</option>
@@ -3611,8 +3604,16 @@ function _parsePrice(v) {
   return parseFloat(String(v).replace(/[,\s₩원]/g,'')) || 0;
 }
 function _stripBrand(name, brand) {
-  if (!brand || !name.includes(brand)) return name.trim();
-  return name.replace(brand,'').trim().replace(/^[\s\-_]+|[\s\-_]+$/g,'').trim();
+  if (!brand || !name) return (name || '').trim();
+  if (!name.includes(brand)) return name.trim();
+  const esc = brand.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return name
+    .replace(new RegExp(`^\\[${esc}\\]\\s*`, ''), '')   // [브랜드] 앞
+    .replace(new RegExp(`^${esc}[\\s\\-_]*`, ''), '')    // 브랜드 앞
+    .replace(new RegExp(`[\\s\\-_]*${esc}$`, ''), '')    // 브랜드 뒤
+    .trim()
+    .replace(/^[\s\-_\[\]]+|[\s\-_\[\]]+$/g, '')
+    .trim();
 }
 
 function _parseTSV(text, forceFmt) {

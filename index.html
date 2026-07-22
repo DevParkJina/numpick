@@ -489,6 +489,7 @@
       <div style="display:flex; gap:10px; margin-top:14px; align-items:center;">
         <button onclick="rmParsePaste()" style="padding:10px 26px; background:#6366f1; color:white; border:none; border-radius:9px; font-family:'Noto Sans KR',sans-serif; font-size:13px; font-weight:700; cursor:pointer; letter-spacing:-0.2px;">파싱하기 →</button>
         <button onclick="document.getElementById('rm-paste-area').value=''; document.getElementById('rm-fmt-badge').style.display='none'; document.getElementById('rm-parse-hint').textContent='';" style="padding:10px 18px; background:transparent; border:1px solid #e2e8f0; color:#64748b; border-radius:9px; font-family:'Noto Sans KR',sans-serif; font-size:13px; font-weight:600; cursor:pointer;">초기화</button>
+        <button onclick="_showBrandCatModal()" style="padding:10px 18px; background:transparent; border:1px solid #e2e8f0; color:#6366f1; border-radius:9px; font-family:'Noto Sans KR',sans-serif; font-size:13px; font-weight:600; cursor:pointer;">🏷 브랜드 카테고리</button>
         <div id="rm-parse-hint" style="font-size:12px; color:#94a3b8; flex:1;"></div>
       </div>
     </div>
@@ -3663,6 +3664,10 @@ function _parseTSV(text, forceFmt) {
 }
 
 // ── 모체코드 파싱 (헤더 매핑 모달 → 미리보기 → 등록)
+const _CAT_OPTS = ['','문화/생활','배송상품','베이커리/도넛','빵/아이스크림','상품권','상품권/마트','아이스크림','치킨/피자','커피/음료','패스트푸드','편의점'];
+function _getBrandCatMap() {
+  try { return JSON.parse(localStorage.getItem('numpick_brand_cat') || '{}'); } catch { return {}; }
+}
 let _mappingState = {};
 
 function rmParsePaste() {
@@ -3780,6 +3785,7 @@ function _showPreviewModal() {
   const notes      = (document.getElementById('rm-c-notes').value || '').trim();
   const catCommon  = document.getElementById('rm-c-category').value;
   const fee        = parseFloat(document.getElementById('rm-fee-input').value) || 0;
+  const brandCatMap = _getBrandCatMap();
 
   for (let i = 1; i < lines.length; i++) {
     const cells = lines[i].split('\t').map(c => c.trim());
@@ -3795,7 +3801,7 @@ function _showPreviewModal() {
       '공급사상품코드': code,
       '공급사발급코드': get('공급사발급코드'),
       '교환처':         get('교환처'),
-      '카테고리':       get('카테고리') || catCommon,
+      '카테고리':       get('카테고리'),
       '상품명':         _stripBrand(rawName, _brand) || rawName,
       '상품정상가':     _parsePrice(get('상품정상가')) || _parsePrice(get('소비자가')),
       '소비자가':       _parsePrice(get('소비자가'))   || _parsePrice(get('상품정상가')),
@@ -3809,6 +3815,8 @@ function _showPreviewModal() {
     if (fmt.postProcess) fmt.postProcess(item);
     // 교환처 없으면 브랜드로 폴백 (모든 포맷 공통)
     if (!item['교환처'] && _brand) item['교환처'] = _brand;
+    // 카테고리: 브랜드맵 → 공통설정 순으로 폴백
+    if (!item['카테고리']) item['카테고리'] = brandCatMap[item['교환처']] || catCommon;
     const consumer = item['소비자가'] || 0;
     item['공급가'] = consumer * (1 + fee / 100);
     delete item['_brand'];
@@ -3818,17 +3826,17 @@ function _showPreviewModal() {
   _mappingState.subHeaderValid = subHeaderValid;
 
   const skipped = previewItems.filter(p => !p['공급사상품코드']).length;
-  const previewRows = previewItems.slice(0, 10).map(p => `
-    <tr style="border-bottom:1px solid #f1f5f9;">
+  const previewRows = previewItems.map((p, i) => {
+    const catSel = _CAT_OPTS.map(v => `<option value="${v}"${v===p['카테고리']?' selected':''}>${v||'— 선택 —'}</option>`).join('');
+    return `<tr style="border-bottom:1px solid #f1f5f9;">
       <td style="padding:8px 10px;font-size:11px;">${p['공급사상품코드'] || '<span style="background:#fef3c7;color:#92400e;padding:2px 6px;border-radius:4px;font-weight:600;font-size:10px;">없음</span>'}</td>
       <td style="padding:8px 10px;font-size:11px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${p['상품명']}">${p['교환처']?`<span style="color:#6366f1;font-size:10px;font-weight:700;">[${p['교환처']}]</span> `:''}<span style="color:#0f172a;">${p['상품명']}</span></td>
       <td style="padding:8px 10px;font-size:11px;text-align:right;">${(p['소비자가']||0).toLocaleString()}</td>
       <td style="padding:8px 10px;font-size:12px;font-weight:700;color:#0f172a;text-align:right;">${(p['공급가']||0).toLocaleString()}</td>
       <td style="padding:8px 10px;font-size:11px;color:#64748b;">${p['유효일']||'–'}</td>
-      <td style="padding:8px 10px;font-size:11px;color:#94a3b8;">${p['카테고리']||'–'}</td>
-    </tr>`).join('');
-  const more = previewItems.length > 10
-    ? `<tr><td colspan="6" style="padding:10px;text-align:center;color:#94a3b8;font-size:11px;">… 외 ${previewItems.length-10}개 더</td></tr>` : '';
+      <td style="padding:6px 8px;"><select id="_cat_row_${i}" style="font-size:11px;padding:3px 6px;border:1px solid #e2e8f0;border-radius:6px;font-family:'Noto Sans KR',sans-serif;max-width:110px;">${catSel}</select></td>
+    </tr>`;
+  }).join('');
   const warnHtml = skipped > 0
     ? `<div style="padding:0 26px 12px;"><div style="padding:10px 14px;background:#fef3c7;border-radius:10px;font-size:12px;color:#92400e;font-weight:600;">⚠️ 공급사상품코드 없는 행 ${skipped}개 — 나중에 수동 입력 가능</div></div>` : '';
 
@@ -3853,7 +3861,7 @@ function _showPreviewModal() {
               <th style="padding:8px 10px;text-align:left;font-size:11px;color:#64748b;font-weight:700;">카테고리</th>
             </tr>
           </thead>
-          <tbody>${previewRows}${more}</tbody>
+          <tbody>${previewRows}</tbody>
         </table>
       </div>
       ${warnHtml}
@@ -3867,7 +3875,11 @@ function _showPreviewModal() {
 function _doConfirmImport() {
   const { previewItems, fmtKey, subHeaderValid } = _mappingState;
   const fmt = _SUPPLIER_FORMATS[fmtKey];
-  previewItems.forEach(item => _rmMocheList.push(item));
+  previewItems.forEach((item, i) => {
+    const sel = document.getElementById(`_cat_row_${i}`);
+    if (sel) item['카테고리'] = sel.value;
+    _rmMocheList.push(item);
+  });
   const skipped = previewItems.filter(p => !p['공급사상품코드']).length;
 
   const badge = document.getElementById('rm-fmt-badge');
@@ -3886,6 +3898,59 @@ function _doConfirmImport() {
   rmRenderMoche();
   _regToast(`${fmt.name} · ${previewItems.length}개 상품 등록 완료`);
 }
+
+function _showBrandCatModal() {
+  const saved = _getBrandCatMap();
+  const fromList = [...new Set(_rmMocheList.map(p => p['교환처']).filter(Boolean))];
+  const allBrands = [...new Set([...Object.keys(saved), ...fromList])].sort();
+  if (!allBrands.length) return _regToast('먼저 상품을 파싱해야 교환처 목록을 불러올 수 있어요', 1);
+
+  const rows = allBrands.map((b, i) => {
+    const cur = saved[b] || '';
+    const opts = _CAT_OPTS.map(v => `<option value="${v}"${v===cur?' selected':''}>${v||'— 선택 —'}</option>`).join('');
+    return `<tr style="border-bottom:1px solid #f1f5f9;">
+      <td style="padding:10px 14px;font-size:13px;font-weight:600;color:#0f172a;">${b}</td>
+      <td style="padding:6px 10px;"><select id="_bcat_${i}" style="font-size:12px;padding:4px 8px;border:1px solid #e2e8f0;border-radius:6px;font-family:'Noto Sans KR',sans-serif;width:150px;">${opts}</select></td>
+    </tr>`;
+  }).join('');
+
+  let modal = document.getElementById('_bcat_modal');
+  if (!modal) { modal = document.createElement('div'); modal.id = '_bcat_modal'; document.body.appendChild(modal); }
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.4);backdrop-filter:blur(4px);z-index:9999;display:flex;align-items:center;justify-content:center;';
+  modal.innerHTML = `
+    <div style="background:white;border-radius:20px;box-shadow:0 20px 60px rgba(0,0,0,0.2);width:440px;max-width:95vw;max-height:80vh;display:flex;flex-direction:column;overflow:hidden;">
+      <div style="padding:20px 24px 14px;border-bottom:1px solid #f1f5f9;display:flex;align-items:center;gap:10px;">
+        <div style="font-size:15px;font-weight:800;color:#0f172a;flex:1;">브랜드 카테고리 설정</div>
+        <span style="font-size:11px;color:#94a3b8;">${allBrands.length}개 교환처</span>
+        <button onclick="document.getElementById('_bcat_modal').remove()" style="background:none;border:none;font-size:18px;cursor:pointer;color:#94a3b8;padding:2px 6px;">✕</button>
+      </div>
+      <div style="overflow-y:auto;flex:1;">
+        <table style="width:100%;border-collapse:collapse;">
+          <thead><tr style="background:#f8fafc;position:sticky;top:0;">
+            <th style="padding:8px 14px;text-align:left;font-size:11px;color:#64748b;font-weight:700;">교환처</th>
+            <th style="padding:8px 14px;text-align:left;font-size:11px;color:#64748b;font-weight:700;">카테고리</th>
+          </tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+      <div style="padding:14px 24px;border-top:1px solid #f1f5f9;display:flex;gap:10px;justify-content:flex-end;background:#fafbfc;">
+        <button onclick="document.getElementById('_bcat_modal').remove()" style="padding:8px 18px;background:transparent;border:1px solid #e2e8f0;color:#64748b;border-radius:9px;font-family:'Noto Sans KR',sans-serif;font-size:13px;font-weight:600;cursor:pointer;">취소</button>
+        <button onclick="_saveBrandCat(${JSON.stringify(allBrands)})" style="padding:8px 24px;background:#6366f1;color:white;border:none;border-radius:9px;font-family:'Noto Sans KR',sans-serif;font-size:13px;font-weight:700;cursor:pointer;">저장</button>
+      </div>
+    </div>`;
+}
+
+function _saveBrandCat(allBrands) {
+  const map = {};
+  allBrands.forEach((b, i) => {
+    const sel = document.getElementById(`_bcat_${i}`);
+    if (sel && sel.value) map[b] = sel.value;
+  });
+  localStorage.setItem('numpick_brand_cat', JSON.stringify(map));
+  document.getElementById('_bcat_modal').remove();
+  _regToast(`브랜드 카테고리 ${Object.keys(map).length}개 저장 완료`);
+}
+
 function rmRenderMoche() {
   document.getElementById('rm-moche-count').textContent = _rmMocheList.length;
   const tbody = document.getElementById('rm-moche-tbody');

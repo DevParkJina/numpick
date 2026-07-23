@@ -537,57 +537,6 @@
   <!-- ── 매체상품 등록 ── -->
   <div id="reg-panel-media" style="display:none;">
 
-    <!-- 공통 설정 -->
-    <div class="card reg-card" style="margin-bottom:20px;">
-      <div style="font-size:14px; font-weight:700; color:#0f172a; margin-bottom:18px; display:flex; align-items:center; gap:8px;">
-        ⚙️ 공통 설정
-        <span style="font-size:11px; font-weight:400; color:#94a3b8; background:#f8fafc; padding:3px 10px; border-radius:20px; border:1px solid #e2e8f0;">매체상품 등록에 동일 적용</span>
-      </div>
-      <div style="display:grid; grid-template-columns:1fr 160px 1fr; gap:14px 20px; align-items:end;">
-        <div style="display:flex; flex-direction:column; gap:6px;">
-          <label style="font-size:11px; font-weight:600; color:#64748b; letter-spacing:0.3px;">매체명 <span style="color:#ef4444;">*</span></label>
-          <select id="rp-c-media" style="padding:10px 12px; border:1px solid #e2e8f0; border-radius:9px; font-family:'Noto Sans KR',sans-serif; font-size:13px; outline:none; transition:border .15s; background:white; color:#374151;" onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#e2e8f0'">
-            <option value="">— 매체 선택 —</option>
-            <option value="devnium">데브늄</option>
-            <option value="raon">라온부고(구)</option>
-            <option value="raon_hana">하나부고</option>
-            <option value="tium">기프티움</option>
-            <option value="jsbrothers">우리토탈</option>
-            <option value="dasom">다솜</option>
-            <option value="flowergirl">꽃길</option>
-            <option value="samga">삼가</option>
-            <option value="jsmembers">우리토탈M</option>
-            <option value="cheotjang">첫장</option>
-            <option value="iris">아이리스</option>
-            <option value="kookminbugo">국민부고</option>
-            <option value="ium">이음</option>
-            <option value="md_devnium">데브늄_기운</option>
-            <option value="md_wooribugo">우리부고</option>
-            <option value="md_samga">삼가_가운</option>
-            <option value="md_fdnara">직전이나라_자채답례</option>
-            <option value="md_encompany">미엔씩컴퍼니_자채답례</option>
-            <option value="cnwalk">걷줌</option>
-            <option value="md_wooribugoPoint">우리부고포인트몰</option>
-            <option value="md_bnyj">보내아주_기운</option>
-            <option value="talent">달란트비즈</option>
-          </select>
-        </div>
-        <div style="display:flex; flex-direction:column; gap:6px;">
-          <label style="font-size:11px; font-weight:600; color:#64748b; letter-spacing:0.3px;">할인율 % <span style="color:#ef4444;">*</span></label>
-          <input type="number" id="rp-c-discount" placeholder="ex. 20.00" step="0.01" style="padding:10px 12px; border:1px solid #e2e8f0; border-radius:9px; font-family:'Noto Sans KR',sans-serif; font-size:13px; outline:none; text-align:center; transition:border .15s;" onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#e2e8f0'">
-        </div>
-        <div style="display:flex; flex-direction:column; gap:6px;">
-          <label style="font-size:11px; font-weight:600; color:#64748b; letter-spacing:0.3px;">공급수수료 % <span style="font-size:10px; font-weight:400; color:#94a3b8;">새 붙여넣기 시 공급단가 계산용 · 음수=할인 양수=과금</span></label>
-          <div style="display:flex; align-items:center; gap:8px;">
-            <input type="number" id="rp-fee-input" step="0.1" placeholder="예: -2"
-              oninput="_rpFee=parseFloat(this.value)||0; rpUpdateFeeHint(this.value);"
-              style="flex:1; padding:10px 12px; border:1px solid #e2e8f0; border-radius:9px; font-family:'Noto Sans KR',sans-serif; font-size:14px; font-weight:700; outline:none; text-align:center; transition:border .15s;" onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#e2e8f0'">
-            <span id="rp-fee-hint" style="font-size:12px; font-weight:600; color:#94a3b8; white-space:nowrap; min-width:64px;"></span>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <!-- 데이터 소스 -->
     <div class="card reg-card" style="margin-bottom:20px;">
       <div style="font-size:14px; font-weight:700; color:#0f172a; margin-bottom:16px;">📂 데이터 소스</div>
@@ -631,6 +580,57 @@
           <button onclick="rpParsePaste()" style="padding:9px 22px; background:#6366f1; color:white; border:none; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:13px; font-weight:600; cursor:pointer;">파싱하기 →</button>
           <button onclick="document.getElementById('rp-paste-area').value=''; document.getElementById('rp-fmt-badge').style.display='none';" style="padding:9px 16px; background:transparent; border:1px solid #e2e8f0; color:#64748b; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:13px; font-weight:600; cursor:pointer;">초기화</button>
           <div id="rp-parse-hint" style="font-size:12px; color:#94a3b8; flex:1;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 공통 설정 -->
+    <div class="card reg-card" style="margin-bottom:20px;">
+      <div style="font-size:14px; font-weight:700; color:#0f172a; margin-bottom:18px; display:flex; align-items:center; gap:8px;">
+        ⚙️ 공통 설정
+        <span style="font-size:11px; font-weight:400; color:#94a3b8; background:#f8fafc; padding:3px 10px; border-radius:20px; border:1px solid #e2e8f0;">매체상품 등록에 동일 적용</span>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 160px 1fr; gap:14px 20px; align-items:end;">
+        <div style="display:flex; flex-direction:column; gap:6px;">
+          <label style="font-size:11px; font-weight:600; color:#64748b; letter-spacing:0.3px;">매체명 <span style="color:#ef4444;">*</span></label>
+          <select id="rp-c-media" style="padding:10px 12px; border:1px solid #e2e8f0; border-radius:9px; font-family:'Noto Sans KR',sans-serif; font-size:13px; outline:none; transition:border .15s; background:white; color:#374151;" onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#e2e8f0'">
+            <option value="">— 매체 선택 —</option>
+            <option value="데브늄">데브늄</option>
+            <option value="라온부고(구)">라온부고(구)</option>
+            <option value="하나부고">하나부고</option>
+            <option value="기프티움">기프티움</option>
+            <option value="우리토탈">우리토탈</option>
+            <option value="다솜">다솜</option>
+            <option value="꽃길">꽃길</option>
+            <option value="삼가">삼가</option>
+            <option value="우리토탈M">우리토탈M</option>
+            <option value="첫장">첫장</option>
+            <option value="아이리스">아이리스</option>
+            <option value="국민부고">국민부고</option>
+            <option value="이음">이음</option>
+            <option value="데브늄_기운">데브늄_기운</option>
+            <option value="우리부고">우리부고</option>
+            <option value="삼가_가운">삼가_가운</option>
+            <option value="직전이나라_자채답례">직전이나라_자채답례</option>
+            <option value="미엔씩컴퍼니_자채답례">미엔씩컴퍼니_자채답례</option>
+            <option value="걷줌">걷줌</option>
+            <option value="우리부고포인트몰">우리부고포인트몰</option>
+            <option value="보내아주_기운">보내아주_기운</option>
+            <option value="달란트비즈">달란트비즈</option>
+          </select>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:6px;">
+          <label style="font-size:11px; font-weight:600; color:#64748b; letter-spacing:0.3px;">할인율 % <span style="color:#ef4444;">*</span></label>
+          <input type="number" id="rp-c-discount" placeholder="ex. 20.00" step="0.01" style="padding:10px 12px; border:1px solid #e2e8f0; border-radius:9px; font-family:'Noto Sans KR',sans-serif; font-size:13px; outline:none; text-align:center; transition:border .15s;" onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#e2e8f0'">
+        </div>
+        <div style="display:flex; flex-direction:column; gap:6px;">
+          <label style="font-size:11px; font-weight:600; color:#64748b; letter-spacing:0.3px;">공급수수료 % <span style="font-size:10px; font-weight:400; color:#94a3b8;">새 붙여넣기 시 공급단가 계산용 · 음수=할인 양수=과금</span></label>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <input type="number" id="rp-fee-input" step="0.1" placeholder="예: -2"
+              oninput="_rpFee=parseFloat(this.value)||0; rpUpdateFeeHint(this.value);"
+              style="flex:1; padding:10px 12px; border:1px solid #e2e8f0; border-radius:9px; font-family:'Noto Sans KR',sans-serif; font-size:14px; font-weight:700; outline:none; text-align:center; transition:border .15s;" onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#e2e8f0'">
+            <span id="rp-fee-hint" style="font-size:12px; font-weight:600; color:#94a3b8; white-space:nowrap; min-width:64px;"></span>
+          </div>
         </div>
       </div>
     </div>
@@ -4146,7 +4146,8 @@ function rpRenderMedia() {
 function rpExportMedia() {
   if (!_rpMediaList.length) return _regToast('등록 목록이 비어있습니다', 1);
   const COLS = ['공급사상품코드','공급사발급코드','공급단가','상품명','매체명','판매가','할인율'];
-  const data = [COLS, ..._rpMediaList.map(p => COLS.map(c => p[c] ?? ''))];
+  const instructionRow = ['※ 양식에 꼭 맞춰주세요', ...Array.from({length: COLS.length - 1}, (_, i) => i + 2)];
+  const data = [instructionRow, COLS, ..._rpMediaList.map(p => COLS.map(c => p[c] ?? ''))];
   const ws = XLSX.utils.aoa_to_sheet(data);
   ws['!cols'] = COLS.map(c => ({ wch: Math.max(c.length * 1.8, 14) }));
   const wb = XLSX.utils.book_new();

@@ -3538,6 +3538,8 @@ const _SUPPLIER_FORMATS = {
       if (!item['소비자가']) item['소비자가'] = item['상품정상가'];
       if (!item['상품정상가']) item['상품정상가'] = item['소비자가'];
       if (item['유효일'] && /^\d+$/.test(item['유효일'])) item['유효일'] += '일';
+      const days = parseInt(String(item['유효일'] || '').replace(/[^0-9]/g, '')) || 0;
+      item['판매타입'] = (days === 30 || days === 60) ? 'B2B' : 'B2C';
     },
   },
   MST: {

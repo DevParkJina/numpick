@@ -575,7 +575,7 @@
 
       <!-- 새로 붙여넣기 -->
       <div id="rp-paste-wrap" style="display:none;">
-        <div style="display:flex; gap:8px; margin-bottom:8px; align-items:center;">
+        <div style="display:flex; gap:12px; margin-bottom:10px; align-items:center; flex-wrap:wrap;">
           <span style="font-size:11px; font-weight:600; color:#64748b; white-space:nowrap;">공급사 포맷</span>
           <select id="rp-supplier-fmt" style="padding:7px 10px; border:1px solid #e2e8f0; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:12px; outline:none; background:white; font-weight:600;">
             <option value="auto">🔍 자동 감지</option>
@@ -584,15 +584,11 @@
             <option value="MNC">MNC</option>
           </select>
           <div id="rp-fmt-badge" style="display:none; font-size:11px; font-weight:700; padding:4px 10px; border-radius:20px; background:#dbeafe; color:#1d4ed8;"></div>
-        </div>
-        <div style="display:flex; flex-direction:column; gap:6px; margin-bottom:10px;">
-          <label style="font-size:11px; font-weight:600; color:#64748b;">공급수수료 % <span style="font-size:10px; font-weight:400; color:#94a3b8;">공급단가 계산용 · 음수=할인 양수=과금</span></label>
-          <div style="display:flex; align-items:center; gap:8px; max-width:220px;">
-            <input type="number" id="rp-fee-input" step="0.1" placeholder="예: -2"
-              oninput="_rpFee=parseFloat(this.value)||0; rpUpdateFeeHint(this.value);"
-              style="flex:1; padding:9px 12px; border:1px solid #e2e8f0; border-radius:9px; font-family:'Noto Sans KR',sans-serif; font-size:13px; font-weight:700; outline:none; text-align:center; transition:border .15s;" onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#e2e8f0'">
-            <span id="rp-fee-hint" style="font-size:12px; font-weight:600; color:#94a3b8; white-space:nowrap;"></span>
-          </div>
+          <span style="font-size:11px; font-weight:600; color:#64748b; white-space:nowrap; margin-left:4px;">공급수수료 %</span>
+          <input type="number" id="rp-fee-input" step="0.1" placeholder="예: -2"
+            oninput="_rpFee=parseFloat(this.value)||0; rpUpdateFeeHint(this.value);"
+            style="width:80px; padding:7px 10px; border:1px solid #e2e8f0; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:13px; font-weight:700; outline:none; text-align:center; transition:border .15s;" onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#e2e8f0'">
+          <span id="rp-fee-hint" style="font-size:12px; font-weight:600; color:#94a3b8; white-space:nowrap;"></span>
         </div>
         <textarea id="rp-paste-area" rows="8"
           placeholder="여기에 붙여넣기 (Ctrl+V)"
@@ -4078,11 +4074,24 @@ function rpLoadExcel(evt) {
     const rows = XLSX.utils.sheet_to_json(ws, {defval:'', range:1});
     _rpXlsxRows = rows.filter(r => r['공급사상품코드'] && String(r['공급사상품코드']).trim() !== '공급사상품코드');
     const sumEl = document.getElementById('rp-excel-summary');
-    sumEl.innerHTML = `<strong style="color:#0f172a;">${_rpXlsxRows.length}개 상품</strong> 로드 완료 · <span style="color:#94a3b8;">${_rpXlsxRows.slice(0,3).map(r=>r['교환처']||String(r['상품명']).slice(0,8)).join(', ')}${_rpXlsxRows.length>3?' …':''}</span>`;
+    const brands = [...new Set(_rpXlsxRows.map(r => r['교환처'] || r['상품명']?.slice(0,6) || '').filter(Boolean))];
+    const brandStr = brands.slice(0,5).join(', ') + (brands.length > 5 ? ' …' : '');
+    sumEl.innerHTML = `<div style="display:flex; align-items:center; justify-content:space-between; gap:8px;">
+      <span><strong style="color:#0f172a;">${_rpXlsxRows.length}개 상품</strong> 로드 완료 · <span style="color:#94a3b8;">${brandStr}</span></span>
+      <button onclick="rpResetExcel()" style="padding:3px 10px; background:transparent; border:1px solid #e2e8f0; color:#94a3b8; border-radius:6px; font-family:'Noto Sans KR',sans-serif; font-size:11px; cursor:pointer;">초기화</button>
+    </div>`;
     sumEl.style.display = 'block';
     _regToast(`${_rpXlsxRows.length}개 상품 로드 완료`);
   };
   reader.readAsBinaryString(file);
+}
+function rpResetExcel() {
+  _rpXlsxRows = [];
+  const sumEl = document.getElementById('rp-excel-summary');
+  sumEl.style.display = 'none';
+  sumEl.innerHTML = '';
+  document.getElementById('rp-excel-file').value = '';
+  _regToast('엑셀 초기화 완료');
 }
 function rpGenerate() {
   const media = document.getElementById('rp-c-media').value.trim();

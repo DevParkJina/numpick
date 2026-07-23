@@ -3566,6 +3566,10 @@ const _SUPPLIER_FORMATS = {
       item['상품정상가'] = item['소비자가'];
       // 브랜드 컬럼이 교환처 역할일 때
       if (!item['교환처'] && item['_brand']) item['교환처'] = item['_brand'];
+      // 교환처명이 상품명 앞에 붙어있으면 제거
+      if (item['교환처'] && item['상품명']) {
+        item['상품명'] = _stripBrand(item['상품명'], item['교환처']) || item['상품명'];
+      }
       // "D/30" → "30일" 변환
       if (item['유효일'] && /^[A-Za-z]\/(\d+)/.test(item['유효일'])) {
         item['유효일'] = item['유효일'].replace(/^[A-Za-z]\/(\d+).*/, '$1일');
@@ -3982,7 +3986,8 @@ function rmExportMoche() {
   const COLS = ['공급사상품코드','공급사발급코드','교환처','카테고리','상품명',
     '상품정상가','소비자가','유효일','RM','상품상태','판매타입','상품설명',
     '공급사','보증타입','공급가','공급수수료','판매시작일','판매종료일','배송상품여부'];
-  const data = [COLS, ..._rmMocheList.map(p => COLS.map(c => {
+  const instructionRow = ['※ 양식에 꼭 맞춰주세요', ...Array.from({length: COLS.length - 1}, (_, i) => i + 2)];
+  const data = [instructionRow, COLS, ..._rmMocheList.map(p => COLS.map(c => {
     if (c === '유효일' && p[c]) return String(p[c]).replace(/[^0-9]/g, '');
     return p[c] ?? '';
   }))];

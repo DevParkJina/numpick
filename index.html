@@ -361,7 +361,7 @@
   <!-- 페이지 헤더 -->
   <div style="margin-bottom:28px;">
     <div style="font-size:22px; font-weight:700; color:#0f172a; letter-spacing:-0.5px; margin-bottom:6px;">📦 상품등록</div>
-    <div style="font-size:13px; color:#94a3b8;">공급사 Excel에서 복사(Ctrl+C) 후 붙여넣기(Ctrl+V) → 한 번에 파싱 · KT / MST / MNC 자동 감지</div>
+    <div style="font-size:13px; color:#94a3b8;">공급사 Excel에서 복사(Ctrl+C) 후 붙여넣기(Ctrl+V) → 한 번에 파싱 · KTA / MST / MNC 자동 감지</div>
   </div>
 
   <!-- 서브탭 -->
@@ -389,7 +389,7 @@
       <div style="display:grid; grid-template-columns:1fr 0.65fr 1.2fr; gap:12px 20px; margin-bottom:14px;">
         <div style="display:flex; flex-direction:column; gap:6px;">
           <label style="font-size:11px; font-weight:600; color:#64748b; letter-spacing:0.3px;">공급사 <span style="font-size:10px; font-weight:400; color:#94a3b8;">(영문)</span></label>
-          <input type="text" id="rm-c-supplier" placeholder="KT / MST / MNC" style="padding:10px 12px; border:1px solid #e2e8f0; border-radius:9px; font-family:'Noto Sans KR',sans-serif; font-size:13px; outline:none; transition:border .15s;" onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#e2e8f0'">
+          <input type="text" id="rm-c-supplier" placeholder="KTA / MST / MNC" style="padding:10px 12px; border:1px solid #e2e8f0; border-radius:9px; font-family:'Noto Sans KR',sans-serif; font-size:13px; outline:none; transition:border .15s;" onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#e2e8f0'">
         </div>
         <div style="display:flex; flex-direction:column; gap:6px;">
           <label style="font-size:11px; font-weight:600; color:#64748b; letter-spacing:0.3px;">공급수수료 % <span style="font-size:10px; font-weight:400; color:#94a3b8;">음수=할인 양수=과금</span></label>
@@ -473,7 +473,7 @@
           <span style="font-size:11px; font-weight:700; color:#475569; white-space:nowrap;">공급사 포맷</span>
           <select id="rm-supplier-fmt" style="padding:5px 8px; border:none; border-radius:6px; font-family:'Noto Sans KR',sans-serif; font-size:12px; outline:none; background:white; font-weight:600; border:1px solid #e2e8f0;">
             <option value="auto">🔍 자동 감지</option>
-            <option value="KT">KT</option>
+            <option value="KTA">KTA</option>
             <option value="MST">MST (미스틱)</option>
             <option value="MNC">MNC</option>
           </select>
@@ -484,7 +484,7 @@
         </div>
       </div>
       <textarea id="rm-paste-area" rows="10"
-        placeholder="여기에 붙여넣기 (Ctrl+V)&#10;&#10;[KT]  NO · 브랜드명(브랜드) · 상품유형 · 카테고리 · 상품코드 · 상품명 · 판매가격 · 소비자가격 · 유효일수 · 공급사코드 · 특이사항&#10;[MST] 미스틱상품코드 · 상품명 · 판매가(정상가) · 유효기간 · 교환처명(브랜드)&#10;[MNC] 제휴사명 · 상품명 · 상품가격 · 발급코드(발급일 포함) · 상품코드"
+        placeholder="여기에 붙여넣기 (Ctrl+V)&#10;&#10;[KTA] NO · 브랜드명(브랜드) · 상품유형 · 카테고리 · 상품코드 · 상품명 · 판매가격 · 소비자가격 · 유효일수 · 공급사코드 · 특이사항&#10;[MST] 미스틱상품코드 · 상품명 · 판매가(정상가) · 유효기간 · 교환처명(브랜드)&#10;[MNC] 제휴사명 · 상품명 · 상품가격 · 발급코드(발급일 포함) · 상품코드"
         style="width:100%; padding:12px 14px; border:1px solid #e2e8f0; border-radius:10px; font-family:'Noto Sans KR',monospace; font-size:12px; outline:none; resize:vertical; line-height:1.6; color:#374151; background:#fafbfc; transition:border .15s;" onfocus="this.style.borderColor='#6366f1'; this.style.background='white'" onblur="this.style.borderColor='#e2e8f0'; this.style.background='#fafbfc'"></textarea>
       <div style="display:flex; gap:10px; margin-top:14px; align-items:center;">
         <button onclick="rmParsePaste()" style="padding:10px 26px; background:#6366f1; color:white; border:none; border-radius:9px; font-family:'Noto Sans KR',sans-serif; font-size:13px; font-weight:700; cursor:pointer; letter-spacing:-0.2px;">파싱하기 →</button>
@@ -590,7 +590,7 @@
           <span style="font-size:11px; font-weight:600; color:#64748b; white-space:nowrap;">공급사 포맷</span>
           <select id="rp-supplier-fmt" style="padding:7px 10px; border:1px solid #e2e8f0; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:12px; outline:none; background:white; font-weight:600;">
             <option value="auto">🔍 자동 감지</option>
-            <option value="KT">KT</option>
+            <option value="KTA">KTA</option>
             <option value="MST">MST (미스틱)</option>
             <option value="MNC">MNC</option>
           </select>
@@ -3517,7 +3517,7 @@ function rpUpdateFeeHint(raw) {
 // ── 공급사별 포맷 정의
 const _SUPPLIER_FORMATS = {
   KT: {
-    name: 'KT',
+    name: 'KTA',
     color: '#dbeafe', textColor: '#1d4ed8',
     detect: hdrs => hdrs.some(h => /^NO$/i.test(h) || /브랜드명/.test(h) || /^공급사코드$/.test(h)),
     map: {

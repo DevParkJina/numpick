@@ -3828,7 +3828,7 @@ function _showPreviewModal() {
     // 카테고리: 브랜드맵 → 공통설정 순으로 폴백
     if (!item['카테고리']) item['카테고리'] = brandCatMap[item['교환처']] || catCommon;
     const consumer = item['소비자가'] || 0;
-    item['공급가'] = consumer * (1 + fee / 100);
+    item['공급가'] = Math.floor(consumer * (1 + fee / 100));
     delete item['_brand'];
     previewItems.push(item);
   }

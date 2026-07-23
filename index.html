@@ -388,8 +388,12 @@
       <!-- 1행: 공급사 / 공급수수료 / 카테고리 -->
       <div style="display:grid; grid-template-columns:1fr 0.65fr 1.2fr; gap:12px 20px; margin-bottom:14px;">
         <div style="display:flex; flex-direction:column; gap:6px;">
-          <label style="font-size:11px; font-weight:600; color:#64748b; letter-spacing:0.3px;">공급사 <span style="font-size:10px; font-weight:400; color:#94a3b8;">(영문)</span></label>
-          <input type="text" id="rm-c-supplier" placeholder="KTA / MST / MNC" style="padding:10px 12px; border:1px solid #e2e8f0; border-radius:9px; font-family:'Noto Sans KR',sans-serif; font-size:13px; outline:none; transition:border .15s;" onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#e2e8f0'">
+          <label style="font-size:11px; font-weight:600; color:#64748b; letter-spacing:0.3px;">공급사</label>
+          <select id="rm-c-supplier" style="padding:10px 12px; border:1px solid #e2e8f0; border-radius:9px; font-family:'Noto Sans KR',sans-serif; font-size:13px; outline:none; transition:border .15s; background:white; color:#374151;" onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#e2e8f0'">
+            <option value="KTA">KTA</option>
+            <option value="MST">MST</option>
+            <option value="MNC">MNC</option>
+          </select>
         </div>
         <div style="display:flex; flex-direction:column; gap:6px;">
           <label style="font-size:11px; font-weight:600; color:#64748b; letter-spacing:0.3px;">공급수수료 % <span style="font-size:10px; font-weight:400; color:#94a3b8;">음수=할인 양수=과금</span></label>

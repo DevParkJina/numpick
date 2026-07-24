@@ -791,72 +791,58 @@
         </div>
         <div style="display:flex; flex-direction:column; gap:4px;">
           <label style="font-size:11px; font-weight:600; color:#64748b;">담당자</label>
-          <input id="rep-manager" type="text" placeholder="예: 이건호 과장 / 010-0000-0000" style="padding:8px 12px; border:1px solid #e2e8f0; border-radius:8px; font-size:13px; font-family:'Noto Sans KR',sans-serif; outline:none; width:240px;" onfocus="this.style.borderColor='#4f46e5'" onblur="this.style.borderColor='#e2e8f0'">
+          <input id="rep-manager" type="text" placeholder="예) 박진아 과장" style="padding:8px 12px; border:1px solid #e2e8f0; border-radius:8px; font-size:13px; font-family:'Noto Sans KR',sans-serif; outline:none; width:200px;" onfocus="this.style.borderColor='#4f46e5'" onblur="this.style.borderColor='#e2e8f0'">
         </div>
       </div>
 
       <!-- CS 처리 현황 -->
       <div style="margin-bottom:20px; padding-bottom:20px; border-bottom:1px solid #f1f5f9;">
         <div style="font-size:13px; font-weight:700; color:#0f172a; margin-bottom:12px;">고객 문의(CS) 처리 현황</div>
-        <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end;">
-          <div style="display:flex; flex-direction:column; gap:4px;">
-            <label style="font-size:11px; font-weight:600; color:#64748b;">총 CS 인입</label>
-            <input id="rep-cs-total" type="number" placeholder="273" style="padding:8px 10px; border:1px solid #e2e8f0; border-radius:8px; font-size:13px; font-family:'Noto Sans KR',sans-serif; outline:none; width:80px; text-align:center; font-weight:700;" onfocus="this.style.borderColor='#4f46e5'" onblur="this.style.borderColor='#e2e8f0'">
-          </div>
-          <div style="width:1px; height:48px; background:#f1f5f9; align-self:flex-end;"></div>
+        <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end; margin-bottom:10px;">
           <div style="display:flex; flex-direction:column; gap:4px;">
             <label style="font-size:11px; font-weight:600; color:#64748b;">단순 문의</label>
-            <input id="rep-cs-simple" type="number" placeholder="78" style="padding:8px 10px; border:1px solid #e2e8f0; border-radius:8px; font-size:13px; font-family:'Noto Sans KR',sans-serif; outline:none; width:72px; text-align:center;" onfocus="this.style.borderColor='#4f46e5'" onblur="this.style.borderColor='#e2e8f0'">
+            <input id="rep-cs-simple" type="number" placeholder="0" oninput="repCalcCsTotal()" style="padding:8px 10px; border:1px solid #e2e8f0; border-radius:8px; font-size:13px; font-family:'Noto Sans KR',sans-serif; outline:none; width:72px; text-align:center;" onfocus="this.style.borderColor='#4f46e5'" onblur="this.style.borderColor='#e2e8f0'">
           </div>
           <div style="display:flex; flex-direction:column; gap:4px;">
             <label style="font-size:11px; font-weight:600; color:#64748b;">쿠폰관련</label>
-            <input id="rep-cs-coupon" type="number" placeholder="132" style="padding:8px 10px; border:1px solid #e2e8f0; border-radius:8px; font-size:13px; font-family:'Noto Sans KR',sans-serif; outline:none; width:72px; text-align:center;" onfocus="this.style.borderColor='#4f46e5'" onblur="this.style.borderColor='#e2e8f0'">
+            <input id="rep-cs-coupon" type="number" placeholder="0" oninput="repCalcCsTotal()" style="padding:8px 10px; border:1px solid #e2e8f0; border-radius:8px; font-size:13px; font-family:'Noto Sans KR',sans-serif; outline:none; width:72px; text-align:center;" onfocus="this.style.borderColor='#4f46e5'" onblur="this.style.borderColor='#e2e8f0'">
           </div>
           <div style="display:flex; flex-direction:column; gap:4px;">
             <label style="font-size:11px; font-weight:600; color:#64748b;">발송오기입</label>
-            <input id="rep-cs-shipping" type="number" placeholder="21" style="padding:8px 10px; border:1px solid #e2e8f0; border-radius:8px; font-size:13px; font-family:'Noto Sans KR',sans-serif; outline:none; width:72px; text-align:center;" onfocus="this.style.borderColor='#4f46e5'" onblur="this.style.borderColor='#e2e8f0'">
+            <input id="rep-cs-shipping" type="number" placeholder="0" oninput="repCalcCsTotal()" style="padding:8px 10px; border:1px solid #e2e8f0; border-radius:8px; font-size:13px; font-family:'Noto Sans KR',sans-serif; outline:none; width:72px; text-align:center;" onfocus="this.style.borderColor='#4f46e5'" onblur="this.style.borderColor='#e2e8f0'">
           </div>
           <div style="display:flex; flex-direction:column; gap:4px;">
             <label style="font-size:11px; font-weight:600; color:#64748b;">결제 문의</label>
-            <input id="rep-cs-payment" type="number" placeholder="28" style="padding:8px 10px; border:1px solid #e2e8f0; border-radius:8px; font-size:13px; font-family:'Noto Sans KR',sans-serif; outline:none; width:72px; text-align:center;" onfocus="this.style.borderColor='#4f46e5'" onblur="this.style.borderColor='#e2e8f0'">
+            <input id="rep-cs-payment" type="number" placeholder="0" oninput="repCalcCsTotal()" style="padding:8px 10px; border:1px solid #e2e8f0; border-radius:8px; font-size:13px; font-family:'Noto Sans KR',sans-serif; outline:none; width:72px; text-align:center;" onfocus="this.style.borderColor='#4f46e5'" onblur="this.style.borderColor='#e2e8f0'">
           </div>
           <div style="display:flex; flex-direction:column; gap:4px;">
             <label style="font-size:11px; font-weight:600; color:#64748b;">취소 문의</label>
-            <input id="rep-cs-cancel" type="number" placeholder="14" style="padding:8px 10px; border:1px solid #e2e8f0; border-radius:8px; font-size:13px; font-family:'Noto Sans KR',sans-serif; outline:none; width:72px; text-align:center;" onfocus="this.style.borderColor='#4f46e5'" onblur="this.style.borderColor='#e2e8f0'">
+            <input id="rep-cs-cancel" type="number" placeholder="0" oninput="repCalcCsTotal()" style="padding:8px 10px; border:1px solid #e2e8f0; border-radius:8px; font-size:13px; font-family:'Noto Sans KR',sans-serif; outline:none; width:72px; text-align:center;" onfocus="this.style.borderColor='#4f46e5'" onblur="this.style.borderColor='#e2e8f0'">
           </div>
+        </div>
+        <div style="background:#f8fafc; border-radius:8px; padding:10px 14px; display:flex; align-items:center; gap:10px;">
+          <span style="font-size:11px; font-weight:600; color:#64748b;">총 CS 인입 (자동합산)</span>
+          <span id="rep-cs-total-display" style="font-size:16px; font-weight:700; color:#1e3a5f;">0건</span>
+          <input type="hidden" id="rep-cs-total" value="0">
         </div>
       </div>
 
       <!-- 주요 이슈 -->
       <div style="margin-bottom:20px; padding-bottom:20px; border-bottom:1px solid #f1f5f9;">
-        <div style="font-size:13px; font-weight:700; color:#0f172a; margin-bottom:12px;">주요 이슈</div>
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
-          <div style="display:flex; flex-direction:column; gap:6px;">
-            <input id="rep-issue1-title" type="text" placeholder="이슈 1 제목 (예: 상품 라인업 확대)" style="padding:8px 12px; border:1px solid #e2e8f0; border-radius:8px; font-size:12px; font-weight:600; font-family:'Noto Sans KR',sans-serif; outline:none;" onfocus="this.style.borderColor='#4f46e5'" onblur="this.style.borderColor='#e2e8f0'">
-            <textarea id="rep-issue1-body" rows="3" placeholder="이슈 1 내용" style="padding:8px 12px; border:1px solid #e2e8f0; border-radius:8px; font-size:12px; font-family:'Noto Sans KR',sans-serif; outline:none; resize:vertical; line-height:1.6;" onfocus="this.style.borderColor='#4f46e5'" onblur="this.style.borderColor='#e2e8f0'"></textarea>
-          </div>
-          <div style="display:flex; flex-direction:column; gap:6px;">
-            <input id="rep-issue2-title" type="text" placeholder="이슈 2 제목 (예: 리스크 분산 및 매출 안정 확보)" style="padding:8px 12px; border:1px solid #e2e8f0; border-radius:8px; font-size:12px; font-weight:600; font-family:'Noto Sans KR',sans-serif; outline:none;" onfocus="this.style.borderColor='#4f46e5'" onblur="this.style.borderColor='#e2e8f0'">
-            <textarea id="rep-issue2-body" rows="3" placeholder="이슈 2 내용" style="padding:8px 12px; border:1px solid #e2e8f0; border-radius:8px; font-size:12px; font-family:'Noto Sans KR',sans-serif; outline:none; resize:vertical; line-height:1.6;" onfocus="this.style.borderColor='#4f46e5'" onblur="this.style.borderColor='#e2e8f0'"></textarea>
-          </div>
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+          <div style="font-size:13px; font-weight:700; color:#0f172a;">주요 이슈</div>
+          <button onclick="repAddIssue()" style="background:#f1f5f9; color:#374151; border:none; border-radius:8px; padding:5px 14px; font-size:12px; font-weight:600; cursor:pointer; font-family:'Noto Sans KR',sans-serif;">+ 추가</button>
         </div>
+        <div id="rep-issues-list" style="display:flex; flex-direction:column; gap:12px;"></div>
       </div>
 
       <!-- 업데이트 예정 -->
       <div style="margin-bottom:20px; padding-bottom:20px; border-bottom:1px solid #f1f5f9;">
-        <div style="font-size:13px; font-weight:700; color:#0f172a; margin-bottom:12px;">업데이트 예정 사항</div>
-        <div style="display:flex; flex-direction:column; gap:8px;">
-          <div style="display:flex; gap:10px; align-items:center;">
-            <span style="min-width:20px; height:20px; background:#1e3a5f; color:white; border-radius:4px; font-size:11px; font-weight:700; display:flex; align-items:center; justify-content:center;">1</span>
-            <input id="rep-update1-title" type="text" placeholder="항목명 (예: 알림톡 자동화)" style="padding:7px 12px; border:1px solid #e2e8f0; border-radius:8px; font-size:12px; font-weight:600; font-family:'Noto Sans KR',sans-serif; outline:none; width:180px;" onfocus="this.style.borderColor='#4f46e5'" onblur="this.style.borderColor='#e2e8f0'">
-            <input id="rep-update1-body" type="text" placeholder="설명" style="padding:7px 12px; border:1px solid #e2e8f0; border-radius:8px; font-size:12px; font-family:'Noto Sans KR',sans-serif; outline:none; flex:1;" onfocus="this.style.borderColor='#4f46e5'" onblur="this.style.borderColor='#e2e8f0'">
-          </div>
-          <div style="display:flex; gap:10px; align-items:center;">
-            <span style="min-width:20px; height:20px; background:#1e3a5f; color:white; border-radius:4px; font-size:11px; font-weight:700; display:flex; align-items:center; justify-content:center;">2</span>
-            <input id="rep-update2-title" type="text" placeholder="항목명 (예: 주문정보 실시간 제공)" style="padding:7px 12px; border:1px solid #e2e8f0; border-radius:8px; font-size:12px; font-weight:600; font-family:'Noto Sans KR',sans-serif; outline:none; width:180px;" onfocus="this.style.borderColor='#4f46e5'" onblur="this.style.borderColor='#e2e8f0'">
-            <input id="rep-update2-body" type="text" placeholder="설명" style="padding:7px 12px; border:1px solid #e2e8f0; border-radius:8px; font-size:12px; font-family:'Noto Sans KR',sans-serif; outline:none; flex:1;" onfocus="this.style.borderColor='#4f46e5'" onblur="this.style.borderColor='#e2e8f0'">
-          </div>
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+          <div style="font-size:13px; font-weight:700; color:#0f172a;">업데이트 예정 사항</div>
+          <button onclick="repAddUpdate()" style="background:#f1f5f9; color:#374151; border:none; border-radius:8px; padding:5px 14px; font-size:12px; font-weight:600; cursor:pointer; font-family:'Noto Sans KR',sans-serif;">+ 추가</button>
         </div>
+        <div id="rep-updates-list" style="display:flex; flex-direction:column; gap:8px;"></div>
       </div>
 
       <div style="display:flex; justify-content:flex-end;">
@@ -2809,15 +2795,73 @@ function resetTrend() {
   renderTrend();
 }
 
+let _repIssueSeq = 0, _repUpdateSeq = 0;
+
+function repCalcCsTotal() {
+  const total = ['rep-cs-simple','rep-cs-coupon','rep-cs-shipping','rep-cs-payment','rep-cs-cancel']
+    .reduce((s, id) => s + (parseInt(document.getElementById(id).value) || 0), 0);
+  document.getElementById('rep-cs-total-display').textContent = total.toLocaleString() + '건';
+  document.getElementById('rep-cs-total').value = total;
+}
+
+function repAddIssue() {
+  const id = ++_repIssueSeq;
+  const s = 'padding:8px 12px; border:1px solid #e2e8f0; border-radius:8px; font-size:12px; font-family:\'Noto Sans KR\',sans-serif; outline:none;';
+  const div = document.createElement('div');
+  div.id = `rep-issue-item-${id}`;
+  div.style.cssText = 'display:flex; flex-direction:column; gap:6px;';
+  div.innerHTML = `
+    <div style="display:flex; gap:8px; align-items:center;">
+      <input type="text" id="rep-iss${id}-t" placeholder="이슈 제목" style="${s} flex:1; font-weight:600;" onfocus="this.style.borderColor='#4f46e5'" onblur="this.style.borderColor='#e2e8f0'">
+      <button onclick="repRemoveIssue(${id})" style="padding:6px 10px; background:#fee2e2; color:#ef4444; border:none; border-radius:8px; font-size:16px; font-weight:700; cursor:pointer; line-height:1; flex-shrink:0;">−</button>
+    </div>
+    <textarea id="rep-iss${id}-b" rows="3" placeholder="이슈 내용" style="${s} resize:vertical; line-height:1.6; width:100%;" onfocus="this.style.borderColor='#4f46e5'" onblur="this.style.borderColor='#e2e8f0'"></textarea>`;
+  document.getElementById('rep-issues-list').appendChild(div);
+}
+
+function repRemoveIssue(id) {
+  const el = document.getElementById(`rep-issue-item-${id}`);
+  if (el) el.remove();
+}
+
+function repAddUpdate() {
+  const id = ++_repUpdateSeq;
+  const n = document.getElementById('rep-updates-list').children.length + 1;
+  const s = 'padding:7px 12px; border:1px solid #e2e8f0; border-radius:8px; font-size:12px; font-family:\'Noto Sans KR\',sans-serif; outline:none;';
+  const div = document.createElement('div');
+  div.id = `rep-update-item-${id}`;
+  div.style.cssText = 'display:flex; gap:10px; align-items:center;';
+  div.innerHTML = `
+    <span style="min-width:22px; height:22px; background:#1e3a5f; color:white; border-radius:4px; font-size:11px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0;">${n}</span>
+    <input type="text" id="rep-upd${id}-t" placeholder="항목명" style="${s} width:160px; font-weight:600;" onfocus="this.style.borderColor='#4f46e5'" onblur="this.style.borderColor='#e2e8f0'">
+    <input type="text" id="rep-upd${id}-b" placeholder="설명" style="${s} flex:1;" onfocus="this.style.borderColor='#4f46e5'" onblur="this.style.borderColor='#e2e8f0'">
+    <button onclick="repRemoveUpdate(${id})" style="padding:5px 9px; background:#fee2e2; color:#ef4444; border:none; border-radius:8px; font-size:16px; font-weight:700; cursor:pointer; line-height:1; flex-shrink:0;">−</button>`;
+  document.getElementById('rep-updates-list').appendChild(div);
+}
+
+function repRemoveUpdate(id) {
+  const el = document.getElementById(`rep-update-item-${id}`);
+  if (el) el.remove();
+}
+
 function toggleReportBuilder() {
   const panel = document.getElementById('report-builder-panel');
   const btn   = document.getElementById('report-builder-toggle-btn');
   const open  = panel.style.display === 'none';
   panel.style.display = open ? '' : 'none';
   btn.style.background = open ? '#4f46e5' : '#0f172a';
-  if (open && _trendFromD) {
-    document.getElementById('rep-year').value  = _trendFromD.getFullYear();
-    document.getElementById('rep-month').value = _trendFromD.getMonth() + 1;
+  if (open) {
+    if (_trendFromD) {
+      document.getElementById('rep-year').value  = _trendFromD.getFullYear();
+      document.getElementById('rep-month').value = _trendFromD.getMonth() + 1;
+    }
+    const mediaVal = (document.getElementById('trend-filter-media').value || '').trim();
+    const recipEl  = document.getElementById('rep-recipient');
+    if (mediaVal && !mediaVal.startsWith('_') && !recipEl.value) {
+      recipEl.value = mediaVal;
+    }
+    if (!document.getElementById('rep-issues-list').children.length)  repAddIssue();
+    if (!document.getElementById('rep-updates-list').children.length) repAddUpdate();
   }
 }
 
@@ -2829,27 +2873,35 @@ function generateReport() {
   const month     = document.getElementById('rep-month').value || (new Date().getMonth() + 1);
   const manager   = document.getElementById('rep-manager').value.trim() || '';
 
-  const csTotal    = parseInt(document.getElementById('rep-cs-total').value)    || 0;
   const csSimple   = parseInt(document.getElementById('rep-cs-simple').value)   || 0;
   const csCoupon   = parseInt(document.getElementById('rep-cs-coupon').value)   || 0;
   const csShipping = parseInt(document.getElementById('rep-cs-shipping').value) || 0;
   const csPayment  = parseInt(document.getElementById('rep-cs-payment').value)  || 0;
   const csCancel   = parseInt(document.getElementById('rep-cs-cancel').value)   || 0;
+  const csTotal    = csSimple + csCoupon + csShipping + csPayment + csCancel;
 
-  const issue1Title = document.getElementById('rep-issue1-title').value.trim();
-  const issue1Body  = document.getElementById('rep-issue1-body').value.trim();
-  const issue2Title = document.getElementById('rep-issue2-title').value.trim();
-  const issue2Body  = document.getElementById('rep-issue2-body').value.trim();
-  const upd1Title   = document.getElementById('rep-update1-title').value.trim();
-  const upd1Body    = document.getElementById('rep-update1-body').value.trim();
-  const upd2Title   = document.getElementById('rep-update2-title').value.trim();
-  const upd2Body    = document.getElementById('rep-update2-body').value.trim();
+  const issues = [];
+  document.querySelectorAll('#rep-issues-list > [id^="rep-issue-item-"]').forEach(div => {
+    const id = div.id.replace('rep-issue-item-', '');
+    const t = (document.getElementById(`rep-iss${id}-t`)?.value || '').trim();
+    const b = (document.getElementById(`rep-iss${id}-b`)?.value || '').trim();
+    if (t) issues.push({ t, b });
+  });
+
+  const updates = [];
+  document.querySelectorAll('#rep-updates-list > [id^="rep-update-item-"]').forEach(div => {
+    const id = div.id.replace('rep-update-item-', '');
+    const t = (document.getElementById(`rep-upd${id}-t`)?.value || '').trim();
+    const b = (document.getElementById(`rep-upd${id}-b`)?.value || '').trim();
+    if (t) updates.push({ t, b });
+  });
 
   // 매출 집계
   const agg = aggRows(_trendRows);
-  const totalAmt   = agg.amt;
+  const totalAmt    = agg.amt;
   const totalOrders = agg.orders;
-  const totalSent  = _trendRows.length;
+  const totalQty    = agg.qty;
+  const totalSent   = _trendRows.length;
 
   // 브랜드별 집계
   const brandMap = {};
@@ -2888,24 +2940,99 @@ function generateReport() {
     <td style="padding:10px 16px; border-bottom:1px solid #e2e8f0; font-size:13px; color:#1d4ed8; text-align:center;">${csTypePct(n)}</td>
   </tr>`).join('');
 
-  const issueCards = [issue1Title && {t:issue1Title, b:issue1Body}, issue2Title && {t:issue2Title, b:issue2Body}].filter(Boolean).map((iss, i) => `
+  const issueMoji = ['📈','💡','🔍','📌'];
+  const issueCards = issues.map((iss, i) => `
     <div style="border:1px solid #e8ecf4; border-radius:8px; padding:16px 20px; margin-bottom:12px; display:flex; gap:16px; align-items:flex-start;">
-      <div style="font-size:20px; margin-top:2px;">${i===0?'📈':'💡'}</div>
+      <div style="font-size:20px; margin-top:2px;">${issueMoji[i] || '•'}</div>
       <div>
         <div style="font-size:13px; font-weight:700; color:#1e3a5f; margin-bottom:6px;">${iss.t}</div>
         <div style="font-size:12px; color:#374151; line-height:1.7; white-space:pre-wrap;">${iss.b}</div>
       </div>
     </div>`).join('');
 
-  const updRows = [[upd1Title, upd1Body], [upd2Title, upd2Body]].filter(([t])=>t).map(([t,b],i)=>`
+  const updRows = updates.map(({t, b}, i) => `
     <tr>
       <td style="padding:10px 16px; border-bottom:1px solid #e2e8f0; font-size:13px; font-weight:700; color:white; background:#1e3a5f; text-align:center; width:36px;">${i+1}</td>
       <td style="padding:10px 16px; border-bottom:1px solid #e2e8f0; font-size:13px; font-weight:700; color:#1e3a5f;">${t}</td>
       <td style="padding:10px 16px; border-bottom:1px solid #e2e8f0; font-size:13px; color:#374151;">${b}</td>
     </tr>`).join('');
 
-  const insightBrands = brands.slice(0,2).map(([name, amt])=>`${name}(${totalAmt>0?(amt/totalAmt*100).toFixed(1):0}%)`).join(' + ');
-  const otherPct = (100 - top2Pct).toFixed(1);
+  // ── 핵심 인사이트 자동 분석 ──
+  const autoInsights = [];
+
+  // 1. 브랜드 집중도
+  if (brands.length === 1) {
+    autoInsights.push(`<b>${brands[0][0]}</b> 단일 브랜드 구조입니다. 특정 브랜드 의존도가 높아 추가 라인업 확대를 통한 리스크 분산이 권장됩니다.`);
+  } else {
+    const b1pct = totalAmt > 0 ? top1[1] / totalAmt * 100 : 0;
+    const b2pct = totalAmt > 0 ? (top2 ? top2[1] / totalAmt * 100 : 0) : 0;
+    if (b1pct >= 70) {
+      autoInsights.push(`<b>${top1[0]}</b>이 전체 매출의 <b>${b1pct.toFixed(1)}%</b>를 차지하며 압도적 1위입니다. 단일 브랜드 의존도가 높아 다변화 전략 검토가 필요합니다.`);
+    } else if (b1pct >= 45) {
+      autoInsights.push(`<b>${top1[0]}</b>(${b1pct.toFixed(1)}%) · <b>${top2[0]}</b>(${b2pct.toFixed(1)}%) 양강 구도로 안정적인 수익 구조를 형성하고 있습니다. 나머지 ${brands.length - 2}개 브랜드가 추가 매출을 보완합니다.`);
+    } else {
+      const top3amt = brands.slice(0,3).reduce((s,[,v])=>s+v,0);
+      const top3pct = totalAmt > 0 ? (top3amt / totalAmt * 100).toFixed(1) : 0;
+      autoInsights.push(`상위 ${Math.min(3,brands.length)}개 브랜드가 전체의 <b>${top3pct}%</b>를 고르게 분담하는 균형 잡힌 멀티 브랜드 구조로, 리스크 분산이 잘 이루어지고 있습니다.`);
+    }
+  }
+
+  // 2. 평균 주문 단가
+  if (totalOrders > 0) {
+    const avgAmt = Math.round(totalAmt / totalOrders);
+    if (avgAmt >= 50000) {
+      autoInsights.push(`주문 1건당 평균 거래금액 <b>${avgAmt.toLocaleString()}원</b> — 고단가 프리미엄 기프티콘 중심의 구매 패턴이 견조하게 유지되고 있습니다.`);
+    } else if (avgAmt >= 20000) {
+      autoInsights.push(`주문 1건당 평균 거래금액 <b>${avgAmt.toLocaleString()}원</b> — 중가 상품대 수요가 안정적입니다. 프리미엄 라인업 비중 확대 시 단가 상승 여지가 있습니다.`);
+    } else {
+      autoInsights.push(`주문 1건당 평균 거래금액 <b>${avgAmt.toLocaleString()}원</b> — 소액 상품 주문이 많습니다. 고단가 상품 구성 강화를 통해 매출 효율을 높일 수 있습니다.`);
+    }
+  }
+
+  // 3. 수량 패턴
+  if (totalOrders > 0 && totalQty > 0) {
+    const avgQty = totalQty / totalOrders;
+    if (avgQty >= 2.0) {
+      autoInsights.push(`주문 1건당 평균 <b>${avgQty.toFixed(1)}개</b> 발송 — 묶음·대량 주문 비율이 높습니다. 세트 구성 또는 대량 할인 전략을 통해 객단가 추가 향상이 가능합니다.`);
+    } else if (avgQty <= 1.1) {
+      autoInsights.push(`주문 1건당 평균 <b>${avgQty.toFixed(1)}개</b> 발송 — 단품 위주의 개별 주문이 주를 이루고 있습니다. 2개 이상 구매 유도 프로모션 도입을 검토해볼 수 있습니다.`);
+    }
+  }
+
+  // 4. CS 비율 분석
+  if (csTotal > 0 && totalOrders > 0) {
+    const csRate = csTotal / totalOrders * 100;
+    const maxCsType = [['단순 문의', csSimple],['쿠폰 관련', csCoupon],['발송 오기입', csShipping],['결제 문의', csPayment],['취소 문의', csCancel]]
+      .filter(([,n])=>n>0).sort((a,b)=>b[1]-a[1])[0];
+    if (csRate < 5) {
+      autoInsights.push(`CS 발생률 <b>${csRate.toFixed(1)}%</b>(${csTotal}건) — 매우 낮은 수준으로 상품 운영 품질이 우수합니다. 전담팀의 신속한 처리로 고객사 불편이 최소화되고 있습니다.`);
+    } else if (csRate < 15) {
+      autoInsights.push(`CS 발생률 <b>${csRate.toFixed(1)}%</b>(${csTotal}건) — 전담팀이 전량 직접 처리해 고객사 업무 부담을 완전히 해소하였습니다.${maxCsType ? ` 이달 가장 많은 유형은 ${maxCsType[0]}(${maxCsType[1]}건)입니다.` : ''}`);
+    } else {
+      autoInsights.push(`CS 발생률 <b>${csRate.toFixed(1)}%</b>(${csTotal}건) — 주의가 필요한 수준입니다.${maxCsType ? ` 가장 빈도가 높은 <b>${maxCsType[0]}(${maxCsType[1]}건)</b>에 대한 사전 안내 강화로 발생률을 낮출 수 있습니다.` : ''}`);
+    }
+  }
+
+  // 5. 전기 대비 성장률
+  if (_trendPrevRows.length > 0) {
+    const prevAgg = aggRows(_trendPrevRows);
+    if (prevAgg.amt > 0) {
+      const gPct = (totalAmt - prevAgg.amt) / prevAgg.amt * 100;
+      if (gPct >= 20) {
+        autoInsights.push(`직전 기간 대비 매출 <b>+${gPct.toFixed(1)}%</b> 성장 — 강한 상승세입니다. 현재 운영 전략의 효과가 명확하게 나타나고 있습니다.`);
+      } else if (gPct >= 5) {
+        autoInsights.push(`직전 기간 대비 매출 <b>+${gPct.toFixed(1)}%</b> 증가 — 안정적인 성장 기조가 유지되고 있습니다.`);
+      } else if (gPct >= -5) {
+        autoInsights.push(`직전 기간 대비 매출 변동 <b>${gPct >= 0 ? '+' : ''}${gPct.toFixed(1)}%</b> — 보합 수준으로 계절적 요인 등을 고려한 전략 점검을 권장합니다.`);
+      } else if (gPct >= -20) {
+        autoInsights.push(`직전 기간 대비 매출 <b>${gPct.toFixed(1)}%</b> 감소 — 계절성·이벤트 요인을 검토하고 다음 달 회복 전략을 수립해야 합니다.`);
+      } else {
+        autoInsights.push(`직전 기간 대비 매출 <b>${gPct.toFixed(1)}%</b> 급감 — 주요 브랜드 실적 변화, 외부 환경 요인 등 원인을 면밀히 분석하고 즉각적인 대응이 필요합니다.`);
+      }
+    }
+  }
+
+  const insightItems = autoInsights.map(txt => `<li style="margin-bottom:9px; line-height:1.75; color:#374151;">${txt}</li>`).join('');
 
   const html = `<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8">
   <title>${year}년 ${month}월 월간 운영 결산 리포트 - ${recipient}</title>
@@ -2939,7 +3066,8 @@ function generateReport() {
   <div class="section-title">📊 핵심 성과 요약</div>
   <div class="kpi-row">
     <div class="kpi-cell"><div class="kpi-label">총매출 (정상가)</div><div class="kpi-value">${totalAmt.toLocaleString()}</div><div class="kpi-unit">원</div></div>
-    <div class="kpi-cell"><div class="kpi-label">총 주문자수</div><div class="kpi-value">${totalOrders.toLocaleString()} <span style="font-size:16px;font-weight:400;">명</span></div></div>
+    <div class="kpi-cell"><div class="kpi-label">주문건수</div><div class="kpi-value">${totalOrders.toLocaleString()} <span style="font-size:16px;font-weight:400;">건</span></div></div>
+    <div class="kpi-cell"><div class="kpi-label">판매수량</div><div class="kpi-value">${totalQty.toLocaleString()} <span style="font-size:16px;font-weight:400;">개</span></div></div>
     <div class="kpi-cell"><div class="kpi-label">총 발송건수</div><div class="kpi-value">${totalSent.toLocaleString()} <span style="font-size:16px;font-weight:400;">건</span></div></div>
   </div>
   <div class="section-title">☕ 브랜드별 매출 현황</div>
@@ -2965,9 +3093,9 @@ ${updRows || top1 ? `<div class="page">
   <p style="font-size:13px; color:#374151; margin-bottom:20px;">${month}월 운영 결과를 바탕으로, 운영대행을 저희에게 맡기는 것이 왜 합리적인 선택인지 구체적인 근거로 말씀드립니다.</p>
   ${csTotal ? `<div style="border:1px solid #e2e8f0; border-radius:8px; padding:16px 20px; margin-bottom:12px; display:flex; gap:16px; align-items:flex-start;"><div style="min-width:32px;height:32px;background:#1e3a5f;color:white;border-radius:6px;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;">1</div><div><div style="font-size:13px;font-weight:700;color:#1d4ed8;margin-bottom:4px;">CS ${csTotal}건, 저희가 전부 처리했습니다</div><div style="font-size:12px;color:#374151;">이달 접수된 고객 문의 ${csTotal}건을 저희 운영팀이 직접 분류하고 처리했습니다.</div></div></div>` : ''}
   ${top1 && top2 ? `<div style="border:1px solid #e2e8f0; border-radius:8px; padding:16px 20px; margin-bottom:20px; display:flex; gap:16px; align-items:flex-start;"><div style="min-width:32px;height:32px;background:#1e3a5f;color:white;border-radius:6px;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;">${csTotal?2:1}</div><div><div style="font-size:13px;font-weight:700;color:#1d4ed8;margin-bottom:4px;">멀티 브랜드 구조 안착</div><div style="font-size:12px;color:#374151;line-height:1.7;">${top1[0]}가 전체 매출의 ${(top1[1]/totalAmt*100).toFixed(1)}%를 달성하고, ${brands.slice(1).map(([n])=>n).join(', ')} 등의 매출이 함께 구성됩니다.<br>특정 브랜드의 돌발 변수에도 전체 실적은 흔들림 없이 유지됩니다.</div></div></div>` : ''}
-  <div style="border:1px solid #e8ecf4; border-radius:8px; padding:16px 20px; background:#f8faff;">
-    <div style="font-size:13px;font-weight:700;color:#0f172a;margin-bottom:6px;">핵심 인사이트</div>
-    <div style="font-size:12px;color:#374151;line-height:1.7;">${insightBrands ? insightBrands + ' 두 브랜드가 전체 매출의 ' + top2Pct.toFixed(1) + '%를 차지하며, 나머지 ' + (brands.length - 2) + '개 브랜드가 나머지 ' + otherPct + '%를 구성합니다. 멀티 브랜드 구조 안착으로 매출 변동성이 크게 완화되었습니다.' : '브랜드별 분석 데이터를 기반으로 운영 현황을 확인하세요.'}</div>
+  <div style="border:1px solid #c7d2e8; border-radius:10px; padding:20px 24px; background:#f0f4ff;">
+    <div style="font-size:13px; font-weight:700; color:#1e3a5f; margin-bottom:12px; display:flex; align-items:center; gap:6px;">🔍 이달 운영 핵심 인사이트</div>
+    <ul style="font-size:12px; padding-left:18px; margin:0;">${insightItems || '<li style="color:#94a3b8;">분석 데이터가 부족합니다.</li>'}</ul>
   </div>
   <div class="footer"><span>본 보고서는 운영팀이 작성한 월간 결산 리포트입니다.</span><span>${manager?'문의: '+manager:''}</span></div>
 </div>` : ''}

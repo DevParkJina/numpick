@@ -2860,10 +2860,9 @@ function repSyncRecipient() {
   if (!panel || panel.style.display === 'none') return;
   const mediaVal = (document.getElementById('trend-filter-media').value || '').trim();
   if (!mediaVal) return;
-  const koLabel = (MEDIA_MAP && MEDIA_MAP[mediaVal]) || mediaVal;
-  if (!koLabel.includes('_자체답례') && !koLabel.includes('_기온')) {
-    document.getElementById('rep-recipient').value = koLabel;
-  }
+  const koLabel = ((MEDIA_MAP && MEDIA_MAP[mediaVal]) || mediaVal)
+    .replace('_자체답례', '').replace('_기온', '');
+  document.getElementById('rep-recipient').value = koLabel;
 }
 
 function toggleReportBuilder() {
@@ -2879,10 +2878,9 @@ function toggleReportBuilder() {
     }
     const mediaVal = (document.getElementById('trend-filter-media').value || '').trim();
     if (mediaVal) {
-      const koLabel = (MEDIA_MAP && MEDIA_MAP[mediaVal]) || mediaVal;
-      if (!koLabel.includes('_자체답례') && !koLabel.includes('_기온')) {
-        document.getElementById('rep-recipient').value = koLabel;
-      }
+      const koLabel = ((MEDIA_MAP && MEDIA_MAP[mediaVal]) || mediaVal)
+        .replace('_자체답례', '').replace('_기온', '');
+      document.getElementById('rep-recipient').value = koLabel;
     }
     if (!document.getElementById('rep-issues-list').children.length)  repAddIssue();
     if (!document.getElementById('rep-updates-list').children.length) repAddUpdate();

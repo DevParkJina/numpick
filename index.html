@@ -717,9 +717,9 @@
           <div style="display:flex; gap:4px; background:#f8fafc; border-radius:10px; padding:3px;">
             <button id="trend-period-7"      onclick="setTrendPeriod('7')"      style="padding:5px 14px; border-radius:8px; font-size:12px; font-weight:600; border:none; cursor:pointer; background:#4f46e5; color:white; font-family:'Noto Sans KR',sans-serif; transition:all 0.15s;">7일</button>
             <button id="trend-period-14"     onclick="setTrendPeriod('14')"     style="padding:5px 14px; border-radius:8px; font-size:12px; font-weight:600; border:none; cursor:pointer; background:transparent; color:#64748b; font-family:'Noto Sans KR',sans-serif; transition:all 0.15s;">14일</button>
-            <button id="trend-period-30"     onclick="setTrendPeriod('30')"     style="padding:5px 14px; border-radius:8px; font-size:12px; font-weight:600; border:none; cursor:pointer; background:transparent; color:#64748b; font-family:'Noto Sans KR',sans-serif; transition:all 0.15s;">30일</button>
             <button id="trend-period-custom" onclick="setTrendPeriod('custom')" style="padding:5px 14px; border-radius:8px; font-size:12px; font-weight:600; border:none; cursor:pointer; background:transparent; color:#64748b; font-family:'Noto Sans KR',sans-serif; transition:all 0.15s;">직접선택</button>
           </div>
+          <div id="trend-month-btns" style="display:flex; gap:4px; background:#f8fafc; border-radius:10px; padding:3px;"></div>
 
           <div id="trend-custom-end-wrap" style="display:none; align-items:center; gap:6px; flex-wrap:wrap;">
             <span style="font-size:11px; font-weight:600; color:#94a3b8;">종료</span>
@@ -2603,14 +2603,25 @@ function destroyTrendChart(id) {
 
 function setTrendPeriod(mode) {
   _trendPeriodMode = mode;
-  ['7','14','30','custom'].forEach(m => {
+  ['7','14','custom'].forEach(m => {
     const btn = document.getElementById('trend-period-' + m);
     if (!btn) return;
     btn.style.background = m === mode ? '#4f46e5' : '#f1f5f9';
     btn.style.color      = m === mode ? 'white'   : '#64748b';
   });
+  document.querySelectorAll('.trend-month-btn').forEach(btn => {
+    const active = btn.dataset.mode === mode;
+    btn.style.background = active ? '#4f46e5' : '#f1f5f9';
+    btn.style.color      = active ? 'white'   : '#64748b';
+  });
   const wrap = document.getElementById('trend-custom-end-wrap');
   if (wrap) wrap.style.display = mode === 'custom' ? 'flex' : 'none';
+  const startDateEl = document.getElementById('trend-start-date');
+  if (startDateEl) {
+    const isMonth = mode.startsWith('month-');
+    startDateEl.style.opacity       = isMonth ? '0.4' : '1';
+    startDateEl.style.pointerEvents = isMonth ? 'none' : '';
+  }
 }
 
 function setTrendTimeUnit(unit) {
@@ -2647,6 +2658,34 @@ function initTrendTab() {
   };
   buildOpts('trend-filter-media', medias, v => MEDIA_MAP[v.trim()] || v);
 
+  // 월별 버튼 동적 생성
+  {
+    const monthSet = new Set();
+    salesData.forEach(r => {
+      const d = toDate(col(r,'주문일시'));
+      if (d) monthSet.add(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`);
+    });
+    const months   = [...monthSet].sort().reverse();
+    const allYears = new Set(months.map(m => m.split('-')[0]));
+    const multiYear = allYears.size > 1;
+    const monthBtnsEl = document.getElementById('trend-month-btns');
+    if (monthBtnsEl) {
+      monthBtnsEl.innerHTML = '';
+      const bStyle = "padding:5px 14px; border-radius:8px; font-size:12px; font-weight:600; border:none; cursor:pointer; background:#f1f5f9; color:#64748b; font-family:'Noto Sans KR',sans-serif; transition:all 0.15s;";
+      months.forEach(ym => {
+        const [y, mo] = ym.split('-');
+        const label = multiYear ? `${String(y).slice(2)}년 ${parseInt(mo)}월` : `${parseInt(mo)}월`;
+        const btn = document.createElement('button');
+        btn.className = 'trend-month-btn';
+        btn.dataset.mode = 'month-' + ym;
+        btn.setAttribute('style', bStyle);
+        btn.textContent = label;
+        btn.onclick = () => { setTrendPeriod('month-' + ym); renderTrend(); };
+        monthBtnsEl.appendChild(btn);
+      });
+    }
+  }
+
   let maxD = null;
   salesData.forEach(r => {
     const d = toDate(col(r,'주문일시'));
@@ -2665,26 +2704,36 @@ function initTrendTab() {
 }
 
 function getTrendFilteredRows() {
-  const startDateStr = document.getElementById('trend-start-date').value;
-  if (!startDateStr) return { curr:[], prev:[], fromD:null, toD:null, prevFromD:null, prevToD:null };
+  let fromD, toD;
 
-  const fromD = new Date(startDateStr + 'T00:00:00');
-  let toD;
-  if (_trendPeriodMode === '7') {
-    toD = new Date(fromD); toD.setDate(toD.getDate() + 6); toD.setHours(23,59,59,999);
-  } else if (_trendPeriodMode === '14') {
-    toD = new Date(fromD); toD.setDate(toD.getDate() + 13); toD.setHours(23,59,59,999);
-  } else if (_trendPeriodMode === '30') {
-    toD = new Date(fromD); toD.setDate(toD.getDate() + 29); toD.setHours(23,59,59,999);
+  if (_trendPeriodMode.startsWith('month-')) {
+    const parts = _trendPeriodMode.split('-'); // ['month','YYYY','MM']
+    const year = parseInt(parts[1]), month = parseInt(parts[2]);
+    fromD = new Date(year, month-1, 1, 0, 0, 0, 0);
+    toD   = new Date(year, month, 0, 23, 59, 59, 999);
   } else {
-    const ce = document.getElementById('trend-custom-end').value;
-    toD = ce ? new Date(ce + 'T23:59:59') : new Date(fromD); toD.setHours(23,59,59,999);
+    const startDateStr = document.getElementById('trend-start-date').value;
+    if (!startDateStr) return { curr:[], prev:[], fromD:null, toD:null, prevFromD:null, prevToD:null };
+    fromD = new Date(startDateStr + 'T00:00:00');
+    if (_trendPeriodMode === '7') {
+      toD = new Date(fromD); toD.setDate(toD.getDate() + 6); toD.setHours(23,59,59,999);
+    } else if (_trendPeriodMode === '14') {
+      toD = new Date(fromD); toD.setDate(toD.getDate() + 13); toD.setHours(23,59,59,999);
+    } else {
+      const ce = document.getElementById('trend-custom-end').value;
+      toD = ce ? new Date(ce + 'T23:59:59') : new Date(fromD); toD.setHours(23,59,59,999);
+    }
   }
 
   const durationMs = toD.getTime() - fromD.getTime();
   let prevFromD = null, prevToD = null;
 
-  if (_trendPeriodMode === '7' || _trendPeriodMode === '14' || _trendPeriodMode === '30') {
+  if (_trendPeriodMode.startsWith('month-')) {
+    const parts = _trendPeriodMode.split('-');
+    const year = parseInt(parts[1]), month = parseInt(parts[2]);
+    prevFromD = new Date(year, month-2, 1, 0, 0, 0, 0);
+    prevToD   = new Date(year, month-1, 0, 23, 59, 59, 999);
+  } else if (_trendPeriodMode === '7' || _trendPeriodMode === '14') {
     // 자동 비교: 분석기간과 동일한 길이를 직전으로 이동
     prevToD   = new Date(fromD.getTime() - 1);
     prevFromD = new Date(prevToD.getTime() - durationMs);
@@ -2726,9 +2775,9 @@ function getTrendFilteredRows() {
   const cmpLabel = document.getElementById('trend-cmp-label');
   if (cmpLabel) {
     if (prevFromD && prevToD) {
-      const cmpDesc = _trendPeriodMode === '7'  ? '전주 동일 7일'   :
-                      _trendPeriodMode === '14' ? '2주 전 동일 14일' :
-                      _trendPeriodMode === '30' ? '전월 동일 30일'  : '직접 선택 비교기간';
+      const cmpDesc = _trendPeriodMode === '7'              ? '전주 동일 7일'   :
+                      _trendPeriodMode === '14'             ? '2주 전 동일 14일' :
+                      _trendPeriodMode.startsWith('month-') ? '전월'            : '직접 선택 비교기간';
       cmpLabel.textContent = `비교 대상: ${fmtDate(prevFromD)} ~ ${fmtDate(prevToD)} (${cmpDesc})`;
     } else {
       cmpLabel.textContent = '비교 없음';

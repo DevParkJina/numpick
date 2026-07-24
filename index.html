@@ -798,40 +798,32 @@
       <!-- CS 처리 현황 -->
       <div style="margin-bottom:20px; padding-bottom:20px; border-bottom:1px solid #f1f5f9;">
         <div style="font-size:13px; font-weight:700; color:#0f172a; margin-bottom:12px;">고객 문의(CS) 처리 현황</div>
-        <!-- 총합 헤드라인 -->
-        <div style="display:flex; align-items:center; gap:12px; background:#f0f4ff; border:1px solid #c7d2fe; border-radius:10px; padding:14px 18px; margin-bottom:12px;">
-          <div>
-            <div style="font-size:11px; font-weight:600; color:#6366f1; margin-bottom:2px;">총 CS 인입</div>
-            <div style="display:flex; align-items:baseline; gap:4px;">
-              <span id="rep-cs-total-display" style="font-size:28px; font-weight:800; color:#1e3a5f; line-height:1;">0</span>
-              <span style="font-size:14px; font-weight:600; color:#6366f1;">건</span>
-            </div>
+        <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end;">
+          <div style="display:flex; flex-direction:column; gap:4px;">
+            <label style="font-size:11px; font-weight:600; color:#64748b;">단순 문의</label>
+            <input id="rep-cs-simple" type="number" placeholder="0" oninput="repCalcCsTotal()" style="padding:8px 10px; border:1px solid #e2e8f0; border-radius:8px; font-size:13px; font-family:'Noto Sans KR',sans-serif; outline:none; width:72px; text-align:center;" onfocus="this.style.borderColor='#4f46e5'" onblur="this.style.borderColor='#e2e8f0'">
           </div>
-          <div style="width:1px; height:36px; background:#c7d2fe;"></div>
-          <div style="font-size:11px; color:#94a3b8; line-height:1.6;">아래 항목을 입력하면<br>자동으로 합산됩니다</div>
-          <input type="hidden" id="rep-cs-total" value="0">
-        </div>
-        <!-- 5개 세부 항목 -->
-        <div style="display:flex; gap:10px; flex-wrap:wrap;">
-          <div style="display:flex; flex-direction:column; gap:4px; flex:1; min-width:70px;">
-            <label style="font-size:11px; font-weight:600; color:#64748b; text-align:center;">단순 문의</label>
-            <input id="rep-cs-simple" type="number" placeholder="0" oninput="repCalcCsTotal()" style="padding:8px 6px; border:1px solid #e2e8f0; border-radius:8px; font-size:14px; font-family:'Noto Sans KR',sans-serif; outline:none; width:100%; text-align:center; font-weight:600;" onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#e2e8f0'">
+          <div style="display:flex; flex-direction:column; gap:4px;">
+            <label style="font-size:11px; font-weight:600; color:#64748b;">쿠폰관련</label>
+            <input id="rep-cs-coupon" type="number" placeholder="0" oninput="repCalcCsTotal()" style="padding:8px 10px; border:1px solid #e2e8f0; border-radius:8px; font-size:13px; font-family:'Noto Sans KR',sans-serif; outline:none; width:72px; text-align:center;" onfocus="this.style.borderColor='#4f46e5'" onblur="this.style.borderColor='#e2e8f0'">
           </div>
-          <div style="display:flex; flex-direction:column; gap:4px; flex:1; min-width:70px;">
-            <label style="font-size:11px; font-weight:600; color:#64748b; text-align:center;">쿠폰관련</label>
-            <input id="rep-cs-coupon" type="number" placeholder="0" oninput="repCalcCsTotal()" style="padding:8px 6px; border:1px solid #e2e8f0; border-radius:8px; font-size:14px; font-family:'Noto Sans KR',sans-serif; outline:none; width:100%; text-align:center; font-weight:600;" onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#e2e8f0'">
+          <div style="display:flex; flex-direction:column; gap:4px;">
+            <label style="font-size:11px; font-weight:600; color:#64748b;">발송오기입</label>
+            <input id="rep-cs-shipping" type="number" placeholder="0" oninput="repCalcCsTotal()" style="padding:8px 10px; border:1px solid #e2e8f0; border-radius:8px; font-size:13px; font-family:'Noto Sans KR',sans-serif; outline:none; width:72px; text-align:center;" onfocus="this.style.borderColor='#4f46e5'" onblur="this.style.borderColor='#e2e8f0'">
           </div>
-          <div style="display:flex; flex-direction:column; gap:4px; flex:1; min-width:70px;">
-            <label style="font-size:11px; font-weight:600; color:#64748b; text-align:center;">발송오기입</label>
-            <input id="rep-cs-shipping" type="number" placeholder="0" oninput="repCalcCsTotal()" style="padding:8px 6px; border:1px solid #e2e8f0; border-radius:8px; font-size:14px; font-family:'Noto Sans KR',sans-serif; outline:none; width:100%; text-align:center; font-weight:600;" onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#e2e8f0'">
+          <div style="display:flex; flex-direction:column; gap:4px;">
+            <label style="font-size:11px; font-weight:600; color:#64748b;">결제 문의</label>
+            <input id="rep-cs-payment" type="number" placeholder="0" oninput="repCalcCsTotal()" style="padding:8px 10px; border:1px solid #e2e8f0; border-radius:8px; font-size:13px; font-family:'Noto Sans KR',sans-serif; outline:none; width:72px; text-align:center;" onfocus="this.style.borderColor='#4f46e5'" onblur="this.style.borderColor='#e2e8f0'">
           </div>
-          <div style="display:flex; flex-direction:column; gap:4px; flex:1; min-width:70px;">
-            <label style="font-size:11px; font-weight:600; color:#64748b; text-align:center;">결제 문의</label>
-            <input id="rep-cs-payment" type="number" placeholder="0" oninput="repCalcCsTotal()" style="padding:8px 6px; border:1px solid #e2e8f0; border-radius:8px; font-size:14px; font-family:'Noto Sans KR',sans-serif; outline:none; width:100%; text-align:center; font-weight:600;" onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#e2e8f0'">
+          <div style="display:flex; flex-direction:column; gap:4px;">
+            <label style="font-size:11px; font-weight:600; color:#64748b;">취소 문의</label>
+            <input id="rep-cs-cancel" type="number" placeholder="0" oninput="repCalcCsTotal()" style="padding:8px 10px; border:1px solid #e2e8f0; border-radius:8px; font-size:13px; font-family:'Noto Sans KR',sans-serif; outline:none; width:72px; text-align:center;" onfocus="this.style.borderColor='#4f46e5'" onblur="this.style.borderColor='#e2e8f0'">
           </div>
-          <div style="display:flex; flex-direction:column; gap:4px; flex:1; min-width:70px;">
-            <label style="font-size:11px; font-weight:600; color:#64748b; text-align:center;">취소 문의</label>
-            <input id="rep-cs-cancel" type="number" placeholder="0" oninput="repCalcCsTotal()" style="padding:8px 6px; border:1px solid #e2e8f0; border-radius:8px; font-size:14px; font-family:'Noto Sans KR',sans-serif; outline:none; width:100%; text-align:center; font-weight:600;" onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#e2e8f0'">
+          <div style="width:1px; height:48px; background:#f1f5f9; align-self:flex-end;"></div>
+          <div style="display:flex; flex-direction:column; gap:4px;">
+            <label style="font-size:11px; font-weight:600; color:#64748b;">총 CS 인입</label>
+            <div id="rep-cs-total-display" style="padding:8px 10px; border:1px solid #e2e8f0; border-radius:8px; font-size:13px; width:80px; text-align:center; font-weight:700; background:#f8fafc; color:#0f172a; line-height:1.6;">0</div>
+            <input type="hidden" id="rep-cs-total" value="0">
           </div>
         </div>
       </div>
@@ -2865,11 +2857,10 @@ function toggleReportBuilder() {
       document.getElementById('rep-month').value = _trendFromD.getMonth() + 1;
     }
     const mediaVal = (document.getElementById('trend-filter-media').value || '').trim();
-    const recipEl  = document.getElementById('rep-recipient');
-    if (mediaVal && !recipEl.value) {
+    if (mediaVal) {
       const koLabel = (MEDIA_MAP && MEDIA_MAP[mediaVal]) || mediaVal;
       if (!koLabel.includes('_자체답례') && !koLabel.includes('_기온')) {
-        recipEl.value = koLabel;
+        document.getElementById('rep-recipient').value = koLabel;
       }
     }
     if (!document.getElementById('rep-issues-list').children.length)  repAddIssue();

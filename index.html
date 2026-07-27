@@ -2955,13 +2955,7 @@ function repBuildCsText() {
   const cancel   = Math.max(0, parseInt(document.getElementById('rep-cs-cancel')?.value)   || 0);
   const total    = simple + coupon + shipping + payment + cancel;
   if (total === 0) return 'CS 건수를 입력해 주세요.';
-  const details = [];
-  if (simple   > 0) details.push(`단순 문의 ${simple}건`);
-  if (coupon   > 0) details.push(`쿠폰 관련 ${coupon}건`);
-  if (shipping > 0) details.push(`발송 오기입 ${shipping}건`);
-  if (payment  > 0) details.push(`결제 문의 ${payment}건`);
-  if (cancel   > 0) details.push(`취소 문의 ${cancel}건`);
-  return `이달 총 ${total}건의 고객 문의를 저희 운영팀이 직접 분류하고 처리했습니다.\n(${details.join(', ')})`;
+  return `이달 총 ${total}건의 고객 문의를 저희 운영팀이 직접 분류하고 처리했습니다.`;
 }
 
 function repAddCsPerf() {

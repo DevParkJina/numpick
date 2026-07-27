@@ -4889,6 +4889,7 @@ function rpGenerate() {
       consumer: safeNum(r['소비자가']), brand: '',
     }));
   }
+  _rpMediaList.splice(0, _rpMediaList.length);
   let added = 0, noDisc = 0;
   sourceItems.forEach(p => {
     const disc = _rpGetBrandDisc(p.brand, defaultDisc);

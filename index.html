@@ -510,6 +510,7 @@
         등록 목록 <span id="rm-moche-count" style="background:#6366f1; color:white; border-radius:20px; padding:2px 10px; font-size:12px; font-weight:700;">0</span>
         <div style="flex:1;"></div>
         <button onclick="_rmMocheList.length=0; rmRenderMoche();" style="padding:7px 16px; background:transparent; border:1px solid #fca5a5; color:#dc2626; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:12px; font-weight:600; cursor:pointer; margin-right:8px;">전체 삭제</button>
+        <button id="rm-img-dl-btn" onclick="rmDownloadImages()" style="display:none; padding:8px 16px; background:#f0f9ff; color:#0369a1; border:1px solid #bae6fd; border-radius:9px; font-family:'Noto Sans KR',sans-serif; font-size:12px; font-weight:600; cursor:pointer; margin-right:8px; letter-spacing:-0.2px;">🖼 이미지 ZIP</button>
         <button onclick="rmExportMoche()" style="padding:8px 18px; background:#10b981; color:white; border:none; border-radius:9px; font-family:'Noto Sans KR',sans-serif; font-size:12px; font-weight:600; cursor:pointer; letter-spacing:-0.2px;">📥 newGoodsSample.xlsx</button>
       </div>
       <!-- 카테고리 일괄 적용 바 -->
@@ -632,7 +633,7 @@
     <!-- ② 공통 설정 -->
     <div class="card reg-card" style="margin-bottom:20px;">
       <div style="font-size:14px; font-weight:700; color:#0f172a; margin-bottom:18px;">② 공통 설정</div>
-      <div style="display:grid; grid-template-columns:1fr 200px; gap:14px 20px; align-items:end;">
+      <div style="display:grid; grid-template-columns:1fr 220px; gap:14px 20px; align-items:end; margin-bottom:20px;">
         <div style="display:flex; flex-direction:column; gap:6px;">
           <label style="font-size:11px; font-weight:600; color:#64748b; letter-spacing:0.3px;">매체명 <span style="color:#ef4444;">*</span></label>
           <select id="rp-c-media" style="padding:10px 12px; border:1px solid #e2e8f0; border-radius:9px; font-family:'Noto Sans KR',sans-serif; font-size:13px; outline:none; transition:border .15s; background:white; color:#374151;" onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#e2e8f0'">
@@ -661,15 +662,24 @@
           </select>
         </div>
         <div style="display:flex; flex-direction:column; gap:6px;">
-          <label style="font-size:11px; font-weight:600; color:#64748b; letter-spacing:0.3px;">할인율 % <span style="color:#ef4444;">*</span></label>
+          <label style="font-size:11px; font-weight:600; color:#64748b; letter-spacing:0.3px;">기본 할인율 % <span style="color:#ef4444;">*</span></label>
           <input type="number" id="rp-c-discount" placeholder="ex. 20.00" step="0.01" style="padding:10px 12px; border:1px solid #e2e8f0; border-radius:9px; font-family:'Noto Sans KR',sans-serif; font-size:13px; outline:none; text-align:center; transition:border .15s;" onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#e2e8f0'">
         </div>
       </div>
-    </div>
 
-    <!-- ③ 생성하기 -->
-    <div id="rp-generate-wrap" style="margin-bottom:20px; text-align:center;">
-      <button onclick="rpGenerate()" style="padding:13px 48px; background:#6366f1; color:white; border:none; border-radius:10px; font-family:'Noto Sans KR',sans-serif; font-size:14px; font-weight:700; cursor:pointer; letter-spacing:-0.2px;">③ 생성하기 →</button>
+      <!-- 브랜드별 할인율 -->
+      <div id="rp-brand-disc-section" style="display:none; border-top:1px solid #f1f5f9; padding-top:16px; margin-bottom:20px;">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
+          <span style="font-size:12px; font-weight:700; color:#374151;">브랜드별 할인율</span>
+          <span style="font-size:11px; color:#94a3b8;">비워두면 기본 할인율 적용</span>
+        </div>
+        <div id="rp-brand-disc-rows" style="display:flex; flex-direction:column; gap:0;"></div>
+      </div>
+
+      <!-- 생성하기 -->
+      <div id="rp-generate-wrap" style="display:flex; justify-content:flex-end; border-top:1px solid #f1f5f9; padding-top:16px;">
+        <button onclick="rpGenerate()" style="padding:11px 36px; background:#6366f1; color:white; border:none; border-radius:10px; font-family:'Noto Sans KR',sans-serif; font-size:14px; font-weight:700; cursor:pointer; letter-spacing:-0.2px;">생성하기 →</button>
+      </div>
     </div>
 
     <!-- 안내 -->
@@ -4145,7 +4155,7 @@ function switchRegTab(t) {
   const off = 'padding:8px 20px; border-radius:8px; font-size:13px; font-weight:600; border:1px solid #e2e8f0; cursor:pointer; background:transparent; color:#64748b; font-family:\'Noto Sans KR\',sans-serif;';
   document.getElementById('reg-tab-moche').style.cssText = t === 'moche' ? on : off;
   document.getElementById('reg-tab-media').style.cssText = t === 'media' ? on : off;
-  if (t === 'media') rpUpdateMocheSummary();
+  if (t === 'media') { rpUpdateMocheSummary(); rpRefreshBrandDiscUI(); }
 }
 
 // ── 공급수수료 힌트 (모체 탭)
@@ -4187,6 +4197,7 @@ const _SUPPLIER_FORMATS = {
       if (/상품명|제품명/.test(hdr))             return '상품명';
       if (/카테고리/.test(hdr))                  return '카테고리';
       if (/교환처/.test(hdr))                    return '교환처';
+      if (/이미지/.test(hdr))                    return '이미지URL';
       return null;
     },
     map: {
@@ -4200,6 +4211,7 @@ const _SUPPLIER_FORMATS = {
       '유효일수':'유효일', '유효일':'유효일',
       '교환처':'교환처',
       '특이사항':'상품설명', '비고':'상품설명', '유의사항':'상품설명', '상품 설명':'상품설명', '상품설명':'상품설명',
+      '이미지 경로':'이미지URL', '이미지경로':'이미지URL', '이미지':'이미지URL',
     },
     skipRow: cells => false,
     postProcess: item => {
@@ -4506,6 +4518,7 @@ function _showPreviewModal() {
       '공급사': supplier, '보증타입': warranty, '공급가': 0,
       '공급수수료': fee, '판매시작일': '', '판매종료일': '',
       '배송상품여부': delivery, '_brand': _brand,
+      '이미지URL': get('이미지URL'),
     };
     if (fmt.postProcess) fmt.postProcess(item);
     // 교환처 없으면 브랜드로 폴백 (모든 포맷 공통)
@@ -4646,8 +4659,49 @@ function _saveBrandCat(allBrands) {
   _regToast(`브랜드 카테고리 ${Object.keys(map).length}개 저장 완료`);
 }
 
+async function rmDownloadImages() {
+  const items = _rmMocheList.filter(p => p['이미지URL'] && p['이미지URL'].trim() && p['공급사상품코드']);
+  if (!items.length) return _regToast('이미지 경로가 있는 상품이 없습니다', 1);
+
+  _regToast(`이미지 ${items.length}개 다운로드 중...`);
+
+  if (!window.JSZip) {
+    await new Promise((resolve, reject) => {
+      const s = document.createElement('script');
+      s.src = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
+      s.onload = resolve; s.onerror = reject;
+      document.head.appendChild(s);
+    });
+  }
+
+  const zip = new JSZip();
+  let ok = 0, fail = 0;
+  for (const p of items) {
+    const url = p['이미지URL'].trim();
+    const code = p['공급사상품코드'];
+    const ext = (url.split('?')[0].split('.').pop() || 'jpg').toLowerCase();
+    try {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(res.status);
+      zip.file(`${code}.${ext}`, await res.blob());
+      ok++;
+    } catch { fail++; }
+  }
+
+  if (ok === 0) return _regToast('이미지를 받아올 수 없습니다 (서버 CORS 차단)', 1);
+  const blob = await zip.generateAsync({ type: 'blob' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `kta_images_${items.length}개.zip`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+  _regToast(`이미지 ${ok}개 ZIP 완료${fail ? ` (${fail}개 실패)` : ''}`);
+}
+
 function rmRenderMoche() {
   document.getElementById('rm-moche-count').textContent = _rmMocheList.length;
+  const imgBtn = document.getElementById('rm-img-dl-btn');
+  if (imgBtn) imgBtn.style.display = _rmMocheList.some(p => p['이미지URL']) ? 'inline-block' : 'none';
   const tbody = document.getElementById('rm-moche-tbody');
   if (!_rmMocheList.length) {
     tbody.innerHTML = '<tr><td colspan="15" style="text-align:center;padding:36px;color:#94a3b8;font-size:13px;">붙여넣기 후 파싱하기를 클릭하세요</td></tr>';
@@ -4746,7 +4800,8 @@ function rpSetSource(s) {
   document.getElementById('rp-from-moche-wrap').style.display = s === 'moche' ? 'block' : 'none';
   document.getElementById('rp-excel-wrap').style.display       = s === 'excel'  ? 'block' : 'none';
   document.getElementById('rp-paste-wrap').style.display       = s === 'paste'  ? 'block' : 'none';
-  document.getElementById('rp-generate-wrap').style.display    = s === 'paste'  ? 'none'  : 'block';
+  document.getElementById('rp-generate-wrap').style.display    = s === 'paste'  ? 'none'  : 'flex';
+  if (s === 'moche') rpRefreshBrandDiscUI();
   const on  = 'padding:8px 20px; border-radius:8px; font-size:12px; font-weight:600; border:none; cursor:pointer; background:#6366f1; color:white; font-family:\'Noto Sans KR\',sans-serif;';
   const off = 'padding:8px 20px; border-radius:8px; font-size:12px; font-weight:600; border:1px solid #e2e8f0; cursor:pointer; background:transparent; color:#64748b; font-family:\'Noto Sans KR\',sans-serif;';
   document.getElementById('rp-src-moche').style.cssText = s === 'moche' ? on : off;
@@ -4763,6 +4818,36 @@ function rpUpdateMocheSummary() {
     el.innerHTML = `<strong style="color:#0f172a;">${_rmMocheList.length}개 상품</strong>이 준비됐습니다.<br>
       <span style="font-size:11px; color:#94a3b8;">${_rmMocheList.slice(0,3).map(p=>p['교환처']||p['공급사상품코드']).join(', ')}${_rmMocheList.length>3?' …':''}</span>`;
   }
+}
+function rpRefreshBrandDiscUI() {
+  const section = document.getElementById('rp-brand-disc-section');
+  const wrap    = document.getElementById('rp-brand-disc-rows');
+  if (!section || !wrap) return;
+  if (!_rmMocheList.length) { section.style.display = 'none'; return; }
+
+  const brands = [...new Set(_rmMocheList.map(p => p['교환처']).filter(Boolean))].sort();
+  if (brands.length < 2) { section.style.display = 'none'; return; }
+
+  // 기존 입력값 보존
+  const saved = {};
+  wrap.querySelectorAll('[data-brand]').forEach(el => { saved[el.dataset.brand] = el.value; });
+
+  wrap.innerHTML = brands.map(brand => {
+    const val = saved[brand] || '';
+    return `<div style="display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid #f8fafc;">
+      <span style="font-size:13px; font-weight:600; color:#374151; flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${brand}</span>
+      <input type="number" data-brand="${brand}" value="${val}" placeholder="기본" step="0.01"
+        style="width:90px; padding:7px 10px; border:1px solid #e2e8f0; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:13px; font-weight:700; text-align:center; outline:none; transition:border .15s;"
+        onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#e2e8f0'">
+      <span style="font-size:12px; color:#94a3b8; white-space:nowrap;">%</span>
+    </div>`;
+  }).join('');
+  section.style.display = 'block';
+}
+function _rpGetBrandDisc(brand, defaultDisc) {
+  const el = document.querySelector(`#rp-brand-disc-rows [data-brand="${CSS.escape(brand)}"]`);
+  if (el && el.value.trim() !== '') return parseFloat(el.value);
+  return defaultDisc;
 }
 function rpLoadExcel(evt) {
   const file = evt.target.files[0];
@@ -4796,8 +4881,8 @@ function rpResetExcel() {
 function rpGenerate() {
   const media = document.getElementById('rp-c-media').value.trim();
   if (!media) return _regToast('매체명을 선택하세요', 1);
-  const disc = parseFloat(document.getElementById('rp-c-discount').value);
-  if (isNaN(disc)) return _regToast('할인율을 입력하세요', 1);
+  const defaultDisc = parseFloat(document.getElementById('rp-c-discount').value);
+  if (isNaN(defaultDisc)) return _regToast('기본 할인율을 입력하세요', 1);
   let sourceItems = [];
   if (_rpSource === 'moche') {
     if (!_rmMocheList.length) return _regToast('모체 목록이 비어있습니다. 모체코드 탭에서 먼저 파싱하세요', 1);
@@ -4805,17 +4890,18 @@ function rpGenerate() {
       code: p['공급사상품코드'], issueCode: p['공급사발급코드'] || '',
       supplyP: p['공급가'] || 0, name: p['상품명'] || '',
       consumer: p['소비자가'] || p['상품정상가'] || 0,
+      brand: p['교환처'] || '',
     }));
   } else {
     if (!_rpXlsxRows.length) return _regToast('엑셀을 먼저 업로드하세요', 1);
     sourceItems = _rpXlsxRows.map(r => ({
       code: String(r['공급사상품코드'] || ''), issueCode: String(r['공급사발급코드'] || ''),
       supplyP: safeNum(r['공급가']), name: String(r['상품명'] || ''),
-      consumer: safeNum(r['소비자가']),
+      consumer: safeNum(r['소비자가']), brand: '',
     }));
   }
-  _rpMediaList.length = 0;
   sourceItems.forEach(p => {
+    const disc = _rpGetBrandDisc(p.brand, defaultDisc);
     _rpMediaList.push({
       '공급사상품코드': p.code, '공급사발급코드': p.issueCode,
       '공급단가': p.supplyP, '상품명': p.name, '매체명': media,

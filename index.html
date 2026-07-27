@@ -3061,9 +3061,27 @@ function repBuildKpiText() {
   _trendRows.forEach(r => { const b=String(col(r,'브랜드')||'').trim()||'기타'; const q=safeNum(col(r,'수량')),n=safeNum(col(r,'정상가')); currBM[b]=(currBM[b]||0)+(n>0?n*q:safeNum(col(r,'거래금액','매출액'))); });
   _trendPrevRows.forEach(r => { const b=String(col(r,'브랜드')||'').trim()||'기타'; const q=safeNum(col(r,'수량')),n=safeNum(col(r,'정상가')); prevBM[b]=(prevBM[b]||0)+(n>0?n*q:safeNum(col(r,'거래금액','매출액'))); });
   const upBrands = [];
-  new Set([...Object.keys(currBM),...Object.keys(prevBM)]).forEach(b => { if((currBM[b]||0)>(prevBM[b]||0)) upBrands.push(b); });
+  new Set([...Object.keys(currBM),...Object.keys(prevBM)]).forEach(b => {
+    const c = currBM[b]||0, p = prevBM[b]||0;
+    if (c > p) upBrands.push({ name:b, pct: p > 0 ? ((c-p)/p*100).toFixed(1) : null });
+  });
+  upBrands.sort((a,z) => (parseFloat(z.pct)||0) - (parseFloat(a.pct)||0));
   let text = ups.length ? ups.join(', ') + '하였습니다.' : '';
-  if (upBrands.length) text += (text ? '\n' : '') + '전월 대비 증가한 브랜드: ' + upBrands.join(', ');
+  if (upBrands.length > 0) {
+    const total = upBrands.length;
+    const previewNames = upBrands.slice(0, 2).map(b => b.name);
+    const top3 = upBrands.slice(0, 3).map(b => `${b.name} ▲${b.pct ? b.pct+'%' : ''}`);
+    const hasMore = total > 3;
+    let brandSentence;
+    if (total === 1) {
+      brandSentence = `${upBrands[0].name}이(가) 전월 대비 유의미한 성장을 달성했습니다. (▲${upBrands[0].pct ? upBrands[0].pct+'%' : ''})`;
+    } else if (total === 2) {
+      brandSentence = `${previewNames.join(', ')} 2개 주요 브랜드가 전월 대비 유의미한 성장을 달성했습니다.\n(${top3.join(', ')})`;
+    } else {
+      brandSentence = `${previewNames.join(', ')} 등 ${total}개 주요 브랜드가 전월 대비 유의미한 성장을 달성했습니다.\n(${top3.join(', ')}${hasMore ? ' 등' : ''})`;
+    }
+    text += (text ? '\n' : '') + brandSentence;
+  }
   return text || '전월 대비 성과를 입력해 주세요.';
 }
 

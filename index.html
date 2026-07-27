@@ -849,6 +849,22 @@
         <div id="rep-updates-list" style="display:flex; flex-direction:column; gap:8px;"></div>
       </div>
 
+      <!-- 운영대행 핵심성과 -->
+      <div style="margin-bottom:20px; padding-bottom:20px; border-bottom:1px solid #f1f5f9;">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
+          <div>
+            <div style="font-size:13px; font-weight:700; color:#0f172a;">운영대행 핵심성과</div>
+            <div style="font-size:11px; color:#94a3b8; margin-top:2px;">리포트 마지막 페이지에 표시됩니다</div>
+          </div>
+          <button onclick="repAddPerf()" style="background:#f1f5f9; color:#374151; border:none; border-radius:8px; padding:5px 14px; font-size:12px; font-weight:600; cursor:pointer; font-family:'Noto Sans KR',sans-serif;">+ 추가</button>
+        </div>
+        <div style="background:#f8fafc; border-radius:10px; padding:12px 16px; margin-bottom:14px;">
+          <div style="font-size:11px; font-weight:600; color:#94a3b8; margin-bottom:8px;">전월 대비 KPI 변화 (참고용)</div>
+          <div id="rep-kpi-compare-body" style="font-size:11px; color:#64748b;">—</div>
+        </div>
+        <div id="rep-perf-list" style="display:flex; flex-direction:column; gap:12px;"></div>
+      </div>
+
       <div style="display:flex; justify-content:flex-end;">
         <button onclick="generateReport()" style="background:#0f172a; color:white; border:none; border-radius:10px; padding:10px 28px; font-size:14px; font-weight:700; cursor:pointer; font-family:'Noto Sans KR',sans-serif;">📄 리포트 미리보기 / 인쇄</button>
       </div>
@@ -2923,6 +2939,95 @@ function closeReportHelp() {
   if (el) { el.style.display = 'none'; }
 }
 
+let _repPerfId = 0;
+
+function repAddPerf(titleVal, bodyVal) {
+  titleVal = titleVal || '';
+  bodyVal  = bodyVal  || '';
+  const id  = ++_repPerfId;
+  const list = document.getElementById('rep-perf-list');
+  const num  = list.children.length + 1;
+  const div  = document.createElement('div');
+  div.id = `rep-perf-item-${id}`;
+  div.style.cssText = 'border:1px solid #e2e8f0; border-radius:10px; padding:14px 14px 10px; display:flex; flex-direction:column; gap:8px; position:relative;';
+  const safeTitle = titleVal.replace(/&/g,'&amp;').replace(/"/g,'&quot;');
+  const safeBody  = bodyVal.replace(/&/g,'&amp;').replace(/</g,'&lt;');
+  div.innerHTML = `
+    <button onclick="repRemovePerf(${id})" style="position:absolute; top:10px; right:12px; background:none; border:none; font-size:17px; color:#94a3b8; cursor:pointer; line-height:1; padding:0;">×</button>
+    <div style="font-size:11px; font-weight:600; color:#64748b; padding-right:24px;">핵심성과 #${num}</div>
+    <input id="rep-perf${id}-t" type="text" value="${safeTitle}" placeholder="제목 (예: CS 처리 현황)" style="padding:7px 10px; border:1px solid #e2e8f0; border-radius:8px; font-size:13px; font-family:'Noto Sans KR',sans-serif; outline:none;" onfocus="this.style.borderColor='#4f46e5'" onblur="this.style.borderColor='#e2e8f0'">
+    <textarea id="rep-perf${id}-b" placeholder="내용을 입력하세요" rows="3" style="padding:7px 10px; border:1px solid #e2e8f0; border-radius:8px; font-size:12px; font-family:'Noto Sans KR',sans-serif; outline:none; resize:vertical; line-height:1.6;" onfocus="this.style.borderColor='#4f46e5'" onblur="this.style.borderColor='#e2e8f0'">${safeBody}</textarea>`;
+  list.appendChild(div);
+}
+
+function repRemovePerf(id) {
+  const el = document.getElementById('rep-perf-item-' + id);
+  if (el) el.remove();
+}
+
+function repRefreshPerfKpi() {
+  const container = document.getElementById('rep-kpi-compare-body');
+  if (!container) return;
+  if (!_trendPrevRows || !_trendPrevRows.length) {
+    container.innerHTML = '<span style="color:#94a3b8;">비교 기간 데이터가 없습니다 (월기준 조회 시 전월과 자동 비교됩니다)</span>';
+    return;
+  }
+  const curr = aggRows(_trendRows), prev = aggRows(_trendPrevRows);
+  const kpis = [
+    { label:'거래금액', c:curr.amt,    p:prev.amt    },
+    { label:'주문건수', c:curr.orders, p:prev.orders },
+    { label:'판매수량', c:curr.qty,    p:prev.qty    },
+  ];
+  const chips = kpis.map(k => {
+    const diff = k.c - k.p;
+    const pct  = k.p > 0 ? (diff / k.p * 100).toFixed(1) : null;
+    const up   = diff > 0, dn = diff < 0;
+    const color = up ? '#16a34a' : dn ? '#dc2626' : '#94a3b8';
+    const arrow = up ? '▲' : dn ? '▼' : '→';
+    const pctStr = pct !== null ? ` ${up?'+':''}${pct}%` : '';
+    return `<span style="display:inline-flex;align-items:center;background:white;border:1px solid ${color}44;border-radius:6px;padding:3px 9px;margin:2px;font-size:11px;color:${color};font-weight:700;font-family:'Noto Sans KR',sans-serif;">${k.label} ${arrow}${pctStr}</span>`;
+  }).join('');
+
+  const currBM = {}, prevBM = {};
+  const fillBM = (rows, map) => rows.forEach(r => {
+    const b = String(col(r,'브랜드')||'').trim() || '기타';
+    const q = safeNum(col(r,'수량')), norm = safeNum(col(r,'정상가'));
+    map[b] = (map[b]||0) + (norm > 0 ? norm * q : safeNum(col(r,'거래금액','매출액')));
+  });
+  fillBM(_trendRows, currBM); fillBM(_trendPrevRows, prevBM);
+  const upBrands = [];
+  new Set([...Object.keys(currBM), ...Object.keys(prevBM)]).forEach(b => {
+    if ((currBM[b]||0) > (prevBM[b]||0)) {
+      const p = prevBM[b]||0, c = currBM[b]||0;
+      upBrands.push({ name:b, pct: p > 0 ? ((c-p)/p*100).toFixed(1) : null });
+    }
+  });
+  upBrands.sort((a,z) => (parseFloat(z.pct)||0) - (parseFloat(a.pct)||0));
+
+  const brandChips = upBrands.length > 0
+    ? upBrands.map(b => `<span style="display:inline-flex;align-items:center;background:white;border:1px solid #16a34a44;border-radius:6px;padding:3px 9px;margin:2px;font-size:11px;color:#16a34a;font-weight:700;font-family:'Noto Sans KR',sans-serif;">▲ ${b.name}${b.pct ? ' +'+b.pct+'%' : ''}</span>`).join('')
+    : '<span style="color:#94a3b8;">전월 대비 증가 브랜드 없음</span>';
+
+  container.innerHTML = `<div style="margin-bottom:6px;">${chips}</div><div style="font-size:11px;color:#64748b;font-weight:600;margin-bottom:4px;">브랜드 증가 ▲</div><div>${brandChips}</div>`;
+}
+
+function repBuildKpiText() {
+  if (!_trendPrevRows || !_trendPrevRows.length) return '전월 대비 성과를 입력해 주세요.';
+  const curr = aggRows(_trendRows), prev = aggRows(_trendPrevRows);
+  const ups = [];
+  if (curr.amt    > prev.amt)    ups.push('거래금액 ' + (prev.amt    > 0 ? '+'+((curr.amt-prev.amt)/prev.amt*100).toFixed(1)+'%' : curr.amt.toLocaleString()+'원') + ' 상승');
+  if (curr.orders > prev.orders) ups.push('주문건수 ' + (prev.orders > 0 ? '+'+((curr.orders-prev.orders)/prev.orders*100).toFixed(1)+'%' : curr.orders+'건') + ' 상승');
+  if (curr.qty    > prev.qty)    ups.push('판매수량 ' + (prev.qty    > 0 ? '+'+((curr.qty-prev.qty)/prev.qty*100).toFixed(1)+'%' : curr.qty+'개') + ' 상승');
+  const currBM = {}, prevBM = {};
+  _trendRows.forEach(r => { const b=String(col(r,'브랜드')||'').trim()||'기타'; const q=safeNum(col(r,'수량')),n=safeNum(col(r,'정상가')); currBM[b]=(currBM[b]||0)+(n>0?n*q:safeNum(col(r,'거래금액','매출액'))); });
+  _trendPrevRows.forEach(r => { const b=String(col(r,'브랜드')||'').trim()||'기타'; const q=safeNum(col(r,'수량')),n=safeNum(col(r,'정상가')); prevBM[b]=(prevBM[b]||0)+(n>0?n*q:safeNum(col(r,'거래금액','매출액'))); });
+  const upBrands = [];
+  new Set([...Object.keys(currBM),...Object.keys(prevBM)]).forEach(b => { if((currBM[b]||0)>(prevBM[b]||0)) upBrands.push(b); });
+  let text = ups.length ? ups.join(', ') + '하였습니다.' : '';
+  if (upBrands.length) text += (text ? '\n' : '') + '전월 대비 증가한 브랜드: ' + upBrands.join(', ');
+  return text || '전월 대비 성과를 입력해 주세요.';
+}
+
 function repSyncRecipient() {
   const panel = document.getElementById('report-builder-panel');
   if (!panel || panel.style.display === 'none') return;
@@ -2952,6 +3057,11 @@ function toggleReportBuilder() {
     }
     if (!document.getElementById('rep-issues-list').children.length)  repAddIssue();
     if (!document.getElementById('rep-updates-list').children.length) repAddUpdate();
+    repRefreshPerfKpi();
+    if (!document.getElementById('rep-perf-list').children.length) {
+      repAddPerf('CS 처리 현황', '이달 접수된 고객 문의를 저희 운영팀이 직접 분류하고 처리했습니다.\nCS 건수 입력 후 내용을 수정해 주세요.');
+      repAddPerf('전월 대비 KPI 성장', repBuildKpiText());
+    }
   }
 }
 
@@ -3047,8 +3157,18 @@ function generateReport() {
       <td style="padding:10px 16px; border-bottom:1px solid #e2e8f0; font-size:13px; color:#374151;">${b}</td>
     </tr>`).join('');
 
-  const insightBrands = brands.slice(0,2).map(([name, amt])=>`${name}(${totalAmt>0?(amt/totalAmt*100).toFixed(1):0}%)`).join(' + ');
-  const otherPct = (100 - top2Pct).toFixed(1);
+  const perfs = [];
+  document.querySelectorAll('#rep-perf-list > [id^="rep-perf-item-"]').forEach(div => {
+    const id = div.id.replace('rep-perf-item-', '');
+    const t = (document.getElementById(`rep-perf${id}-t`)?.value || '').trim();
+    const b = (document.getElementById(`rep-perf${id}-b`)?.value || '').trim();
+    if (t) perfs.push({ t, b });
+  });
+  const perfCards = perfs.map((p, i) => `
+    <div style="border:1px solid #e2e8f0; border-radius:8px; padding:16px 20px; margin-bottom:12px; display:flex; gap:16px; align-items:flex-start;">
+      <div style="min-width:32px;height:32px;background:#1e3a5f;color:white;border-radius:6px;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;">${i+1}</div>
+      <div><div style="font-size:13px;font-weight:700;color:#1d4ed8;margin-bottom:4px;">${p.t}</div><div style="font-size:12px;color:#374151;line-height:1.7;white-space:pre-wrap;">${p.b}</div></div>
+    </div>`).join('');
 
   const html = `<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8">
   <title>${year}년 ${month}월 월간 운영 결산 리포트 - ${recipient}</title>
@@ -3116,17 +3236,12 @@ ${csTotal ? `<div class="page">
   <div class="section-title">💡 ${month}월 주요 이슈</div>${issueCards}
   <div class="footer">본 보고서는 운영팀이 작성한 월간 결산 리포트입니다.${manager?' | 문의: '+manager:''}</div>
 </div>` : ''}
-${updRows || top1 ? `<div class="page">
+${updRows || perfCards ? `<div class="page">
   <div class="header-bar">수신: ${recipient} | ${year}년 ${month}월 월간 운영 결산 보고서</div>
   ${updRows ? `<div class="section-title">🚀 업데이트 예정 사항</div><table style="margin-bottom:40px;"><thead><tr><th style="width:40px;text-align:center;"></th><th style="width:180px;">항목</th><th>설명</th></tr></thead><tbody>${updRows}</tbody></table>` : ''}
-  <div class="section-title">이달, 운영대행 핵심 성과</div>
+  ${perfCards ? `<div class="section-title">이달, 운영대행 핵심 성과</div>
   <p style="font-size:13px; color:#374151; margin-bottom:20px;">${month}월 운영 결과를 바탕으로, 운영대행을 저희에게 맡기는 것이 왜 합리적인 선택인지 구체적인 근거로 말씀드립니다.</p>
-  ${csTotal ? `<div style="border:1px solid #e2e8f0; border-radius:8px; padding:16px 20px; margin-bottom:12px; display:flex; gap:16px; align-items:flex-start;"><div style="min-width:32px;height:32px;background:#1e3a5f;color:white;border-radius:6px;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;">1</div><div><div style="font-size:13px;font-weight:700;color:#1d4ed8;margin-bottom:4px;">CS ${csTotal}건, 저희가 전부 처리했습니다</div><div style="font-size:12px;color:#374151;">이달 접수된 고객 문의 ${csTotal}건을 저희 운영팀이 직접 분류하고 처리했습니다.</div></div></div>` : ''}
-  ${top1 && top2 ? `<div style="border:1px solid #e2e8f0; border-radius:8px; padding:16px 20px; margin-bottom:20px; display:flex; gap:16px; align-items:flex-start;"><div style="min-width:32px;height:32px;background:#1e3a5f;color:white;border-radius:6px;font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;">${csTotal?2:1}</div><div><div style="font-size:13px;font-weight:700;color:#1d4ed8;margin-bottom:4px;">멀티 브랜드 구조 안착</div><div style="font-size:12px;color:#374151;line-height:1.7;">${top1[0]}가 전체 매출의 ${(top1[1]/totalAmt*100).toFixed(1)}%를 달성하고, ${brands.slice(1).map(([n])=>n).join(', ')} 등의 매출이 함께 구성됩니다.<br>특정 브랜드의 돌발 변수에도 전체 실적은 흔들림 없이 유지됩니다.</div></div></div>` : ''}
-  <div style="border:1px solid #e8ecf4; border-radius:8px; padding:16px 20px; background:#f8faff;">
-    <div style="font-size:13px;font-weight:700;color:#0f172a;margin-bottom:6px;">핵심 인사이트</div>
-    <div style="font-size:12px;color:#374151;line-height:1.7;">${insightBrands ? insightBrands + ' 두 브랜드가 전체 매출의 ' + top2Pct.toFixed(1) + '%를 차지하며, 나머지 ' + (brands.length - 2) + '개 브랜드가 나머지 ' + otherPct + '%를 구성합니다. 멀티 브랜드 구조 안착으로 매출 변동성이 크게 완화되었습니다.' : '브랜드별 분석 데이터를 기반으로 운영 현황을 확인하세요.'}</div>
-  </div>
+  ${perfCards}` : ''}
   <div class="footer">본 보고서는 운영팀이 작성한 월간 결산 리포트입니다.${manager?' | 문의: '+manager:''}</div>
 </div>` : ''}
 </body></html>`;

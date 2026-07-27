@@ -512,10 +512,32 @@
         <button onclick="_rmMocheList.length=0; rmRenderMoche();" style="padding:7px 16px; background:transparent; border:1px solid #fca5a5; color:#dc2626; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:12px; font-weight:600; cursor:pointer; margin-right:8px;">전체 삭제</button>
         <button onclick="rmExportMoche()" style="padding:8px 18px; background:#10b981; color:white; border:none; border-radius:9px; font-family:'Noto Sans KR',sans-serif; font-size:12px; font-weight:600; cursor:pointer; letter-spacing:-0.2px;">📥 newGoodsSample.xlsx</button>
       </div>
+      <!-- 카테고리 일괄 적용 바 -->
+      <div id="rm-bulk-bar" style="display:none; align-items:center; gap:10px; background:#ede9fe; border-radius:10px; padding:10px 16px; margin-bottom:14px; flex-wrap:wrap;">
+        <span id="rm-bulk-count" style="font-size:12px; font-weight:700; color:#5b21b6; white-space:nowrap;"></span>
+        <select id="rm-bulk-cat" style="padding:6px 10px; border:1px solid #c4b5fd; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:12px; outline:none; background:white; color:#374151;">
+          <option value="">— 카테고리 선택 —</option>
+          <option value="문화/생활">문화/생활</option>
+          <option value="배송상품">배송상품</option>
+          <option value="베이커리/도넛">베이커리/도넛</option>
+          <option value="빵/아이스크림">빵/아이스크림</option>
+          <option value="상품권">상품권</option>
+          <option value="상품권/마트">상품권/마트</option>
+          <option value="아이스크림">아이스크림</option>
+          <option value="치킨/피자">치킨/피자</option>
+          <option value="커피/음료">커피/음료</option>
+          <option value="패스트푸드">패스트푸드</option>
+          <option value="편의점">편의점</option>
+        </select>
+        <button onclick="rmApplyBulkCat()" style="padding:6px 16px; background:#6366f1; color:white; border:none; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:12px; font-weight:700; cursor:pointer; white-space:nowrap;">카테고리 적용</button>
+        <button onclick="rmDeleteSelected()" style="padding:6px 14px; background:transparent; border:1px solid #fca5a5; color:#dc2626; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:12px; font-weight:600; cursor:pointer; white-space:nowrap;">선택 삭제</button>
+        <button onclick="rmClearSelection()" style="padding:6px 14px; background:transparent; border:1px solid #c4b5fd; color:#7c3aed; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:12px; font-weight:600; cursor:pointer; white-space:nowrap; margin-left:auto;">선택 해제</button>
+      </div>
       <div style="overflow-x:auto;">
         <table style="width:100%; border-collapse:collapse; font-size:12px;">
           <thead>
             <tr style="background:#f8fafc; border-bottom:2px solid #e2e8f0;">
+              <th style="padding:8px 12px; width:36px;"><input type="checkbox" id="rm-chk-all" onchange="rmToggleAllCheck(this.checked)" style="cursor:pointer; width:14px; height:14px;"></th>
               <th style="padding:8px 12px; text-align:left; font-size:11px; color:#64748b; white-space:nowrap;">공급사상품코드</th>
               <th style="padding:8px 12px; text-align:left; font-size:11px; color:#64748b; white-space:nowrap;">공급사발급코드</th>
               <th style="padding:8px 12px; text-align:left; font-size:11px; color:#64748b; white-space:nowrap;">교환처</th>
@@ -616,7 +638,7 @@
           <select id="rp-c-media" style="padding:10px 12px; border:1px solid #e2e8f0; border-radius:9px; font-family:'Noto Sans KR',sans-serif; font-size:13px; outline:none; transition:border .15s; background:white; color:#374151;" onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#e2e8f0'">
             <option value="">— 매체 선택 —</option>
             <option value="데브늄">데브늄</option>
-            <option value="라온부고(구)">라온부고(구)</option>
+            <option value="우리부고(구)">우리부고(구)</option>
             <option value="하나부고">하나부고</option>
             <option value="기프티움">기프티움</option>
             <option value="우리토탈">우리토탈</option>
@@ -4154,17 +4176,30 @@ const _SUPPLIER_FORMATS = {
     name: 'KTA',
     color: '#dbeafe', textColor: '#1d4ed8',
     detect: hdrs => hdrs.some(h => /^NO$/i.test(h) || /브랜드명/.test(h) || /^공급사코드$/.test(h)),
+    mapFn: hdr => {
+      if (/판매단가|판매가격|정상가/.test(hdr)) return '상품정상가';
+      if (/소비자가/.test(hdr))                 return '소비자가';
+      if (/유효일/.test(hdr))                   return '유효일';
+      if (/상품\s*설명|특이사항|비고|유의사항/.test(hdr)) return '상품설명';
+      if (/브랜드/.test(hdr))                   return '_brand';
+      if (/상품유형|유형/.test(hdr))             return '판매타입';
+      if (/상품코드|공급사상품코드/.test(hdr))   return '공급사상품코드';
+      if (/상품명|제품명/.test(hdr))             return '상품명';
+      if (/카테고리/.test(hdr))                  return '카테고리';
+      if (/교환처/.test(hdr))                    return '교환처';
+      return null;
+    },
     map: {
       '브랜드명':'_brand', '브랜드':'_brand',
       '상품유형':'판매타입', '유형':'판매타입',
       '카테고리':'카테고리',
       '상품코드':'공급사상품코드', '공급사상품코드':'공급사상품코드',
       '상품명':'상품명', '제품명':'상품명',
-      '판매가격':'상품정상가', '정상가':'상품정상가',
+      '판매가격':'상품정상가', '정상가':'상품정상가', '판매단가':'상품정상가',
       '소비자가격':'소비자가',
       '유효일수':'유효일', '유효일':'유효일',
       '교환처':'교환처',
-      '특이사항':'상품설명', '비고':'상품설명', '유의사항':'상품설명',
+      '특이사항':'상품설명', '비고':'상품설명', '유의사항':'상품설명', '상품 설명':'상품설명', '상품설명':'상품설명',
     },
     skipRow: cells => false,
     postProcess: item => {
@@ -4615,16 +4650,20 @@ function rmRenderMoche() {
   document.getElementById('rm-moche-count').textContent = _rmMocheList.length;
   const tbody = document.getElementById('rm-moche-tbody');
   if (!_rmMocheList.length) {
-    tbody.innerHTML = '<tr><td colspan="14" style="text-align:center;padding:36px;color:#94a3b8;font-size:13px;">붙여넣기 후 파싱하기를 클릭하세요</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="15" style="text-align:center;padding:36px;color:#94a3b8;font-size:13px;">붙여넣기 후 파싱하기를 클릭하세요</td></tr>';
+    const allCb = document.getElementById('rm-chk-all'); if (allCb) allCb.checked = false;
+    document.getElementById('rm-bulk-bar').style.display = 'none';
     return;
   }
   const sLabel = {'1':'판매중','2':'판매중단','5':'공급사중단'};
+  const catOpts = _CAT_OPTS.map(v => `<option value="${v}">${v||'— 선택 —'}</option>`).join('');
   tbody.innerHTML = _rmMocheList.map((p,i) => `
-    <tr style="border-bottom:1px solid #f1f5f9;">
+    <tr id="rm-row-${i}" style="border-bottom:1px solid #f1f5f9;">
+      <td style="padding:8px 12px;"><input type="checkbox" id="rm-chk-${i}" onchange="rmUpdateBulkBar()" style="cursor:pointer; width:14px; height:14px;"></td>
       <td style="padding:8px 12px;"><span style="background:#dbeafe;color:#1d4ed8;padding:2px 7px;border-radius:20px;font-size:11px;font-weight:600;">${p['공급사상품코드']}</span></td>
       <td style="padding:8px 12px;font-size:11px;">${p['공급사발급코드']||'–'}</td>
       <td style="padding:8px 12px;font-size:11px;">${p['교환처']||'–'}</td>
-      <td style="padding:8px 12px;font-size:11px;">${p['카테고리']||'–'}</td>
+      <td style="padding:6px 8px;"><select onchange="_rmMocheList[${i}]['카테고리']=this.value" style="font-size:11px;padding:4px 6px;border:1px solid #e2e8f0;border-radius:6px;font-family:'Noto Sans KR',sans-serif;max-width:120px;background:white;">${_CAT_OPTS.map(v=>`<option value="${v}"${v===p['카테고리']?' selected':''}>${v||'— 선택 —'}</option>`).join('')}</select></td>
       <td style="padding:8px 12px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;" title="${p['상품명']}">${p['상품명']}</td>
       <td style="padding:8px 12px;font-size:11px;">${(p['상품정상가']||0).toLocaleString()}</td>
       <td style="padding:8px 12px;font-size:11px;">${(p['소비자가']||0).toLocaleString()}</td>
@@ -4636,6 +4675,51 @@ function rmRenderMoche() {
       <td style="padding:8px 12px;font-size:11px;">${p['보증타입']==='1'?'사용분':'발행분'}</td>
       <td style="padding:8px 12px;"><button onclick="_rmMocheList.splice(${i},1);rmRenderMoche();" style="background:#fee2e2;color:#dc2626;border:none;padding:3px 9px;font-size:11px;border-radius:5px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-weight:600;">삭제</button></td>
     </tr>`).join('');
+}
+
+function rmToggleAllCheck(checked) {
+  _rmMocheList.forEach((_, i) => { const cb = document.getElementById(`rm-chk-${i}`); if (cb) cb.checked = checked; });
+  rmUpdateBulkBar();
+}
+
+function rmUpdateBulkBar() {
+  const checkedIdxs = _rmMocheList.map((_, i) => i).filter(i => document.getElementById(`rm-chk-${i}`)?.checked);
+  const bar = document.getElementById('rm-bulk-bar');
+  if (!bar) return;
+  if (checkedIdxs.length > 0) {
+    bar.style.display = 'flex';
+    document.getElementById('rm-bulk-count').textContent = `${checkedIdxs.length}개 선택됨`;
+  } else {
+    bar.style.display = 'none';
+  }
+  const allCb = document.getElementById('rm-chk-all');
+  if (allCb) allCb.checked = checkedIdxs.length === _rmMocheList.length && _rmMocheList.length > 0;
+}
+
+function rmApplyBulkCat() {
+  const cat = document.getElementById('rm-bulk-cat').value;
+  if (!cat) return _regToast('카테고리를 선택하세요', 1);
+  let count = 0;
+  _rmMocheList.forEach((p, i) => {
+    if (document.getElementById(`rm-chk-${i}`)?.checked) { p['카테고리'] = cat; count++; }
+  });
+  if (!count) return _regToast('선택된 항목이 없습니다', 1);
+  rmRenderMoche();
+  _regToast(`${count}개 카테고리 → "${cat}" 적용 완료`);
+}
+
+function rmDeleteSelected() {
+  const toDelete = new Set(_rmMocheList.map((_, i) => i).filter(i => document.getElementById(`rm-chk-${i}`)?.checked));
+  if (!toDelete.size) return;
+  for (let i = _rmMocheList.length - 1; i >= 0; i--) { if (toDelete.has(i)) _rmMocheList.splice(i, 1); }
+  rmRenderMoche();
+  _regToast(`${toDelete.size}개 삭제 완료`);
+}
+
+function rmClearSelection() {
+  _rmMocheList.forEach((_, i) => { const cb = document.getElementById(`rm-chk-${i}`); if (cb) cb.checked = false; });
+  const allCb = document.getElementById('rm-chk-all'); if (allCb) allCb.checked = false;
+  document.getElementById('rm-bulk-bar').style.display = 'none';
 }
 function rmExportMoche() {
   if (!_rmMocheList.length) return _regToast('등록 목록이 비어있습니다', 1);

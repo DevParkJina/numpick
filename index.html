@@ -470,8 +470,14 @@
     </div>
 
     <!-- 붙여넣기 영역 -->
-    <div class="card reg-card" style="margin-bottom:20px;">
-      <div style="font-size:14px; font-weight:700; color:#0f172a; margin-bottom:16px;">📋 데이터 붙여넣기</div>
+    <div class="card reg-card" style="margin-bottom:20px;" ondragover="event.preventDefault(); this.style.borderColor='#6366f1';" ondragleave="this.style.borderColor=''" ondrop="event.preventDefault(); this.style.borderColor=''; const f=event.dataTransfer.files[0]; if(f&&/\.xlsx?$/i.test(f.name)) rmHandleExcelFile(f); else _regToast('xlsx / xls 파일만 지원합니다', 1);">
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
+        <div style="font-size:14px; font-weight:700; color:#0f172a;">📋 데이터 붙여넣기</div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <input type="file" id="rm-excel-file" accept=".xlsx,.xls" style="display:none" onchange="rmHandleExcelFile(this.files[0]); this.value=''">
+          <button onclick="document.getElementById('rm-excel-file').click()" style="padding:7px 16px; background:#f0fdf4; color:#16a34a; border:1px solid #bbf7d0; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:12px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:5px; white-space:nowrap;">📂 엑셀 파일 업로드</button>
+        </div>
+      </div>
       <div style="display:flex; gap:10px; margin-bottom:14px; align-items:center; flex-wrap:wrap;">
         <div style="display:flex; align-items:center; gap:8px; background:#f8fafc; padding:6px 12px; border-radius:9px; border:1px solid #e4e9f0;">
           <span style="font-size:11px; font-weight:700; color:#475569; white-space:nowrap;">공급사 포맷</span>
@@ -4304,6 +4310,27 @@ function _getBrandCatMap() {
   try { return JSON.parse(localStorage.getItem('numpick_brand_cat') || '{}'); } catch { return {}; }
 }
 let _mappingState = {};
+
+function rmHandleExcelFile(file) {
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const wb = XLSX.read(e.target.result, { type: 'array' });
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+      if (!rows.length || rows.length < 2) return _regToast('데이터가 없습니다 (헤더 포함 2행 이상 필요)', 1);
+      const tsv = rows
+        .map(r => r.map(c => String(c ?? '').replace(/\t/g, ' ').replace(/\r?\n|\n/g, ' ')).join('\t'))
+        .join('\n');
+      const forceFmt = document.getElementById('rm-supplier-fmt').value;
+      _showMappingModal(tsv, forceFmt, null);
+    } catch(err) {
+      _regToast('엑셀 읽기 오류: ' + err.message, 1);
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
 
 function rmParsePaste() {
   const text = document.getElementById('rm-paste-area').value;

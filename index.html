@@ -1371,10 +1371,11 @@ function setGroupBy(type) {
   btn.className = 'tog-btn on';
   btn.style.background = '';
   const sortBrandBtn = document.getElementById('sort-brand');
-  if (sortBrandBtn) sortBrandBtn.style.display = type === 'media' ? '' : 'none';
+  if (sortBrandBtn) sortBrandBtn.style.display = type === 'brand' ? 'none' : '';
   const sortProductBtn = document.getElementById('sort-product');
   if (sortProductBtn) sortProductBtn.style.display = type === 'media' ? '' : 'none';
-  if (type !== 'media' && (sortBy === 'brand' || sortBy === 'product')) setSortBy('qty');
+  if (type === 'brand' && sortBy === 'brand') setSortBy('qty');
+  if (type !== 'media' && sortBy === 'product') setSortBy('qty');
   renderSalesDashboard();
 }
 

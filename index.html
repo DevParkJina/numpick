@@ -1752,7 +1752,10 @@ function renderSalesDashboard() {
     document.getElementById('sales-heatmap').style.display = 'none';
     document.getElementById('sales-heatmap').innerHTML = '';
     grid.innerHTML = '';
-    renderComposition(rows);
+    const compRows = selectedMedias.size > 0
+      ? rows.filter(r => selectedMedias.has(String(col(r, '매체명') || '').trim()))
+      : rows;
+    renderComposition(compRows);
     return;
   }
   document.getElementById('sales-composition').style.display = 'none';

@@ -1606,20 +1606,22 @@ function renderComposition(rows) {
     const suppliersSorted = Object.entries(suppliers).map(([sup, brands]) => ({
       sup,
       qty: Object.values(brands).reduce((s, v) => s + v.qty, 0),
+      amt: Object.values(brands).reduce((s, v) => s + v.amt, 0),
       brands: Object.entries(brands).map(([br, v]) => ({ br, ...v })).sort((a, b) => b.qty - a.qty),
     })).sort((a, b) => b.qty - a.qty);
 
     let tableRows = '';
-    suppliersSorted.forEach(({ sup, qty: supQty, brands }) => {
+    suppliersSorted.forEach(({ sup, qty: supQty, amt: supAmt, brands }) => {
       const supPct = mediaTotalQty > 0 ? supQty / mediaTotalQty * 100 : 0;
       brands.forEach((b, bi) => {
         const pct = mediaTotalQty > 0 ? b.qty / mediaTotalQty * 100 : 0;
         tableRows += `<tr>
           ${bi === 0
-            ? `<td rowspan="${brands.length}" style="${tdBase} font-weight:700; color:#374151; vertical-align:top; border-right:2px solid ${color}20; white-space:nowrap;">${sup}<div style="font-size:10px; color:#94a3b8; font-weight:400; margin-top:2px;">${supQty.toLocaleString()}개 · ${supPct.toFixed(0)}%</div></td>`
+            ? `<td rowspan="${brands.length}" style="${tdBase} font-weight:700; color:#374151; vertical-align:top; border-right:2px solid ${color}20; white-space:nowrap;">${sup}<div style="font-size:10px; color:#94a3b8; font-weight:400; margin-top:2px;">${supQty.toLocaleString()}개 · ${fmtAmt(supAmt)} · ${supPct.toFixed(0)}%</div></td>`
             : ''}
           <td style="${tdBase} color:#475569;">${b.br}</td>
           <td style="${tdBase} text-align:right; font-weight:600; color:#0f172a;">${b.qty.toLocaleString()}</td>
+          <td style="${tdBase} text-align:right; color:#475569;">${fmtAmt(b.amt)}</td>
           <td style="${tdBase} text-align:right; min-width:52px;">
             <div style="display:flex; align-items:center; gap:6px; justify-content:flex-end;">
               <div style="width:48px; background:#f1f5f9; border-radius:3px; height:4px; overflow:hidden;">
@@ -1646,6 +1648,7 @@ function renderComposition(rows) {
                 <th style="padding:6px 12px; font-size:10px; font-weight:600; color:#94a3b8; text-align:left; border-bottom:1px solid #f1f5f9; white-space:nowrap;">공급사</th>
                 <th style="padding:6px 12px; font-size:10px; font-weight:600; color:#94a3b8; text-align:left; border-bottom:1px solid #f1f5f9;">브랜드</th>
                 <th style="padding:6px 12px; font-size:10px; font-weight:600; color:#94a3b8; text-align:right; border-bottom:1px solid #f1f5f9;">수량</th>
+                <th style="padding:6px 12px; font-size:10px; font-weight:600; color:#94a3b8; text-align:right; border-bottom:1px solid #f1f5f9; white-space:nowrap;">금액(정상가)</th>
                 <th style="padding:6px 12px; font-size:10px; font-weight:600; color:#94a3b8; text-align:right; border-bottom:1px solid #f1f5f9; white-space:nowrap;">비율</th>
               </tr>
             </thead>

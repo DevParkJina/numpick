@@ -1577,7 +1577,10 @@ function renderComposition(rows) {
     data[media][supplier][brand].amt += amt;
   });
 
-  const mediaList = Object.keys(data).sort();
+  const mediaList = Object.keys(data).sort((a, b) => {
+    const qtyOf = m => Object.values(data[m]).reduce((s, brands) => s + Object.values(brands).reduce((ss, v) => ss + v.qty, 0), 0);
+    return qtyOf(b) - qtyOf(a);
+  });
   if (!mediaList.length) { el.style.display = 'none'; return; }
 
   const palette = ['#6366f1','#8b5cf6','#ec4899','#f59e0b','#10b981','#0ea5e9','#ef4444','#14b8a6'];
@@ -1632,7 +1635,7 @@ function renderComposition(rows) {
       <div style="border:1px solid #e2e8f0; border-radius:12px; overflow:hidden;">
         <div style="padding:10px 14px; background:#f8fafc; border-bottom:1px solid #e2e8f0; display:flex; align-items:center; gap:8px;">
           <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:${color}; flex-shrink:0;"></span>
-          <span style="font-size:13px; font-weight:800; color:#0f172a; flex:1;">${media}</span>
+          <span style="font-size:13px; font-weight:800; color:#0f172a; flex:1;">${MEDIA_MAP[media] || media}</span>
           <span style="font-size:11px; color:#64748b; font-weight:600;">총 ${mediaTotalQty.toLocaleString()}개</span>
         </div>
         <div style="overflow-x:auto;">

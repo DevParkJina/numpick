@@ -164,6 +164,9 @@
   <div id="sales-kpis" style="display:none; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:20px;"></div>
   <div id="sales-heatmap" style="display:none; margin-bottom:20px;"></div>
 
+  <!-- 매체별 공급사·브랜드 구성 -->
+  <div id="sales-composition" style="display:none; margin-bottom:20px;"></div>
+
   <!-- Media grid -->
   <div id="sales-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(580px, 1fr)); gap:20px;"></div>
 </div>
@@ -1295,6 +1298,8 @@ async function resetSales() {
   document.getElementById('sales-kpis').style.display = 'none';
   document.getElementById('sales-grid').innerHTML = '';
   document.getElementById('sales-kpis').innerHTML = '';
+  document.getElementById('sales-composition').style.display = 'none';
+  document.getElementById('sales-composition').innerHTML = '';
   document.getElementById('sales-file').value = '';
   Object.values(charts).forEach(c => c.destroy());
   charts = {};
@@ -1550,6 +1555,105 @@ async function loadFromStorage() {
     } catch(e) { localStorage.removeItem(_SK.media.lock); }
   }
 }
+function renderComposition(rows) {
+  const el = document.getElementById('sales-composition');
+  if (!el) return;
+
+  const data = {};
+  rows.forEach(r => {
+    const media    = String(col(r, '매체명') || '').trim() || '(매체없음)';
+    const supplier = String(col(r, '공급사') || '').trim() || '(공급사없음)';
+    const brand    = String(col(r, '브랜드') || '').trim() || '(브랜드없음)';
+    const qty      = safeNum(col(r, '수량'));
+    const normalPrice = safeNum(col(r, '정상가'));
+    const amt      = normalPrice > 0 ? normalPrice * qty : safeNum(col(r, '거래금액', '매출액'));
+    if (!data[media]) data[media] = {};
+    if (!data[media][supplier]) data[media][supplier] = {};
+    if (!data[media][supplier][brand]) data[media][supplier][brand] = { qty: 0, amt: 0 };
+    data[media][supplier][brand].qty += qty;
+    data[media][supplier][brand].amt += amt;
+  });
+
+  const mediaList = Object.keys(data).sort();
+  if (!mediaList.length) { el.style.display = 'none'; return; }
+
+  const palette = ['#6366f1','#8b5cf6','#ec4899','#f59e0b','#10b981','#0ea5e9','#ef4444','#14b8a6'];
+  const tdBase = 'padding:7px 12px; font-size:12px; border-bottom:1px solid #f1f5f9;';
+
+  let html = `
+    <div class="card" style="padding:0; overflow:hidden;">
+      <div style="padding:14px 20px; border-bottom:1px solid #f1f5f9; display:flex; align-items:center; gap:10px;">
+        <span style="font-size:14px; font-weight:700; color:#0f172a;">매체별 공급사 · 브랜드 구성</span>
+        <span style="font-size:11px; color:#94a3b8;">${mediaList.length}개 매체</span>
+      </div>
+      <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(480px,1fr)); gap:16px; padding:16px;">
+  `;
+
+  mediaList.forEach((media, mi) => {
+    const suppliers = data[media];
+    const color = palette[mi % palette.length];
+
+    let mediaTotalQty = 0;
+    Object.values(suppliers).forEach(brands => Object.values(brands).forEach(v => { mediaTotalQty += v.qty; }));
+
+    const suppliersSorted = Object.entries(suppliers).map(([sup, brands]) => ({
+      sup,
+      qty: Object.values(brands).reduce((s, v) => s + v.qty, 0),
+      brands: Object.entries(brands).map(([br, v]) => ({ br, ...v })).sort((a, b) => b.qty - a.qty),
+    })).sort((a, b) => b.qty - a.qty);
+
+    let tableRows = '';
+    suppliersSorted.forEach(({ sup, qty: supQty, brands }) => {
+      const supPct = mediaTotalQty > 0 ? supQty / mediaTotalQty * 100 : 0;
+      brands.forEach((b, bi) => {
+        const pct = mediaTotalQty > 0 ? b.qty / mediaTotalQty * 100 : 0;
+        tableRows += `<tr>
+          ${bi === 0
+            ? `<td rowspan="${brands.length}" style="${tdBase} font-weight:700; color:#374151; vertical-align:top; border-right:2px solid ${color}20; white-space:nowrap;">${sup}<div style="font-size:10px; color:#94a3b8; font-weight:400; margin-top:2px;">${supQty.toLocaleString()}개 · ${supPct.toFixed(0)}%</div></td>`
+            : ''}
+          <td style="${tdBase} color:#475569;">${b.br}</td>
+          <td style="${tdBase} text-align:right; font-weight:600; color:#0f172a;">${b.qty.toLocaleString()}</td>
+          <td style="${tdBase} text-align:right; min-width:52px;">
+            <div style="display:flex; align-items:center; gap:6px; justify-content:flex-end;">
+              <div style="width:48px; background:#f1f5f9; border-radius:3px; height:4px; overflow:hidden;">
+                <div style="width:${Math.min(pct,100).toFixed(1)}%; background:${color}; height:100%;"></div>
+              </div>
+              <span style="font-size:11px; color:#64748b; min-width:28px; text-align:right;">${pct.toFixed(0)}%</span>
+            </div>
+          </td>
+        </tr>`;
+      });
+    });
+
+    html += `
+      <div style="border:1px solid #e2e8f0; border-radius:12px; overflow:hidden;">
+        <div style="padding:10px 14px; background:#f8fafc; border-bottom:1px solid #e2e8f0; display:flex; align-items:center; gap:8px;">
+          <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:${color}; flex-shrink:0;"></span>
+          <span style="font-size:13px; font-weight:800; color:#0f172a; flex:1;">${media}</span>
+          <span style="font-size:11px; color:#64748b; font-weight:600;">총 ${mediaTotalQty.toLocaleString()}개</span>
+        </div>
+        <div style="overflow-x:auto;">
+          <table style="width:100%; border-collapse:collapse;">
+            <thead>
+              <tr style="background:#fafafa;">
+                <th style="padding:6px 12px; font-size:10px; font-weight:600; color:#94a3b8; text-align:left; border-bottom:1px solid #f1f5f9; white-space:nowrap;">공급사</th>
+                <th style="padding:6px 12px; font-size:10px; font-weight:600; color:#94a3b8; text-align:left; border-bottom:1px solid #f1f5f9;">브랜드</th>
+                <th style="padding:6px 12px; font-size:10px; font-weight:600; color:#94a3b8; text-align:right; border-bottom:1px solid #f1f5f9;">수량</th>
+                <th style="padding:6px 12px; font-size:10px; font-weight:600; color:#94a3b8; text-align:right; border-bottom:1px solid #f1f5f9; white-space:nowrap;">비율</th>
+              </tr>
+            </thead>
+            <tbody>${tableRows}</tbody>
+          </table>
+        </div>
+      </div>
+    `;
+  });
+
+  html += `</div></div>`;
+  el.innerHTML = html;
+  el.style.display = 'block';
+}
+
 function renderSalesDashboard() {
   const from = document.getElementById('date-from').value;
   const to   = document.getElementById('date-to').value;
@@ -1868,6 +1972,8 @@ function renderSalesDashboard() {
       }
     });
   });
+
+  renderComposition(rows);
 }
 
 // ════════════════════════════════════════════════════

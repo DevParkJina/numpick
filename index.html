@@ -1386,14 +1386,15 @@ const _SK = {
   sales:    { lock:'np_lock_sales' },
   products: { lock:'np_lock_prods' },
   media:    { lock:'np_lock_media' },
+  ium:      { lock:'np_lock_ium' },
 };
 
 function openDB() {
   return new Promise((resolve, reject) => {
-    const req = indexedDB.open('nyumpick', 1);
+    const req = indexedDB.open('nyumpick', 2);
     req.onupgradeneeded = e => {
       const db = e.target.result;
-      ['sales','products','media'].forEach(s => {
+      ['sales','products','media','ium'].forEach(s => {
         if (!db.objectStoreNames.contains(s)) db.createObjectStore(s);
       });
     };
@@ -1431,7 +1432,7 @@ async function clearDB(tab) {
 
 function isLocked(tab) { return localStorage.getItem(_SK[tab].lock) === '1'; }
 
-const _TAB_LABELS = { sales:'매출', products:'상품', media:'매체' };
+const _TAB_LABELS = { sales:'매출', products:'상품', media:'매체', ium:'이음기프트' };
 window.addEventListener('beforeunload', e => {
   const locked = Object.keys(_SK).filter(isLocked);
   if (locked.length === 0) return;
@@ -1463,6 +1464,9 @@ async function saveToStorage(tab) {
     } else if (tab === 'media') {
       if (!mediaData.length) { alert('저장할 데이터가 없습니다.'); return false; }
       await saveDB('media', { mediaData, mediaChanData });
+    } else if (tab === 'ium') {
+      if (!_iumData || !_iumData.length) { alert('저장할 데이터가 없습니다.'); return false; }
+      await saveDB('ium', _iumData);
     }
     return true;
   } catch(e) {
@@ -1475,8 +1479,8 @@ async function autoSaveIfLocked(tab) {
   if (isLocked(tab)) await saveToStorage(tab);
 }
 
-const _TAB_ICONS = { sales:'📊', products:'📦', media:'📺' };
-const _TAB_NAMES = { sales:'판매 분석', products:'상품 현황', media:'매체 상품현황' };
+const _TAB_ICONS = { sales:'📊', products:'📦', media:'📺', ium:'🏢' };
+const _TAB_NAMES = { sales:'판매 분석', products:'상품 현황', media:'매체 상품현황', ium:'이음기프트 기업분석' };
 
 function updateLockBtn(tab, locked) {
   const btn = document.getElementById('lock-btn-' + tab);
@@ -1557,6 +1561,18 @@ async function loadFromStorage() {
         renderMediaDashboard();
       }
     } catch(e) { localStorage.removeItem(_SK.media.lock); }
+  }
+
+  // 이음기프트 기업분석
+  if (isLocked('ium')) {
+    try {
+      const data = await loadDB('ium');
+      if (data && data.length) {
+        _iumData = data;
+        renderIumAnalysis();
+        updateLockBtn('ium', true);
+      }
+    } catch(e) { localStorage.removeItem(_SK.ium.lock); }
   }
 }
 function renderComposition(rows) {
@@ -4014,6 +4030,11 @@ function destroyIumChart(id) {
   if (_iumCharts[id]) { _iumCharts[id].destroy(); delete _iumCharts[id]; }
 }
 
+function normalizeCompany(name) {
+  return name.replace(/^\(주\)\s*/, '').replace(/\s*\(주\)$/, '')
+             .replace(/^주식회사\s*/, '').replace(/\s*주식회사$/, '').trim();
+}
+
 function parseIumFile(file) {
   if (!file) return;
   const reader = new FileReader();
@@ -4022,6 +4043,7 @@ function parseIumFile(file) {
     const ws = wb.Sheets[wb.SheetNames[0]];
     _iumData = XLSX.utils.sheet_to_json(ws, { defval:'' });
     renderIumAnalysis();
+    autoSaveIfLocked('ium');
   };
   reader.readAsArrayBuffer(file);
 }
@@ -4035,13 +4057,16 @@ function renderIumSection(mediaKey) {
     sec.innerHTML = `
       <div style="background:white;border-radius:16px;box-shadow:0 1px 4px rgba(0,0,0,0.06);padding:20px 24px;margin-bottom:20px;font-family:'Noto Sans KR',sans-serif;">
         <div style="font-size:13px;font-weight:600;color:#1e293b;margin-bottom:16px;">이음기프트 기업 분석</div>
-        <div style="border:1.5px dashed #e2e8f0;border-radius:10px;padding:28px;text-align:center;">
+        <div id="ium-drop-zone" style="border:1.5px dashed #e2e8f0;border-radius:10px;padding:28px;text-align:center;transition:background 0.15s;"
+          ondragover="event.preventDefault();this.style.background='#f0f9ff';this.style.borderColor='#38bdf8';"
+          ondragleave="this.style.background='';this.style.borderColor='#e2e8f0';"
+          ondrop="event.preventDefault();this.style.background='';this.style.borderColor='#e2e8f0';parseIumFile(event.dataTransfer.files[0]);">
           <div style="font-size:12px;color:#94a3b8;margin-bottom:14px;line-height:1.8;">이음 어드민에서 내보낸 주문 파일을 업로드하면<br>기업별 분석이 표시됩니다.</div>
           <label style="display:inline-flex;align-items:center;gap:6px;padding:8px 18px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;cursor:pointer;font-size:12px;color:#475569;">
             이음 파일 업로드
             <input type="file" accept=".xlsx,.xls,.csv" onchange="parseIumFile(this.files[0])" style="display:none;">
           </label>
-          <div style="font-size:10px;color:#cbd5e1;margin-top:10px;">iumOrderList 파일 형식을 지원합니다</div>
+          <div style="font-size:10px;color:#cbd5e1;margin-top:10px;">파일을 여기로 끌어다 놓거나 클릭하여 업로드하세요</div>
         </div>
       </div>`;
   } else {
@@ -4070,7 +4095,7 @@ function renderIumAnalysis() {
 
   _iumData.forEach(r => {
     const on      = String(col(r,'주문번호')||'').trim();
-    const company = String(col(r,'기업명')||'').trim() || '(기업명 없음)';
+    const company = normalizeCompany(String(col(r,'기업명')||'').trim() || '(기업명 없음)');
     const purpose = String(col(r,'발송목적')||'').trim() || '기타';
     const rawAmt  = String(col(r,'거래금액')||'0').replace(/,/g,'');
     const amt     = parseFloat(rawAmt) || 0;
@@ -4150,9 +4175,13 @@ function renderIumAnalysis() {
     <div style="background:white;border-radius:16px;box-shadow:0 1px 4px rgba(0,0,0,0.06);padding:20px 24px;margin-bottom:20px;font-family:'Noto Sans KR',sans-serif;">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
         <div style="font-size:13px;font-weight:600;color:#1e293b;">이음기프트 기업 분석</div>
-        <label style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;cursor:pointer;font-size:10px;color:#94a3b8;">
-          파일 재업로드<input type="file" accept=".xlsx,.xls,.csv" onchange="parseIumFile(this.files[0])" style="display:none;">
-        </label>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <button id="lock-btn-ium" onclick="toggleLock('ium')"
+            style="padding:4px 10px;font-size:10px;border-radius:6px;cursor:pointer;border:1px solid #e2e8f0;background:transparent;color:#94a3b8;font-family:'Noto Sans KR',sans-serif;">🔓 편집</button>
+          <label style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;cursor:pointer;font-size:10px;color:#94a3b8;">
+            파일 재업로드<input type="file" accept=".xlsx,.xls,.csv" onchange="parseIumFile(this.files[0])" style="display:none;">
+          </label>
+        </div>
       </div>
 
       <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:20px;">
@@ -4210,6 +4239,7 @@ function renderIumAnalysis() {
       </div>
     </div>`;
 
+  updateLockBtn('ium', isLocked('ium'));
   destroyIumChart('ium-brand-chart');
   const barCtx = document.getElementById('ium-brand-chart');
   if (barCtx) {

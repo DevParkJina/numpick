@@ -135,6 +135,8 @@
             style="padding:4px 14px; border-radius:6px; font-size:12px; font-weight:500; border:none; background:transparent;">금액순</button>
           <button id="sort-brand" onclick="setSortBy('brand')" class="tog-btn off"
             style="padding:4px 14px; border-radius:6px; font-size:12px; font-weight:500; border:none; background:transparent;">브랜드별</button>
+          <button id="sort-product" onclick="setSortBy('product')" class="tog-btn off"
+            style="padding:4px 14px; border-radius:6px; font-size:12px; font-weight:500; border:none; background:transparent; display:none;">상품별</button>
         </div>
       </div>
 
@@ -1308,13 +1310,12 @@ async function resetSales() {
 function setSortBy(type) {
   sortBy = type;
   if (type !== 'brand') _brandSortBy = 'qty';
-  document.querySelectorAll('#sort-qty, #sort-amt, #sort-brand').forEach(b => {
+  document.querySelectorAll('#sort-qty, #sort-amt, #sort-brand, #sort-product').forEach(b => {
     b.className = 'tog-btn off';
     b.style.background = 'transparent';
   });
   const btn = document.getElementById('sort-' + type);
-  btn.className = 'tog-btn on';
-  btn.style.background = '';
+  if (btn) { btn.className = 'tog-btn on'; btn.style.background = ''; }
   renderSalesDashboard();
 }
 
@@ -1371,7 +1372,9 @@ function setGroupBy(type) {
   btn.style.background = '';
   const sortBrandBtn = document.getElementById('sort-brand');
   if (sortBrandBtn) sortBrandBtn.style.display = type === 'media' ? '' : 'none';
-  if (type !== 'media' && sortBy === 'brand') setSortBy('qty');
+  const sortProductBtn = document.getElementById('sort-product');
+  if (sortProductBtn) sortProductBtn.style.display = type === 'media' ? '' : 'none';
+  if (type !== 'media' && (sortBy === 'brand' || sortBy === 'product')) setSortBy('qty');
   renderSalesDashboard();
 }
 
@@ -1733,8 +1736,20 @@ function renderSalesDashboard() {
 
   if (!Object.keys(byMedia).length) {
     grid.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:60px; color:#94a3b8; font-size:14px;">해당 기간에 데이터가 없습니다.</div>';
+    document.getElementById('sales-composition').style.display = 'none';
     return;
   }
+
+  // 상품별 보기: 매체 × 공급사 × 브랜드 구성 표
+  if (groupBy === 'media' && sortBy === 'product') {
+    document.getElementById('sales-heatmap').style.display = 'none';
+    document.getElementById('sales-heatmap').innerHTML = '';
+    grid.innerHTML = '';
+    renderComposition(rows);
+    return;
+  }
+  document.getElementById('sales-composition').style.display = 'none';
+  document.getElementById('sales-composition').innerHTML = '';
 
   // Special view: media x brand heatmap
   if (groupBy === 'media' && sortBy === 'brand') {
@@ -1972,8 +1987,6 @@ function renderSalesDashboard() {
       }
     });
   });
-
-  renderComposition(rows);
 }
 
 // ════════════════════════════════════════════════════

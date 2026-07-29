@@ -4553,6 +4553,15 @@ function rmParsePaste() {
   if (!text.trim()) return _regToast('데이터를 먼저 붙여넣어 주세요', 1);
   const lines = text.trim().split('\n').filter(l => l.trim());
   if (lines.length < 2) return _regToast('헤더 포함 2행 이상 필요합니다', 1);
+
+  const missing = [];
+  if (!document.getElementById('rm-fee-input').value.trim()) missing.push('공급수수료');
+  if (!document.getElementById('rm-c-notes').value.trim()) missing.push('유의사항');
+  if (missing.length > 0) {
+    const ok = confirm(`⚠️ 공통설정에서 다음 항목이 비어있습니다:\n\n• ${missing.join('\n• ')}\n\n지금 채우고 파싱하는 것을 권장합니다.\n그래도 계속 진행하시겠습니까?`);
+    if (!ok) return;
+  }
+
   const forceFmt = document.getElementById('rm-supplier-fmt').value;
   _showMappingModal(text, forceFmt, null);
 }
@@ -4926,15 +4935,6 @@ function rmClearSelection() {
 }
 function rmExportMoche() {
   if (!_rmMocheList.length) return _regToast('등록 목록이 비어있습니다', 1);
-
-  const missing = [];
-  if (!document.getElementById('rm-fee-input').value.trim()) missing.push('공급수수료');
-  if (!document.getElementById('rm-c-notes').value.trim()) missing.push('유의사항');
-  if (missing.length > 0) {
-    const ok = confirm(`⚠️ 공통설정에서 다음 항목이 입력되지 않았습니다:\n\n• ${missing.join('\n• ')}\n\n그래도 다운로드 하시겠습니까?`);
-    if (!ok) return;
-  }
-
   const COLS = ['공급사상품코드','공급사발급코드','교환처','카테고리','상품명',
     '상품정상가','소비자가','유효일','RM','상품상태','판매타입','상품설명',
     '공급사','보증타입','공급가','공급수수료','판매시작일','판매종료일','배송상품여부'];

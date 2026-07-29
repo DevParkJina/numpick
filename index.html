@@ -4578,6 +4578,11 @@ function _showMappingModal(text, forceFmt, savedColMap) {
   });
   _mappingState = { text, fmtKey, forceFmt, headers, autoMap };
 
+  const supplierSel = document.getElementById('rm-c-supplier');
+  if (supplierSel && fmtKey && supplierSel.querySelector(`option[value="${fmtKey}"]`)) {
+    supplierSel.value = fmtKey;
+  }
+
   const fieldOpts = [
     { value: '', label: '— 무시 —' },
     { value: '공급사상품코드', label: '공급사상품코드' },

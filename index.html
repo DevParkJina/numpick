@@ -637,8 +637,9 @@
     <!-- ② 공통 설정 -->
     <div class="card reg-card" style="margin-bottom:20px;">
       <div style="font-size:14px; font-weight:700; color:#0f172a; margin-bottom:18px;">② 공통 설정</div>
-      <div style="display:grid; grid-template-columns:1fr 220px; gap:14px 20px; align-items:end; margin-bottom:20px;">
-        <div style="display:flex; flex-direction:column; gap:6px;">
+      <div style="display:flex; gap:16px; align-items:flex-start; margin-bottom:20px; flex-wrap:wrap;">
+        <!-- 매체명 -->
+        <div style="display:flex; flex-direction:column; gap:6px; flex:0 0 220px; min-width:180px;">
           <label style="font-size:11px; font-weight:600; color:#64748b; letter-spacing:0.3px;">매체명 <span style="color:#ef4444;">*</span></label>
           <select id="rp-c-media" onchange="rpOnMediaChange()" style="padding:10px 12px; border:1px solid #e2e8f0; border-radius:9px; font-family:'Noto Sans KR',sans-serif; font-size:13px; outline:none; transition:border .15s; background:white; color:#374151;" onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#e2e8f0'">
             <option value="">— 매체 선택 —</option>
@@ -665,11 +666,22 @@
             <option value="달란트비즈">달란트비즈</option>
           </select>
         </div>
-        <div style="display:flex; flex-direction:column; gap:6px;">
-          <label style="font-size:11px; font-weight:600; color:#64748b; letter-spacing:0.3px;">기본 할인율 % <span style="color:#94a3b8; font-weight:400;">양수 입력 · 20 = 20%할인</span></label>
-          <input type="number" id="rp-c-discount" placeholder="ex. 20" step="0.01" style="padding:10px 12px; border:1px solid #e2e8f0; border-radius:9px; font-family:'Noto Sans KR',sans-serif; font-size:13px; outline:none; text-align:center; transition:border .15s;" onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#e2e8f0'">
-          <div id="rp-disc-hint" style="display:none; font-size:11px; color:#92400e; background:#fffbeb; border:1px solid #fde68a; border-radius:7px; padding:7px 10px; line-height:1.5;"></div>
-          <div style="font-size:10px; color:#cbd5e1; margin-top:1px;">※ 모체 공급수수료(-8)와 달리 할인도 양수로 입력</div>
+        <!-- 할인율 -->
+        <div style="display:flex; flex-direction:column; gap:6px; flex:1; min-width:260px;">
+          <label style="font-size:11px; font-weight:600; color:#64748b; letter-spacing:0.3px;">
+            기본 할인율 %
+            <span style="font-weight:400; color:#94a3b8; margin-left:4px;">양수 입력 — 20이면 20% 할인 적용</span>
+          </label>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <input type="number" id="rp-c-discount" placeholder="ex. 20" step="0.01"
+              style="width:120px; padding:10px 14px; border:1px solid #e2e8f0; border-radius:9px; font-family:'Noto Sans KR',sans-serif; font-size:16px; font-weight:700; outline:none; text-align:center; transition:border .15s; color:#1e293b;"
+              onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#e2e8f0'">
+            <span style="font-size:12px; color:#94a3b8; line-height:1.5;">
+              ※ 모체 공급수수료는 <span style="color:#ef4444; font-weight:600;">음수(-8)</span> 입력,<br>
+              여기 할인율은 <span style="color:#6366f1; font-weight:600;">양수(20)</span> 입력
+            </span>
+          </div>
+          <div id="rp-disc-hint" style="display:none; font-size:12px; color:#92400e; background:#fffbeb; border:1px solid #fde68a; border-radius:8px; padding:9px 12px; line-height:1.6; margin-top:2px;"></div>
         </div>
       </div>
 

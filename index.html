@@ -640,7 +640,7 @@
       <div style="display:grid; grid-template-columns:1fr 220px; gap:14px 20px; align-items:end; margin-bottom:20px;">
         <div style="display:flex; flex-direction:column; gap:6px;">
           <label style="font-size:11px; font-weight:600; color:#64748b; letter-spacing:0.3px;">매체명 <span style="color:#ef4444;">*</span></label>
-          <select id="rp-c-media" style="padding:10px 12px; border:1px solid #e2e8f0; border-radius:9px; font-family:'Noto Sans KR',sans-serif; font-size:13px; outline:none; transition:border .15s; background:white; color:#374151;" onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#e2e8f0'">
+          <select id="rp-c-media" onchange="rpOnMediaChange()" style="padding:10px 12px; border:1px solid #e2e8f0; border-radius:9px; font-family:'Noto Sans KR',sans-serif; font-size:13px; outline:none; transition:border .15s; background:white; color:#374151;" onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#e2e8f0'">
             <option value="">— 매체 선택 —</option>
             <option value="데브늄">데브늄</option>
             <option value="우리부고(구)">우리부고(구)</option>
@@ -666,8 +666,10 @@
           </select>
         </div>
         <div style="display:flex; flex-direction:column; gap:6px;">
-          <label style="font-size:11px; font-weight:600; color:#64748b; letter-spacing:0.3px;">기본 할인율 % <span style="color:#94a3b8; font-weight:400;">(선택)</span></label>
-          <input type="number" id="rp-c-discount" placeholder="ex. 20.00" step="0.01" style="padding:10px 12px; border:1px solid #e2e8f0; border-radius:9px; font-family:'Noto Sans KR',sans-serif; font-size:13px; outline:none; text-align:center; transition:border .15s;" onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#e2e8f0'">
+          <label style="font-size:11px; font-weight:600; color:#64748b; letter-spacing:0.3px;">기본 할인율 % <span style="color:#94a3b8; font-weight:400;">양수 입력 · 20 = 20%할인</span></label>
+          <input type="number" id="rp-c-discount" placeholder="ex. 20" step="0.01" style="padding:10px 12px; border:1px solid #e2e8f0; border-radius:9px; font-family:'Noto Sans KR',sans-serif; font-size:13px; outline:none; text-align:center; transition:border .15s;" onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#e2e8f0'">
+          <div id="rp-disc-hint" style="display:none; font-size:11px; color:#92400e; background:#fffbeb; border:1px solid #fde68a; border-radius:7px; padding:7px 10px; line-height:1.5;"></div>
+          <div style="font-size:10px; color:#cbd5e1; margin-top:1px;">※ 모체 공급수수료(-8)와 달리 할인도 양수로 입력</div>
         </div>
       </div>
 
@@ -4956,6 +4958,23 @@ function rmExportMoche() {
 }
 
 // ── 매체상품 등록
+const _RP_DISC_ZERO_MEDIA = new Set(['이음', '달란트비즈']);
+
+function rpOnMediaChange() {
+  const media = document.getElementById('rp-c-media').value;
+  const discInput = document.getElementById('rp-c-discount');
+  const hint = document.getElementById('rp-disc-hint');
+  if (!hint) return;
+  if (_RP_DISC_ZERO_MEDIA.has(media)) {
+    discInput.value = '0';
+    hint.innerHTML = '⚠️ <strong>' + media + '</strong>는 할인율 <strong>0</strong>으로 등록 후,<br>해당 어드민에서 직접 할인율을 설정하세요.';
+    hint.style.display = 'block';
+  } else {
+    hint.style.display = 'none';
+    hint.innerHTML = '';
+  }
+}
+
 let _rpXlsxRows = [];
 function rpSetSource(s) {
   _rpSource = s;

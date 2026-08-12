@@ -4433,13 +4433,14 @@ const _SUPPLIER_FORMATS = {
   MNC: {
     name: 'MNC',
     color: '#fce7f3', textColor: '#9d174d',
-    detect: hdrs => hdrs.some(h => /제휴사명/.test(h) || /발급코드/.test(h)),
-    // 헤더 부분 매칭 (발급코드 (발급일 포함) 처리)
+    detect: hdrs => hdrs.some(h => /제휴사명/.test(h) || /발급코드/.test(h) || /연동코드/.test(h)),
+    // 헤더 부분 매칭 (발급코드 (발급일 포함) / 연동코드+유효기간 두 변형 모두 처리)
     mapFn: hdr => {
       if (/제휴사명/.test(hdr))              return '_brand';
       if (/상품명|제품명/.test(hdr))          return '상품명';
       if (/상품가격|판매가격/.test(hdr))      return '소비자가';
-      if (/발급코드/.test(hdr))              return '공급사발급코드';
+      if (/유효기간|유효일/.test(hdr))        return '유효일';
+      if (/발급코드|연동코드/.test(hdr))      return '공급사발급코드';
       if (/상품코드/.test(hdr))              return '공급사상품코드';
       if (/유의사항|비고|안내|특이사항/.test(hdr)) return '상품설명';
       return null;
@@ -4455,6 +4456,11 @@ const _SUPPLIER_FORMATS = {
           .replace(new RegExp(`\\[${item['_brand']}\\]\\s*`, 'g'), '')
           .replace(new RegExp(item['_brand'], 'g'), '')
           .trim().replace(/^[\s\-_\[\]]+|[\s\-_\[\]]+$/g, '').trim();
+      }
+      // "30" 처럼 숫자만 있을 때 "일" 붙이기 (발급일 포함 등 괄호 설명 제거 후)
+      if (item['유효일']) {
+        const days = String(item['유효일']).replace(/\(.*?\)/g, '').trim();
+        item['유효일'] = /^\d+$/.test(days) ? days + '일' : days;
       }
     },
   },

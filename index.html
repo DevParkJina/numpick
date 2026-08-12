@@ -4478,6 +4478,10 @@ function _parsePrice(v) {
   if (v == null) return 0;
   return parseFloat(String(v).replace(/[,\s₩원]/g,'')) || 0;
 }
+// 매체 판매가는 100원 단위로 무조건 올림 (예: 8632→8700, 8601→8700)
+function _ceil100(v) {
+  return Math.ceil((v || 0) / 100) * 100;
+}
 function _stripBrand(name, brand) {
   if (!brand || !name) return (name || '').trim();
   if (!name.includes(brand)) return name.trim();
@@ -5102,7 +5106,7 @@ function rpGenerate() {
     _rpMediaList.push({
       '공급사상품코드': p.code, '공급사발급코드': p.issueCode,
       '공급단가': p.supplyP, '상품명': p.name, '매체명': media,
-      '판매가': Math.round(p.consumer * (1 - disc / 100)),
+      '판매가': _ceil100(p.consumer * (1 - disc / 100)),
       '할인율': parseFloat(disc.toFixed(2)),
     });
     added++;
@@ -5152,7 +5156,7 @@ function rpParsePaste() {
       '공급단가':       Math.round(consumer * (1 + fee / 100)),
       '상품명':         item['상품명'],
       '매체명':         media,
-      '판매가':         Math.round(consumer * (1 - disc / 100)),
+      '판매가':         _ceil100(consumer * (1 - disc / 100)),
       '할인율':         parseFloat(disc.toFixed(2)),
     });
     added++;

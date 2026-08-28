@@ -5011,7 +5011,7 @@ function rpSetSource(s) {
   document.getElementById('rp-excel-wrap').style.display       = s === 'excel'  ? 'block' : 'none';
   document.getElementById('rp-paste-wrap').style.display       = s === 'paste'  ? 'block' : 'none';
   document.getElementById('rp-generate-wrap').style.display    = s === 'paste'  ? 'none'  : 'flex';
-  if (s === 'moche') rpRefreshBrandDiscUI();
+  rpRefreshBrandDiscUI();
   const on  = 'padding:8px 20px; border-radius:8px; font-size:12px; font-weight:600; border:none; cursor:pointer; background:#6366f1; color:white; font-family:\'Noto Sans KR\',sans-serif;';
   const off = 'padding:8px 20px; border-radius:8px; font-size:12px; font-weight:600; border:1px solid #e2e8f0; cursor:pointer; background:transparent; color:#64748b; font-family:\'Noto Sans KR\',sans-serif;';
   document.getElementById('rp-src-moche').style.cssText = s === 'moche' ? on : off;
@@ -5029,13 +5029,19 @@ function rpUpdateMocheSummary() {
       <span style="font-size:11px; color:#94a3b8;">${_rmMocheList.slice(0,3).map(p=>p['교환처']||p['공급사상품코드']).join(', ')}${_rmMocheList.length>3?' …':''}</span>`;
   }
 }
+// 현재 선택된 소스(모체 목록 / 엑셀 업로드)에서 교환처(브랜드) 목록을 뽑는다.
+// "새로 붙여넣기"는 소스 확정 단계가 없어 브랜드별 할인율 UI를 지원하지 않는다.
+function _rpCurrentBrandSourceList() {
+  if (_rpSource === 'moche') return _rmMocheList.map(p => p['교환처']);
+  if (_rpSource === 'excel') return _rpXlsxRows.map(r => r['교환처']);
+  return [];
+}
 function rpRefreshBrandDiscUI() {
   const section = document.getElementById('rp-brand-disc-section');
   const wrap    = document.getElementById('rp-brand-disc-rows');
   if (!section || !wrap) return;
-  if (!_rmMocheList.length) { section.style.display = 'none'; return; }
 
-  const brands = [...new Set(_rmMocheList.map(p => p['교환처']).filter(Boolean))].sort();
+  const brands = [...new Set(_rpCurrentBrandSourceList().filter(Boolean))].sort();
   if (brands.length < 2) { section.style.display = 'none'; return; }
 
   // 기존 입력값 보존
@@ -5096,6 +5102,7 @@ function rpLoadExcel(evt) {
       <button onclick="rpResetExcel()" style="padding:3px 10px; background:transparent; border:1px solid #e2e8f0; color:#94a3b8; border-radius:6px; font-family:'Noto Sans KR',sans-serif; font-size:11px; cursor:pointer;">초기화</button>
     </div>`;
     sumEl.style.display = 'block';
+    rpRefreshBrandDiscUI();
     _regToast(`${_rpXlsxRows.length}개 상품 로드 완료`);
   };
   if (isCsv) reader.readAsArrayBuffer(file); else reader.readAsBinaryString(file);
@@ -5106,6 +5113,7 @@ function rpResetExcel() {
   sumEl.style.display = 'none';
   sumEl.innerHTML = '';
   document.getElementById('rp-excel-file').value = '';
+  rpRefreshBrandDiscUI();
   _regToast('엑셀 초기화 완료');
 }
 function rpGenerate() {
@@ -5126,7 +5134,7 @@ function rpGenerate() {
     sourceItems = _rpXlsxRows.map(r => ({
       code: String(r['공급사상품코드'] || ''), issueCode: String(r['공급사발급코드'] || ''),
       supplyP: safeNum(r['공급가']), name: String(r['상품명'] || ''),
-      consumer: safeNum(r['소비자가']), brand: '',
+      consumer: safeNum(r['소비자가']), brand: r['교환처'] || '',
     }));
   }
   _rpMediaList.splice(0, _rpMediaList.length);

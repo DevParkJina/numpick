@@ -599,9 +599,9 @@
       <div id="rp-excel-wrap" style="display:none;">
         <label for="rp-excel-file" style="display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; border:2px dashed #a5b4fc; border-radius:12px; padding:28px; cursor:pointer; background:#fafbff; transition:background 0.15s;" onmouseover="this.style.background='#eef2ff'" onmouseout="this.style.background='#fafbff'">
           <span style="font-size:28px;">📂</span>
-          <span style="font-size:13px; font-weight:600; color:#4338ca;">newGoodsSample.xlsx 업로드</span>
-          <span style="font-size:11px; color:#94a3b8;">클릭하여 파일 선택</span>
-          <input type="file" id="rp-excel-file" accept=".xlsx,.xls" style="display:none;" onchange="rpLoadExcel(event)">
+          <span style="font-size:13px; font-weight:600; color:#4338ca;">newGoodsSample.xlsx / 상품목록 CSV 업로드</span>
+          <span style="font-size:11px; color:#94a3b8;">클릭하여 파일 선택 · 늄픽에 상품등록 없이 이미 등록된 상품목록(.csv/.xlsx)도 지원</span>
+          <input type="file" id="rp-excel-file" accept=".xlsx,.xls,.csv" style="display:none;" onchange="rpLoadExcel(event)">
         </label>
         <div id="rp-excel-summary" style="margin-top:10px; background:#f8fafc; border-radius:8px; padding:10px 14px; font-size:12px; color:#64748b; display:none;"></div>
       </div>
@@ -4347,6 +4347,17 @@ function rpUpdateFeeHint(raw) {
   else if (v > 0) { el.style.color = '#ef4444'; el.textContent = `과금 +${v}%`; }
   else { el.style.color = '#94a3b8'; el.textContent = '수수료 없음'; }
 }
+// 초기 공급수수료 기본값 세팅 (페이지 로드 시 호출)
+function rmSetFee(v) {
+  const el = document.getElementById('rm-fee-input');
+  if (el) el.value = v;
+  rmUpdateFeeHint(String(v));
+}
+function rpSetFee(v) {
+  const el = document.getElementById('rp-fee-input');
+  if (el) el.value = v;
+  rpUpdateFeeHint(String(v));
+}
 
 // ── 공급사별 포맷 정의
 const _SUPPLIER_FORMATS = {
@@ -5051,12 +5062,32 @@ function _rpGetBrandDisc(brand, defaultDisc) {
 function rpLoadExcel(evt) {
   const file = evt.target.files[0];
   if (!file) return;
+  const isCsv = /\.csv$/i.test(file.name);
   const reader = new FileReader();
   reader.onload = e => {
-    const wb = XLSX.read(e.target.result, {type:'binary'});
+    let wb;
+    try {
+      if (isCsv) {
+        // CSV는 UTF-8 우선 시도, 깨지면(EUC-KR/CP949 등 국내 어드민 내보내기 흔함) 완성형으로 재시도
+        const buf = e.target.result;
+        let text;
+        try { text = new TextDecoder('utf-8', { fatal: true }).decode(buf); }
+        catch { text = new TextDecoder('euc-kr').decode(buf); }
+        wb = XLSX.read(text, { type: 'string' });
+      } else {
+        wb = XLSX.read(e.target.result, { type: 'binary' });
+      }
+    } catch (err) {
+      return _regToast('파일 읽기 오류: ' + err.message, 1);
+    }
     const ws = wb.Sheets[wb.SheetNames[0]];
-    const rows = XLSX.utils.sheet_to_json(ws, {defval:'', range:1});
+    // 헤더 행 자동 감지: newGoodsSample.xlsx는 1행이 안내문구라 2행부터, 상품목록 CSV처럼
+    // 1행이 바로 실제 헤더(공급사상품코드 포함)인 경우는 그대로 1행부터 읽는다.
+    const firstRow = XLSX.utils.sheet_to_json(ws, { header: 1, range: 0, defval: '' })[0] || [];
+    const headerRange = firstRow.some(c => String(c).trim() === '공급사상품코드') ? 0 : 1;
+    const rows = XLSX.utils.sheet_to_json(ws, { defval: '', range: headerRange });
     _rpXlsxRows = rows.filter(r => r['공급사상품코드'] && String(r['공급사상품코드']).trim() !== '공급사상품코드');
+    if (!_rpXlsxRows.length) return _regToast('공급사상품코드 컬럼을 찾지 못했습니다. 헤더명을 확인해 주세요', 1);
     const sumEl = document.getElementById('rp-excel-summary');
     const brands = [...new Set(_rpXlsxRows.map(r => r['교환처'] || r['상품명']?.slice(0,6) || '').filter(Boolean))];
     const brandStr = brands.slice(0,5).join(', ') + (brands.length > 5 ? ' …' : '');
@@ -5067,7 +5098,7 @@ function rpLoadExcel(evt) {
     sumEl.style.display = 'block';
     _regToast(`${_rpXlsxRows.length}개 상품 로드 완료`);
   };
-  reader.readAsBinaryString(file);
+  if (isCsv) reader.readAsArrayBuffer(file); else reader.readAsBinaryString(file);
 }
 function rpResetExcel() {
   _rpXlsxRows = [];

@@ -4552,7 +4552,9 @@ function rmHandleExcelFile(file) {
     try {
       const wb = XLSX.read(e.target.result, { type: 'array' });
       const ws = wb.Sheets[wb.SheetNames[0]];
-      const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+      // raw:false → "00000032" 같이 0으로 시작하는 상품코드가 숫자로 인식되어
+      // 앞자리 0이 날아가는(32) 것을 막고 원본 텍스트 그대로 읽는다.
+      const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '', raw: false });
       if (!rows.length || rows.length < 2) return _regToast('데이터가 없습니다 (헤더 포함 2행 이상 필요)', 1);
       const tsv = rows
         .map(r => r.map(c => String(c ?? '').replace(/\t/g, ' ').replace(/\r?\n|\n/g, ' ')).join('\t'))
@@ -5091,7 +5093,9 @@ function rpLoadExcel(evt) {
     // 1행이 바로 실제 헤더(공급사상품코드 포함)인 경우는 그대로 1행부터 읽는다.
     const firstRow = XLSX.utils.sheet_to_json(ws, { header: 1, range: 0, defval: '' })[0] || [];
     const headerRange = firstRow.some(c => String(c).trim() === '공급사상품코드') ? 0 : 1;
-    const rows = XLSX.utils.sheet_to_json(ws, { defval: '', range: headerRange });
+    // raw:false → "00000032" 같이 0으로 시작하는 상품코드가 숫자로 인식되어
+    // 앞자리 0이 날아가는(32) 것을 막고 원본 텍스트 그대로 읽는다.
+    const rows = XLSX.utils.sheet_to_json(ws, { defval: '', range: headerRange, raw: false });
     _rpXlsxRows = rows.filter(r => r['공급사상품코드'] && String(r['공급사상품코드']).trim() !== '공급사상품코드');
     if (!_rpXlsxRows.length) return _regToast('공급사상품코드 컬럼을 찾지 못했습니다. 헤더명을 확인해 주세요', 1);
     const sumEl = document.getElementById('rp-excel-summary');

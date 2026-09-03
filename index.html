@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
@@ -4540,6 +4540,9 @@ function _parseTSV(text, forceFmt) {
 
 // ── 모체코드 파싱 (헤더 매핑 모달 → 미리보기 → 등록)
 const _CAT_OPTS = ['','문화/생활','배송상품','베이커리/도넛','빵/아이스크림','상품권','상품권/마트','아이스크림','치킨/피자','커피/음료','패스트푸드','편의점'];
+// 셀 내부 줄바꿈 임시 치환용 마커. TSV는 행 구분을 '\n'에 의존하므로 셀 안의 실제 줄바꿈은
+// 파싱 중엔 이 마커로 숨겨두고, 최종적으로 상품설명에 담을 때 다시 실제 줄바꿈으로 되돌린다.
+const _CELL_NL = String.fromCharCode(1);
 function _getBrandCatMap() {
   try { return JSON.parse(localStorage.getItem('numpick_brand_cat') || '{}'); } catch { return {}; }
 }
@@ -4557,7 +4560,7 @@ function rmHandleExcelFile(file) {
       const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '', raw: false });
       if (!rows.length || rows.length < 2) return _regToast('데이터가 없습니다 (헤더 포함 2행 이상 필요)', 1);
       const tsv = rows
-        .map(r => r.map(c => String(c ?? '').replace(/\t/g, ' ').replace(/\r\n|\r|\n/g, ' ')).join('\t'))
+        .map(r => r.map(c => String(c ?? '').replace(/\t/g, ' ').replace(/\r\n|\r|\n/g, _CELL_NL)).join('\t'))
         .join('\n');
       const forceFmt = document.getElementById('rm-supplier-fmt').value;
       _showMappingModal(tsv, forceFmt, null);
@@ -4707,7 +4710,7 @@ function _showPreviewModal() {
   const delivery   = document.getElementById('rm-c-delivery').value;
   const rmVal      = document.getElementById('rm-c-rm').value;
   const saleType   = document.getElementById('rm-c-saletype').value;
-  const notes      = (document.getElementById('rm-c-notes').value || '').replace(/\r\n|\r|\n/g, ' ').replace(/\s+/g, ' ').trim();
+  const notes      = (document.getElementById('rm-c-notes').value || '').replace(/\r\n|\r/g, '\n').trim();
   const catCommon  = document.getElementById('rm-c-category').value;
   const fee        = parseFloat(document.getElementById('rm-fee-input').value) || 0;
   const brandCatMap = _getBrandCatMap();
@@ -4718,7 +4721,9 @@ function _showPreviewModal() {
       if (!subHeaderValid) { const v = cells.find(c => /^\d+일$/.test(c)); if (v) subHeaderValid = v; }
       continue;
     }
-    const get = key => colIdx[key] !== undefined ? (cells[colIdx[key]] || '') : '';
+    // 일반 필드는 셀 내부 줄바꿈 마커를 공백으로, 상품설명은 실제 줄바꿈으로 되돌린다.
+    const get    = key => colIdx[key] !== undefined ? (cells[colIdx[key]] || '').split(_CELL_NL).join(' ')  : '';
+    const getDesc = key => colIdx[key] !== undefined ? (cells[colIdx[key]] || '').split(_CELL_NL).join('\n') : '';
     const code = get('공급사상품코드'), rawName = get('상품명');
     if (!code && !rawName) continue;
     const _brand = get('_brand');
@@ -4732,7 +4737,7 @@ function _showPreviewModal() {
       '소비자가':       _parsePrice(get('소비자가'))   || _parsePrice(get('상품정상가')),
       '유효일':         get('유효일') || subHeaderValid || '',
       'RM': rmVal, '상품상태': status, '판매타입': get('판매타입') || saleType,
-      '상품설명':       [get('상품설명'), notes].filter(Boolean).join(' '),
+      '상품설명':       [getDesc('상품설명'), notes].filter(Boolean).join('\n'),
       '공급사': supplier, '보증타입': warranty, '공급가': 0,
       '공급수수료': fee, '판매시작일': '', '판매종료일': '',
       '배송상품여부': delivery, '_brand': _brand,

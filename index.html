@@ -77,6 +77,10 @@
         style="padding:6px 16px; border-radius:8px; font-size:13px; font-weight:500; border:none; cursor:pointer; background:transparent; color:#64748b;">
         📦 상품등록
       </button>
+      <button id="tab-cs" onclick="switchTab('cs')"
+        style="padding:6px 16px; border-radius:8px; font-size:13px; font-weight:500; border:none; cursor:pointer; background:transparent; color:#64748b;">
+        ☎️ CS관리
+      </button>
     </nav>
   </div>
 </header>
@@ -734,6 +738,100 @@
 </div>
 
 <!-- ══════════════════════════════════════
+     PANEL: CS관리
+══════════════════════════════════════ -->
+<div id="panel-cs" class="tab-panel" style="display:none; max-width:1400px; margin:0 auto; padding:28px 24px;">
+
+  <!-- Upload -->
+  <div id="cs-upload-wrap">
+    <div id="cs-upload-area" onclick="document.getElementById('cs-file').click()"
+      ondragover="event.preventDefault(); this.style.borderColor='#4f46e5';"
+      ondragleave="this.style.borderColor='#a5b4fc'"
+      ondrop="event.preventDefault(); this.style.borderColor='#a5b4fc'; const f=event.dataTransfer.files[0]; if(f) handleCsFile(f);"
+      style="border:2px dashed #a5b4fc; border-radius:16px; padding:80px 40px; text-align:center; background:white; cursor:pointer; transition:all 0.2s;">
+      <div style="font-size:44px; margin-bottom:14px;">☎️</div>
+      <div style="font-size:16px; font-weight:600; color:#374151; margin-bottom:6px;">상담 이력 엑셀 파일을 드래그하거나 클릭하세요</div>
+      <div style="font-size:13px; color:#94a3b8; font-weight:400;">날짜 · 시작시간 · 종료시간 · 상담사 번호 · 핵심키워드 · 상담분류 컬럼 포함 파일</div>
+      <input type="file" id="cs-file" accept=".xlsx,.xls" style="display:none" onchange="handleCsFile(this.files[0])">
+    </div>
+  </div>
+
+  <!-- Controls -->
+  <div id="cs-controls" style="display:none; margin-bottom:20px;">
+    <div class="card" style="padding:14px 20px; display:flex; flex-wrap:wrap; align-items:center; gap:20px;">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <span style="font-size:12px; font-weight:500; color:#94a3b8;">조회기간</span>
+        <input type="date" id="cs-date-from" onchange="renderCsDashboard()"
+          style="border:1px solid #e2e8f0; border-radius:8px; padding:6px 10px; font-size:13px; color:#374151; outline:none;">
+        <span style="color:#cbd5e1; font-size:12px;">~</span>
+        <input type="date" id="cs-date-to" onchange="renderCsDashboard()"
+          style="border:1px solid #e2e8f0; border-radius:8px; padding:6px 10px; font-size:13px; color:#374151; outline:none;">
+      </div>
+      <div style="display:flex; align-items:center; gap:8px;">
+        <span style="font-size:12px; font-weight:500; color:#94a3b8;">상담사</span>
+        <select id="cs-filter-agent" onchange="renderCsDashboard()"
+          style="border:1px solid #e2e8f0; border-radius:8px; padding:6px 10px; font-size:13px; color:#374151; outline:none; font-family:'Noto Sans KR',sans-serif;">
+          <option value="">전체</option>
+        </select>
+      </div>
+      <div style="margin-left:auto; display:flex; align-items:center; gap:12px;">
+        <span id="cs-summary" style="font-size:12px; font-weight:400; color:#94a3b8;"></span>
+        <button onclick="resetCs()" style="font-size:12px; color:#94a3b8; background:none; border:none; cursor:pointer; font-weight:400;">초기화</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- KPI -->
+  <div id="cs-kpis" style="display:none; grid-template-columns:repeat(5,1fr); gap:16px; margin-bottom:20px;"></div>
+
+  <!-- Charts row 1 -->
+  <div id="cs-charts-1" style="display:none; grid-template-columns:2fr 1fr; gap:20px; margin-bottom:20px;">
+    <div class="card" style="padding:20px 24px;">
+      <div style="font-size:13px; font-weight:700; color:#374151; margin-bottom:14px;">📅 날짜별 상담 건수 추이</div>
+      <div style="height:260px;"><canvas id="cs-chart-daily"></canvas></div>
+    </div>
+    <div class="card" style="padding:20px 24px;">
+      <div style="font-size:13px; font-weight:700; color:#374151; margin-bottom:14px;">🕐 시간대별 분포</div>
+      <div style="height:260px;"><canvas id="cs-chart-hour"></canvas></div>
+    </div>
+  </div>
+
+  <!-- Charts row 2 -->
+  <div id="cs-charts-2" style="display:none; grid-template-columns:1.4fr 1fr; gap:20px; margin-bottom:20px;">
+    <div class="card" style="padding:20px 24px;">
+      <div style="font-size:13px; font-weight:700; color:#374151; margin-bottom:14px;">🔑 핵심키워드 TOP 15</div>
+      <div style="height:320px;"><canvas id="cs-chart-keyword"></canvas></div>
+    </div>
+    <div class="card" style="padding:20px 24px;">
+      <div style="font-size:13px; font-weight:700; color:#374151; margin-bottom:14px;">🗂️ 상담분류(대) 분포</div>
+      <div style="height:320px;"><canvas id="cs-chart-category"></canvas></div>
+    </div>
+  </div>
+
+  <!-- Daily table -->
+  <div id="cs-table-wrap" style="display:none;">
+    <div class="card" style="padding:20px 24px;">
+      <div style="font-size:13px; font-weight:700; color:#374151; margin-bottom:14px;">날짜별 상세</div>
+      <div style="overflow-x:auto;">
+        <table style="width:100%; border-collapse:collapse;">
+          <thead>
+            <tr style="border-bottom:2px solid #e8ecf0;">
+              <th style="text-align:left; padding:10px 12px; font-size:11px; font-weight:600; color:#64748b;">날짜</th>
+              <th style="text-align:right; padding:10px 12px; font-size:11px; font-weight:600; color:#64748b;">상담건수</th>
+              <th style="text-align:right; padding:10px 12px; font-size:11px; font-weight:600; color:#64748b;">평균 통화시간</th>
+              <th style="text-align:left; padding:10px 12px; font-size:11px; font-weight:600; color:#64748b;">최다 시간대</th>
+              <th style="text-align:left; padding:10px 12px; font-size:11px; font-weight:600; color:#64748b;">주요 키워드</th>
+            </tr>
+          </thead>
+          <tbody id="cs-table-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══════════════════════════════════════
      PANEL: 트렌드 분석
 ══════════════════════════════════════ -->
 <div id="panel-trend" class="tab-panel" style="display:none; max-width:1400px; margin:0 auto; padding:28px 24px;">
@@ -1244,7 +1342,7 @@ function switchTab(tab) {
   document.querySelectorAll('.tab-panel').forEach(p => p.style.display = 'none');
   document.getElementById('panel-' + tab).style.display = 'block';
 
-  ['sales','products','media','trend','register'].forEach(t => {
+  ['sales','products','media','trend','register','cs'].forEach(t => {
     const btn = document.getElementById('tab-' + t);
     if (!btn) return;
     if (t === tab) {
@@ -5263,6 +5361,253 @@ function _regToast(msg, err) {
 // 초기 상태
 rmSetFee(-2);
 rpSetFee(-2);
+
+// ════════════════════════════════════════════════════
+//  CS관리 — 상담 이력 엑셀 대시보드
+// ════════════════════════════════════════════════════
+let _csData = null;
+const _csCharts = {};
+
+async function handleCsFile(file) {
+  if (!file) return;
+  try {
+    const rows = await parseExcel(file);
+    if (!rows.length) { alert('데이터가 없습니다.'); return; }
+    _csData = rows;
+    document.getElementById('cs-upload-wrap').style.display = 'none';
+    document.getElementById('cs-controls').style.display = 'block';
+
+    // 상담사 필터 옵션
+    const agents = [...new Set(_csData.map(r => String(col(r,'상담사 번호','상담사번호')||'').trim()).filter(Boolean))].sort();
+    const sel = document.getElementById('cs-filter-agent');
+    sel.innerHTML = '<option value="">전체</option>' + agents.map(a => `<option value="${a}">${a}</option>`).join('');
+
+    // 조회기간 기본값 = 데이터 전체 범위
+    let minD = null, maxD = null;
+    _csData.forEach(r => {
+      const d = _csRowDate(r);
+      if (!d) return;
+      if (!minD || d < minD) minD = d;
+      if (!maxD || d > maxD) maxD = d;
+    });
+    document.getElementById('cs-date-from').value = minD ? fmtDate(minD) : '';
+    document.getElementById('cs-date-to').value   = maxD ? fmtDate(maxD) : '';
+
+    renderCsDashboard();
+  } catch(e) { alert('파일 오류: ' + e.message); }
+}
+
+function resetCs() {
+  _csData = null;
+  Object.values(_csCharts).forEach(c => c.destroy());
+  Object.keys(_csCharts).forEach(k => delete _csCharts[k]);
+  document.getElementById('cs-upload-wrap').style.display = '';
+  document.getElementById('cs-controls').style.display = 'none';
+  document.getElementById('cs-kpis').style.display = 'none';
+  document.getElementById('cs-kpis').innerHTML = '';
+  document.getElementById('cs-charts-1').style.display = 'none';
+  document.getElementById('cs-charts-2').style.display = 'none';
+  document.getElementById('cs-table-wrap').style.display = 'none';
+  document.getElementById('cs-file').value = '';
+}
+
+// 시간 문자열/값 → 하루 중 초 단위로 변환
+function _csTimeToSec(val) {
+  if (val === '' || val == null) return null;
+  if (val instanceof Date) {
+    if (isNaN(val)) return null;
+    return val.getHours()*3600 + val.getMinutes()*60 + val.getSeconds();
+  }
+  if (typeof val === 'number') {
+    if (val >= 0 && val < 1) return Math.round(val * 86400); // 엑셀 시간값(0~1 소수)
+    return null;
+  }
+  const m = String(val).trim().match(/(\d{1,2}):(\d{2})(?::(\d{2}))?/);
+  if (!m) return null;
+  return (+m[1])*3600 + (+m[2])*60 + (+(m[3]||0));
+}
+
+// 상담 시작 일시(Date) — 날짜컬럼 + 시작시간컬럼을 조합
+function _csRowDateTime(row) {
+  const base = toDate(col(row, '날짜'));
+  if (!base) return null;
+  const startSec = _csTimeToSec(col(row, '시작시간'));
+  if (startSec == null) return base;
+  const d = new Date(base.getFullYear(), base.getMonth(), base.getDate());
+  d.setSeconds(startSec);
+  return d;
+}
+function _csRowDate(row) {
+  const dt = _csRowDateTime(row);
+  if (!dt) return null;
+  return new Date(dt.getFullYear(), dt.getMonth(), dt.getDate());
+}
+// 통화시간(초) = 종료시간 - 시작시간 (자정을 넘기면 하루를 더함)
+function _csDuration(row) {
+  const s = _csTimeToSec(col(row, '시작시간'));
+  const e = _csTimeToSec(col(row, '종료시간'));
+  if (s == null || e == null) return null;
+  let diff = e - s;
+  if (diff < 0) diff += 86400;
+  return diff;
+}
+function _csFmtDur(sec) {
+  if (sec == null || isNaN(sec)) return '-';
+  const m = Math.floor(sec/60), s = Math.round(sec%60);
+  return `${m}분 ${String(s).padStart(2,'0')}초`;
+}
+
+function renderCsDashboard() {
+  if (!_csData) return;
+  const fromVal = document.getElementById('cs-date-from').value;
+  const toVal   = document.getElementById('cs-date-to').value;
+  const agentFilter = document.getElementById('cs-filter-agent').value;
+  const fromD = fromVal ? new Date(fromVal + 'T00:00:00') : null;
+  const toD   = toVal   ? new Date(toVal   + 'T23:59:59') : null;
+
+  const rows = _csData.filter(r => {
+    const dt = _csRowDateTime(r);
+    if (dt && fromD && dt < fromD) return false;
+    if (dt && toD   && dt > toD)   return false;
+    if (agentFilter) {
+      const a = String(col(r,'상담사 번호','상담사번호')||'').trim();
+      if (a !== agentFilter) return false;
+    }
+    return true;
+  });
+
+  document.getElementById('cs-summary').textContent = `${rows.length.toLocaleString()}건`;
+
+  Object.values(_csCharts).forEach(c => c.destroy());
+
+  if (!rows.length) {
+    document.getElementById('cs-kpis').style.display = 'none';
+    document.getElementById('cs-charts-1').style.display = 'none';
+    document.getElementById('cs-charts-2').style.display = 'none';
+    document.getElementById('cs-table-wrap').style.display = 'none';
+    return;
+  }
+
+  // ── 집계 ──
+  const byDate = {};
+  const byHour = Array(24).fill(0);
+  const keywordCount = {};
+  const categoryCount = {};
+  const agentSet = new Set();
+  let durSum = 0, durCnt = 0;
+
+  rows.forEach(r => {
+    const dt = _csRowDateTime(r);
+    const dateKey = dt ? fmtDate(dt) : '(날짜없음)';
+    if (!byDate[dateKey]) byDate[dateKey] = { count:0, durSum:0, durCnt:0, hours:{}, keywords:{} };
+    byDate[dateKey].count++;
+
+    if (dt) {
+      const h = dt.getHours();
+      byHour[h]++;
+      byDate[dateKey].hours[h] = (byDate[dateKey].hours[h]||0) + 1;
+    }
+
+    const dur = _csDuration(r);
+    if (dur != null) {
+      durSum += dur; durCnt++;
+      byDate[dateKey].durSum += dur; byDate[dateKey].durCnt++;
+    }
+
+    const agent = String(col(r,'상담사 번호','상담사번호')||'').trim();
+    if (agent) agentSet.add(agent);
+
+    String(col(r,'핵심키워드')||'').split(/[,\/·、]+/).map(k=>k.trim()).filter(Boolean).forEach(k => {
+      keywordCount[k] = (keywordCount[k]||0) + 1;
+      byDate[dateKey].keywords[k] = (byDate[dateKey].keywords[k]||0) + 1;
+    });
+
+    const cat = String(col(r,'상담분류(대)')||'').trim() || '미분류';
+    categoryCount[cat] = (categoryCount[cat]||0) + 1;
+  });
+
+  // KPI
+  const peakHour = byHour.reduce((best,v,i) => v > byHour[best] ? i : best, 0);
+  const kpis = document.getElementById('cs-kpis');
+  kpis.style.display = 'grid';
+  kpis.innerHTML = [
+    { label:'총 상담건수',     value: rows.length.toLocaleString()+'건' },
+    { label:'평균 통화시간',   value: durCnt ? _csFmtDur(durSum/durCnt) : '-' },
+    { label:'상담사 수',       value: agentSet.size+'명' },
+    { label:'최다 상담 시간대', value: `${peakHour}시 (${byHour[peakHour].toLocaleString()}건)` },
+    { label:'조회 기간',       value: `${fromVal||'전체'} ~ ${toVal||'전체'}` },
+  ].map(k => `
+    <div class="card" style="padding:18px 22px;">
+      <div style="font-size:11px; font-weight:500; color:#94a3b8; margin-bottom:8px;">${k.label}</div>
+      <div class="num" style="font-size:19px; font-weight:700; color:#0f172a;">${k.value}</div>
+    </div>
+  `).join('');
+
+  // 날짜별 추이
+  const dateKeys = Object.keys(byDate).filter(k => k !== '(날짜없음)').sort();
+  document.getElementById('cs-charts-1').style.display = 'grid';
+  _csCharts.daily = new Chart(document.getElementById('cs-chart-daily'), {
+    type: 'line',
+    data: {
+      labels: dateKeys,
+      datasets: [{
+        label: '상담건수', data: dateKeys.map(k => byDate[k].count),
+        borderColor: '#4f46e5', backgroundColor: 'rgba(79,70,229,0.12)',
+        fill: true, tension: 0.3, pointRadius: 3,
+      }]
+    },
+    options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ y:{beginAtZero:true, ticks:{precision:0}} } }
+  });
+
+  // 시간대별 분포
+  _csCharts.hour = new Chart(document.getElementById('cs-chart-hour'), {
+    type: 'bar',
+    data: {
+      labels: Array.from({length:24}, (_,i) => `${i}시`),
+      datasets: [{ data: byHour, backgroundColor: '#8b5cf6' }]
+    },
+    options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ y:{beginAtZero:true, ticks:{precision:0}} } }
+  });
+
+  // 핵심키워드 TOP 15
+  const topKeywords = Object.entries(keywordCount).sort((a,b)=>b[1]-a[1]).slice(0,15);
+  document.getElementById('cs-charts-2').style.display = 'grid';
+  _csCharts.keyword = new Chart(document.getElementById('cs-chart-keyword'), {
+    type: 'bar',
+    data: {
+      labels: topKeywords.map(k=>k[0]),
+      datasets: [{ data: topKeywords.map(k=>k[1]), backgroundColor: '#10b981' }]
+    },
+    options: { indexAxis:'y', responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ x:{beginAtZero:true, ticks:{precision:0}} } }
+  });
+
+  // 상담분류(대) 분포
+  const CS_COLORS = ['#4f46e5','#10b981','#f59e0b','#ef4444','#8b5cf6','#06b6d4','#f97316','#ec4899','#14b8a6','#64748b'];
+  const topCats = Object.entries(categoryCount).sort((a,b)=>b[1]-a[1]);
+  _csCharts.category = new Chart(document.getElementById('cs-chart-category'), {
+    type: 'doughnut',
+    data: {
+      labels: topCats.map(c=>c[0]),
+      datasets: [{ data: topCats.map(c=>c[1]), backgroundColor: CS_COLORS.slice(0, topCats.length), borderWidth:2, borderColor:'white' }]
+    },
+    options: { responsive:true, maintainAspectRatio:false, cutout:'55%', plugins:{ legend:{ position:'right', labels:{ font:{family:'Noto Sans KR',size:11}, boxWidth:10 } } } }
+  });
+
+  // 날짜별 상세 테이블
+  document.getElementById('cs-table-wrap').style.display = 'block';
+  document.getElementById('cs-table-body').innerHTML = dateKeys.slice().reverse().map(k => {
+    const d = byDate[k];
+    const peakH = Object.entries(d.hours).sort((a,b)=>b[1]-a[1])[0];
+    const topKw = Object.entries(d.keywords).sort((a,b)=>b[1]-a[1]).slice(0,3).map(x=>x[0]).join(', ') || '-';
+    return `<tr style="border-bottom:1px solid #f1f5f9;">
+      <td style="padding:8px 12px; font-size:12px; color:#334155;">${k}</td>
+      <td style="padding:8px 12px; font-size:12px; text-align:right; color:#0f172a; font-weight:600;">${d.count.toLocaleString()}건</td>
+      <td style="padding:8px 12px; font-size:12px; text-align:right; color:#64748b;">${d.durCnt ? _csFmtDur(d.durSum/d.durCnt) : '-'}</td>
+      <td style="padding:8px 12px; font-size:12px; color:#64748b;">${peakH ? peakH[0]+'시 ('+peakH[1]+'건)' : '-'}</td>
+      <td style="padding:8px 12px; font-size:12px; color:#64748b;">${topKw}</td>
+    </tr>`;
+  }).join('');
+}
 </script>
 </body>
 </html>

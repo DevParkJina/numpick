@@ -808,6 +808,24 @@
     </div>
   </div>
 
+  <!-- 안내(정보청취) 현황 — 실제 상담 통계와 별도 -->
+  <div id="cs-info-section" style="display:none; margin-bottom:12px; margin-top:24px;">
+    <div style="font-size:14px; font-weight:700; color:#1e293b; margin-bottom:6px;">🔔 안내(정보청취) 현황</div>
+    <div style="font-size:11px; color:#94a3b8; margin-bottom:14px;">상담원 연결 없이 우리가 설정해둔 안내멘트만 들은 콜입니다 — 위 상담 통계에는 포함되지 않아요</div>
+    <div style="display:grid; grid-template-columns:minmax(180px,0.8fr) minmax(320px,2fr); gap:20px;">
+      <div class="card" style="padding:20px 22px; display:flex; flex-direction:column; justify-content:center; gap:6px; background:#fffbeb; border-color:#fde68a;">
+        <div style="font-size:11px; font-weight:600; color:#92400e;">안내청취 건수</div>
+        <div id="cs-info-count" style="font-size:26px; font-weight:800; color:#92400e;">-</div>
+        <div id="cs-info-ratio" style="font-size:12px; font-weight:600; color:#b45309;"></div>
+      </div>
+      <div class="card" style="padding:22px 26px;">
+        <div style="font-size:13px; font-weight:700; color:#374151; margin-bottom:2px;">날짜별 안내청취 추이</div>
+        <div style="font-size:11px; color:#94a3b8; margin-bottom:16px;">마우스를 올리면 날짜별 건수를 볼 수 있어요</div>
+        <div style="height:220px;"><canvas id="cs-chart-info"></canvas></div>
+      </div>
+    </div>
+  </div>
+
   <!-- Daily table -->
   <div id="cs-table-wrap" style="display:none; margin-top:24px;">
     <div style="font-size:14px; font-weight:700; color:#1e293b; margin-bottom:14px;">📋 날짜별 상세</div>
@@ -5402,6 +5420,7 @@ function resetCs() {
   document.getElementById('cs-kpis').innerHTML = '';
   document.getElementById('cs-charts-1').style.display = 'none';
   document.getElementById('cs-charts-2').style.display = 'none';
+  document.getElementById('cs-info-section').style.display = 'none';
   document.getElementById('cs-table-wrap').style.display = 'none';
   document.getElementById('cs-file').value = '';
 }
@@ -5451,6 +5470,11 @@ function _csFmtDur(sec) {
   const m = Math.floor(sec/60), s = Math.round(sec%60);
   return `${m}분 ${String(s).padStart(2,'0')}초`;
 }
+// 상태값이 '안내(정보청취)' 등 — 상담원 연결 없이 안내멘트만 들은 콜인지 여부
+function _csIsInfoOnly(row) {
+  const status = String(col(row, '상태')||'').replace(/\s/g, '');
+  return /안내\(?정보청취\)?/.test(status);
+}
 
 // 차트 안전 파괴 — canvas 재사용 충돌(Canvas is already in use) 방지
 function _csDestroyChart(key) {
@@ -5467,14 +5491,58 @@ function renderCsDashboard() {
   const fromD = fromVal ? new Date(fromVal + 'T00:00:00') : null;
   const toD   = toVal   ? new Date(toVal   + 'T23:59:59') : null;
 
-  const rows = _csData.filter(r => {
+  const dateFiltered = _csData.filter(r => {
     const dt = _csRowDateTime(r);
     if (dt && fromD && dt < fromD) return false;
     if (dt && toD   && dt > toD)   return false;
     return true;
   });
+  // 상태값이 '안내(정보청취)'인 건은 실제 상담이 아니라 우리가 설정한 안내멘트를 들은 콜 —
+  // 상담 통계에서는 빼고, 별도 섹션으로 집계한다.
+  const infoRows = dateFiltered.filter(r => _csIsInfoOnly(r));
+  const rows = dateFiltered.filter(r => !_csIsInfoOnly(r));
 
-  document.getElementById('cs-summary').textContent = `${rows.length.toLocaleString()}건`;
+  document.getElementById('cs-summary').textContent =
+    infoRows.length > 0
+      ? `${rows.length.toLocaleString()}건 (안내청취 ${infoRows.length.toLocaleString()}건 별도)`
+      : `${rows.length.toLocaleString()}건`;
+
+  // ── 안내(정보청취) 현황 ──
+  _csDestroyChart('info');
+  const infoSection = document.getElementById('cs-info-section');
+  if (!infoRows.length) {
+    infoSection.style.display = 'none';
+  } else {
+    infoSection.style.display = 'block';
+    const infoByDate = {};
+    infoRows.forEach(r => {
+      const dt = _csRowDateTime(r);
+      const dateKey = dt ? fmtDate(dt) : '(날짜없음)';
+      infoByDate[dateKey] = (infoByDate[dateKey]||0) + 1;
+    });
+    const infoDateKeys = Object.keys(infoByDate).filter(k => k !== '(날짜없음)').sort();
+    document.getElementById('cs-info-count').textContent = infoRows.length.toLocaleString() + '건';
+    const ratio = dateFiltered.length ? (infoRows.length / dateFiltered.length * 100) : 0;
+    document.getElementById('cs-info-ratio').textContent = `전체 콜 중 ${ratio.toFixed(1)}%`;
+    _csCharts.info = new Chart(document.getElementById('cs-chart-info'), {
+      type: 'line',
+      data: {
+        labels: infoDateKeys,
+        datasets: [{
+          label: '안내청취', data: infoDateKeys.map(k => infoByDate[k]),
+          borderColor: '#f59e0b', backgroundColor: 'rgba(245,158,11,0.12)',
+          fill: true, tension: 0.3, pointRadius: 3,
+        }]
+      },
+      options: {
+        responsive:true, maintainAspectRatio:false, plugins:{
+          legend:{display:false},
+          tooltip:{ callbacks:{ label: ctx => `${ctx.parsed.y.toLocaleString()}건` } }
+        },
+        scales:{ y:{beginAtZero:true, ticks:{precision:0}} }
+      }
+    });
+  }
 
   if (!rows.length) {
     _csDestroyChart('daily'); _csDestroyChart('hour'); _csDestroyChart('keyword');

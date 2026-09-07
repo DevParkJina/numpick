@@ -808,24 +808,6 @@
     </div>
   </div>
 
-  <!-- 안내(정보청취) 현황 — 실제 상담 통계와 별도 -->
-  <div id="cs-info-section" style="display:none; margin-bottom:12px; margin-top:24px;">
-    <div style="font-size:14px; font-weight:700; color:#1e293b; margin-bottom:6px;">🔔 안내(정보청취) 현황</div>
-    <div style="font-size:11px; color:#94a3b8; margin-bottom:14px;">상담원 연결 없이 우리가 설정해둔 안내멘트만 들은 콜입니다 — 위 상담 통계에는 포함되지 않아요</div>
-    <div style="display:grid; grid-template-columns:minmax(180px,0.8fr) minmax(320px,2fr); gap:20px;">
-      <div class="card" style="padding:20px 22px; display:flex; flex-direction:column; justify-content:center; gap:6px; background:#fffbeb; border-color:#fde68a;">
-        <div style="font-size:11px; font-weight:600; color:#92400e;">안내청취 건수</div>
-        <div id="cs-info-count" style="font-size:26px; font-weight:800; color:#92400e;">-</div>
-        <div id="cs-info-ratio" style="font-size:12px; font-weight:600; color:#b45309;"></div>
-      </div>
-      <div class="card" style="padding:22px 26px;">
-        <div style="font-size:13px; font-weight:700; color:#374151; margin-bottom:2px;">날짜별 안내청취 추이</div>
-        <div style="font-size:11px; color:#94a3b8; margin-bottom:16px;">마우스를 올리면 날짜별 건수를 볼 수 있어요</div>
-        <div style="height:220px;"><canvas id="cs-chart-info"></canvas></div>
-      </div>
-    </div>
-  </div>
-
   <!-- Daily table -->
   <div id="cs-table-wrap" style="display:none; margin-top:24px;">
     <div style="font-size:14px; font-weight:700; color:#1e293b; margin-bottom:14px;">📋 날짜별 상세</div>
@@ -5420,7 +5402,6 @@ function resetCs() {
   document.getElementById('cs-kpis').innerHTML = '';
   document.getElementById('cs-charts-1').style.display = 'none';
   document.getElementById('cs-charts-2').style.display = 'none';
-  document.getElementById('cs-info-section').style.display = 'none';
   document.getElementById('cs-table-wrap').style.display = 'none';
   document.getElementById('cs-file').value = '';
 }
@@ -5507,42 +5488,8 @@ function renderCsDashboard() {
       ? `${rows.length.toLocaleString()}건 (안내청취 ${infoRows.length.toLocaleString()}건 별도)`
       : `${rows.length.toLocaleString()}건`;
 
-  // ── 안내(정보청취) 현황 ──
-  _csDestroyChart('info');
-  const infoSection = document.getElementById('cs-info-section');
-  if (!infoRows.length) {
-    infoSection.style.display = 'none';
-  } else {
-    infoSection.style.display = 'block';
-    const infoByDate = {};
-    infoRows.forEach(r => {
-      const dt = _csRowDateTime(r);
-      const dateKey = dt ? fmtDate(dt) : '(날짜없음)';
-      infoByDate[dateKey] = (infoByDate[dateKey]||0) + 1;
-    });
-    const infoDateKeys = Object.keys(infoByDate).filter(k => k !== '(날짜없음)').sort();
-    document.getElementById('cs-info-count').textContent = infoRows.length.toLocaleString() + '건';
-    const ratio = dateFiltered.length ? (infoRows.length / dateFiltered.length * 100) : 0;
-    document.getElementById('cs-info-ratio').textContent = `전체 콜 중 ${ratio.toFixed(1)}%`;
-    _csCharts.info = new Chart(document.getElementById('cs-chart-info'), {
-      type: 'line',
-      data: {
-        labels: infoDateKeys,
-        datasets: [{
-          label: '안내청취', data: infoDateKeys.map(k => infoByDate[k]),
-          borderColor: '#f59e0b', backgroundColor: 'rgba(245,158,11,0.12)',
-          fill: true, tension: 0.3, pointRadius: 3,
-        }]
-      },
-      options: {
-        responsive:true, maintainAspectRatio:false, plugins:{
-          legend:{display:false},
-          tooltip:{ callbacks:{ label: ctx => `${ctx.parsed.y.toLocaleString()}건` } }
-        },
-        scales:{ y:{beginAtZero:true, ticks:{precision:0}} }
-      }
-    });
-  }
+  // 안내(정보청취) 비중 — KPI 카드에 사용
+  const infoRatio = dateFiltered.length ? (infoRows.length / dateFiltered.length * 100) : 0;
 
   if (!rows.length) {
     _csDestroyChart('daily'); _csDestroyChart('hour'); _csDestroyChart('keyword');
@@ -5593,6 +5540,7 @@ function renderCsDashboard() {
     { icon:'⏱️', color:'#ec4899', bg:'#fdf2f8', label:'평균 통화시간',   value: durCnt ? _csFmtDur(durSum/durCnt) : '-' },
     { icon:'🕐', color:'#10b981', bg:'#ecfdf5', label:'최다 상담 시간대', value: `${peakHour}시`, sub: `${byHour[peakHour].toLocaleString()}건` },
     { icon:'🔑', color:'#8b5cf6', bg:'#f5f3ff', label:'최다 키워드',     value: topKeywordEntry ? topKeywordEntry[0] : '-', sub: topKeywordEntry ? `${topKeywordEntry[1].toLocaleString()}건` : '' },
+    { icon:'🔔', color:'#f59e0b', bg:'#fffbeb', label:'안내청취 건수',   value: infoRows.length.toLocaleString()+'건', sub: infoRows.length ? `전체 중 ${infoRatio.toFixed(1)}%` : '' },
   ].map(k => `
     <div class="card" style="padding:20px 22px; display:flex; align-items:center; gap:16px;">
       <div style="width:44px; height:44px; border-radius:12px; background:${k.bg}; display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0;">${k.icon}</div>

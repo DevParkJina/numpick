@@ -5483,10 +5483,7 @@ function renderCsDashboard() {
   const infoRows = dateFiltered.filter(r => _csIsInfoOnly(r));
   const rows = dateFiltered.filter(r => !_csIsInfoOnly(r));
 
-  document.getElementById('cs-summary').textContent =
-    infoRows.length > 0
-      ? `${rows.length.toLocaleString()}건 (안내청취 ${infoRows.length.toLocaleString()}건 별도)`
-      : `${rows.length.toLocaleString()}건`;
+  document.getElementById('cs-summary').textContent = `${rows.length.toLocaleString()}건`;
 
   // 안내(정보청취) 비중 — KPI 카드에 사용
   const infoRatio = dateFiltered.length ? (infoRows.length / dateFiltered.length * 100) : 0;
@@ -5537,10 +5534,10 @@ function renderCsDashboard() {
   kpis.style.display = 'grid';
   kpis.innerHTML = [
     { icon:'📞', color:'#4f46e5', bg:'#eef2ff', label:'총 상담건수',     value: rows.length.toLocaleString()+'건' },
+    { icon:'🔔', color:'#f59e0b', bg:'#fffbeb', label:'안내청취 건수',   value: infoRows.length.toLocaleString()+'건', sub: infoRows.length ? `전체 중 ${infoRatio.toFixed(1)}%` : '' },
     { icon:'⏱️', color:'#ec4899', bg:'#fdf2f8', label:'평균 통화시간',   value: durCnt ? _csFmtDur(durSum/durCnt) : '-' },
     { icon:'🕐', color:'#10b981', bg:'#ecfdf5', label:'최다 상담 시간대', value: `${peakHour}시`, sub: `${byHour[peakHour].toLocaleString()}건` },
     { icon:'🔑', color:'#8b5cf6', bg:'#f5f3ff', label:'최다 키워드',     value: topKeywordEntry ? topKeywordEntry[0] : '-', sub: topKeywordEntry ? `${topKeywordEntry[1].toLocaleString()}건` : '' },
-    { icon:'🔔', color:'#f59e0b', bg:'#fffbeb', label:'안내청취 건수',   value: infoRows.length.toLocaleString()+'건', sub: infoRows.length ? `전체 중 ${infoRatio.toFixed(1)}%` : '' },
   ].map(k => `
     <div class="card" style="padding:20px 22px; display:flex; align-items:center; gap:16px;">
       <div style="width:44px; height:44px; border-radius:12px; background:${k.bg}; display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0;">${k.icon}</div>

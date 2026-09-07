@@ -5366,11 +5366,6 @@ async function handleCsFile(file) {
     document.getElementById('cs-upload-wrap').style.display = 'none';
     document.getElementById('cs-controls').style.display = 'block';
 
-    // 상담사 필터 옵션
-    const agents = [...new Set(_csData.map(r => String(col(r,'상담사 번호','상담사번호')||'').trim()).filter(Boolean))].sort();
-    const sel = document.getElementById('cs-filter-agent');
-    sel.innerHTML = '<option value="">전체</option>' + agents.map(a => `<option value="${a}">${a}</option>`).join('');
-
     // 조회기간 기본값 = 데이터 전체 범위
     let minD = null, maxD = null;
     _csData.forEach(r => {

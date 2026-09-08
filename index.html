@@ -401,7 +401,7 @@
       <!-- 1행: 공급수수료 / 카테고리 (공급사는 헤더로 자동 감지되어 수동 입력 제거) -->
       <div style="display:grid; grid-template-columns:0.8fr 1.2fr; gap:12px 20px; margin-bottom:14px;">
         <div style="display:flex; flex-direction:column; gap:6px;">
-          <label style="font-size:11px; font-weight:600; color:#64748b; letter-spacing:0.3px;">공급수수료 % <span style="font-size:10px; font-weight:400; color:#94a3b8;">음수=할인 양수=과금 · MST는 이 값으로 공급가 계산, KT는 실제 공급가 기준으로 역산되어 표시만 됨(입력값 미사용)</span></label>
+          <label style="font-size:11px; font-weight:600; color:#64748b; letter-spacing:0.3px;">공급수수료 % <span style="font-size:10px; font-weight:400; color:#94a3b8;" title="MST는 이 값으로 공급가를 계산합니다. KT는 실제 공급가를 그대로 쓰고, 이 값 대신 실제 마진율을 역산해서 표시만 합니다.">음수=할인 양수=과금 · MST만 적용 ⓘ</span></label>
           <div style="display:flex; align-items:center; gap:8px;">
             <input type="number" id="rm-fee-input" step="0.1" placeholder="예: -2"
               oninput="_rmFee=parseFloat(this.value)||0; rmUpdateFeeHint(this.value);"
@@ -428,8 +428,8 @@
       </div>
       <!-- 구분선 -->
       <div style="height:1px; background:#f1f5f9; margin:0 -28px 14px;"></div>
-      <!-- 2행: 상품상태 / 보증타입 / 배송상품여부 / RM / 판매타입 -->
-      <div style="display:grid; grid-template-columns:repeat(5,1fr); gap:12px 16px; margin-bottom:14px;">
+      <!-- 2행: 상품상태 / 보증타입 / 배송상품여부 / RM -->
+      <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:12px 16px; margin-bottom:14px;">
         <div style="display:flex; flex-direction:column; gap:6px;">
           <label style="font-size:11px; font-weight:600; color:#64748b; letter-spacing:0.3px;">상품상태</label>
           <select id="rm-c-status" style="padding:10px 12px; border:1px solid #e2e8f0; border-radius:9px; font-family:'Noto Sans KR',sans-serif; font-size:13px; outline:none; background:white;">
@@ -457,13 +457,6 @@
           <select id="rm-c-rm" style="padding:10px 12px; border:1px solid #e2e8f0; border-radius:9px; font-family:'Noto Sans KR',sans-serif; font-size:13px; outline:none; background:white;">
             <option value="N" selected>N</option>
             <option value="Y">Y</option>
-          </select>
-        </div>
-        <div style="display:flex; flex-direction:column; gap:6px;">
-          <label style="font-size:11px; font-weight:600; color:#64748b; letter-spacing:0.3px;">판매타입 <span style="font-size:10px; font-weight:400; color:#94a3b8;">KT/MST 모두 유효일 93일 기준 자동계산 (미적용)</span></label>
-          <select id="rm-c-saletype" style="padding:10px 12px; border:1px solid #e2e8f0; border-radius:9px; font-family:'Noto Sans KR',sans-serif; font-size:13px; outline:none; background:white;">
-            <option value="B2B" selected>B2B</option>
-            <option value="B2C">B2C</option>
           </select>
         </div>
       </div>
@@ -5030,7 +5023,6 @@ function _showPreviewModal() {
   const warranty   = document.getElementById('rm-c-warranty').value;
   const delivery   = document.getElementById('rm-c-delivery').value;
   const rmVal      = document.getElementById('rm-c-rm').value;
-  const saleType   = document.getElementById('rm-c-saletype').value;
   const notes      = (document.getElementById('rm-c-notes').value || '').replace(/\r\n|\r/g, '\n').trim();
   const catCommon  = document.getElementById('rm-c-category').value;
   const fee        = parseFloat(document.getElementById('rm-fee-input').value) || 0;
@@ -5057,7 +5049,7 @@ function _showPreviewModal() {
       '상품정상가':     _parsePrice(get('상품정상가')) || _parsePrice(get('소비자가')),
       '소비자가':       _parsePrice(get('소비자가'))   || _parsePrice(get('상품정상가')),
       '유효일':         get('유효일') || subHeaderValid || '',
-      'RM': rmVal, '상품상태': status, '판매타입': get('판매타입') || saleType,
+      'RM': rmVal, '상품상태': status, '판매타입': get('판매타입') || 'B2B',
       '상품설명':       [getDesc('상품설명'), notes].filter(Boolean).join('\n'),
       '공급사': supplier, '보증타입': warranty, '공급가': 0,
       '공급수수료': fee, '판매시작일': '', '판매종료일': '',

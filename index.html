@@ -398,17 +398,10 @@
         ⚙️ 공통 설정
         <span style="font-size:11px; font-weight:400; color:#94a3b8; background:#f8fafc; padding:3px 10px; border-radius:20px; border:1px solid #e2e8f0;">붙여넣은 전체 상품에 동일 적용</span>
       </div>
-      <!-- 1행: 공급사 / 공급수수료 / 카테고리 -->
-      <div style="display:grid; grid-template-columns:1fr 0.65fr 1.2fr; gap:12px 20px; margin-bottom:14px;">
+      <!-- 1행: 공급수수료 / 카테고리 (공급사는 헤더로 자동 감지되어 수동 입력 제거) -->
+      <div style="display:grid; grid-template-columns:0.8fr 1.2fr; gap:12px 20px; margin-bottom:14px;">
         <div style="display:flex; flex-direction:column; gap:6px;">
-          <label style="font-size:11px; font-weight:600; color:#64748b; letter-spacing:0.3px;">공급사</label>
-          <select id="rm-c-supplier" style="padding:10px 12px; border:1px solid #e2e8f0; border-radius:9px; font-family:'Noto Sans KR',sans-serif; font-size:13px; outline:none; transition:border .15s; background:white; color:#374151;" onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#e2e8f0'">
-            <option value="KTA">KTA</option>
-            <option value="MST">MST</option>
-          </select>
-        </div>
-        <div style="display:flex; flex-direction:column; gap:6px;">
-          <label style="font-size:11px; font-weight:600; color:#64748b; letter-spacing:0.3px;">공급수수료 % <span style="font-size:10px; font-weight:400; color:#94a3b8;">음수=할인 양수=과금 · KT는 공급가가 엑셀에 직접 있어 미적용, MST에만 적용</span></label>
+          <label style="font-size:11px; font-weight:600; color:#64748b; letter-spacing:0.3px;">공급수수료 % <span style="font-size:10px; font-weight:400; color:#94a3b8;">음수=할인 양수=과금 · MST는 이 값으로 공급가 계산, KT는 실제 공급가 기준으로 역산되어 표시만 됨(입력값 미사용)</span></label>
           <div style="display:flex; align-items:center; gap:8px;">
             <input type="number" id="rm-fee-input" step="0.1" placeholder="예: -2"
               oninput="_rmFee=parseFloat(this.value)||0; rmUpdateFeeHint(this.value);"
@@ -4718,7 +4711,12 @@ const _SUPPLIER_FORMATS = {
       const days = parseInt(String(item['유효일'] || '').replace(/[^0-9]/g, '')) || 0;
       item['판매타입'] = days < 93 ? 'B2B' : 'B2C'; // 93일 미만=B2B, 93일 이상=B2C
       const supplyRaw = _parsePrice(item['_supplyPrice']);
-      if (supplyRaw > 0) item['공급가'] = Math.floor(supplyRaw);
+      if (supplyRaw > 0) {
+        item['공급가'] = Math.floor(supplyRaw);
+        // 공급수수료는 입력값이 아니라 실제 공급가/소비자가로 역산 — KT 행마다 실제 마진율이 그대로 남도록
+        const consumer = item['소비자가'] || 0;
+        if (consumer > 0) item['공급수수료'] = Math.round((supplyRaw / consumer - 1) * 1000) / 10;
+      }
     },
   },
   MST: {
@@ -4939,11 +4937,6 @@ function _showMappingModal(text, forceFmt, savedColMap) {
   });
   _mappingState = { text, fmtKey, forceFmt, headers, autoMap };
 
-  const supplierSel = document.getElementById('rm-c-supplier');
-  if (supplierSel && fmtKey && supplierSel.querySelector(`option[value="${fmtKey}"]`)) {
-    supplierSel.value = fmtKey;
-  }
-
   const fieldOpts = [
     { value: '', label: '— 무시 —' },
     { value: '공급사상품코드', label: '공급사상품코드' },
@@ -5031,7 +5024,8 @@ function _showPreviewModal() {
   const lines = text.trim().split('\n').filter(l => l.trim());
   let subHeaderValid = '';
   const previewItems = [];
-  const supplier   = (document.getElementById('rm-c-supplier').value || '').trim();
+  // 공급사는 더 이상 수동 선택 안 함 — 헤더로 자동 감지된 포맷에서 그대로 가져온다 (KT→KTA, MST→MST)
+  const supplier   = { KT:'KTA', MST:'MST', MNC:'MNC' }[fmtKey] || fmtKey;
   const status     = document.getElementById('rm-c-status').value;
   const warranty   = document.getElementById('rm-c-warranty').value;
   const delivery   = document.getElementById('rm-c-delivery').value;

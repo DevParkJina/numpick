@@ -374,7 +374,7 @@
   <!-- 페이지 헤더 -->
   <div style="margin-bottom:28px;">
     <div style="font-size:22px; font-weight:700; color:#0f172a; letter-spacing:-0.5px; margin-bottom:6px;">📦 상품등록</div>
-    <div style="font-size:13px; color:#94a3b8;">공급사 Excel에서 복사(Ctrl+C) 후 붙여넣기(Ctrl+V) → 한 번에 파싱 · KTA / MST / MNC 자동 감지</div>
+    <div style="font-size:13px; color:#94a3b8;">공급사 엑셀 업로드 또는 복사(Ctrl+C) 후 붙여넣기(Ctrl+V) → 한 번에 파싱 · KT / MST 자동 감지</div>
   </div>
 
   <!-- 서브탭 -->
@@ -405,7 +405,6 @@
           <select id="rm-c-supplier" style="padding:10px 12px; border:1px solid #e2e8f0; border-radius:9px; font-family:'Noto Sans KR',sans-serif; font-size:13px; outline:none; transition:border .15s; background:white; color:#374151;" onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#e2e8f0'">
             <option value="KTA">KTA</option>
             <option value="MST">MST</option>
-            <option value="MNC">MNC</option>
           </select>
         </div>
         <div style="display:flex; flex-direction:column; gap:6px;">
@@ -476,8 +475,8 @@
         </div>
       </div>
       <div style="display:flex; flex-direction:column; gap:6px;">
-        <label style="font-size:11px; font-weight:600; color:#64748b; letter-spacing:0.3px;">유의사항 <span style="font-size:10px; font-weight:400; color:#94a3b8;">— 모든 상품 상품설명에 자동 추가 (선택)</span></label>
-        <textarea id="rm-c-notes" rows="2" placeholder="사용 시 유의사항, 교환 조건 등 공통 안내 문구" style="width:100%; padding:10px 12px; border:1px solid #e2e8f0; border-radius:9px; font-family:'Noto Sans KR',sans-serif; font-size:13px; outline:none; resize:vertical; line-height:1.6; transition:border .15s;" onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#e2e8f0'"></textarea>
+        <label style="font-size:11px; font-weight:600; color:#64748b; letter-spacing:0.3px;">공통 유의사항 <span style="font-size:10px; font-weight:400; color:#94a3b8;">— 엑셀에 이미 유의사항이 있으면 비워두세요, 입력 시 상품별 유의사항 뒤에 덧붙습니다 (선택)</span></label>
+        <textarea id="rm-c-notes" rows="2" placeholder="엑셀에 유의사항이 없을 때만 사용 — 모든 상품에 공통으로 덧붙일 안내 문구" style="width:100%; padding:10px 12px; border:1px solid #e2e8f0; border-radius:9px; font-family:'Noto Sans KR',sans-serif; font-size:13px; outline:none; resize:vertical; line-height:1.6; transition:border .15s;" onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#e2e8f0'"></textarea>
       </div>
     </div>
 
@@ -497,7 +496,6 @@
             <option value="auto">🔍 자동 감지</option>
             <option value="KTA">KTA</option>
             <option value="MST">MST (미스틱)</option>
-            <option value="MNC">MNC</option>
           </select>
         </div>
         <div id="rm-fmt-badge" style="display:none; font-size:11px; font-weight:700; padding:5px 12px; border-radius:20px; background:#dbeafe; color:#1d4ed8;"></div>
@@ -506,7 +504,7 @@
         </div>
       </div>
       <textarea id="rm-paste-area" rows="10"
-        placeholder="여기에 붙여넣기 (Ctrl+V)&#10;&#10;[KTA] NO · 브랜드명(브랜드) · 상품유형 · 카테고리 · 상품코드 · 상품명 · 판매가격 · 소비자가격 · 유효일수 · 공급사코드 · 특이사항&#10;[MST] 미스틱상품코드 · 상품명 · 판매가(정상가) · 유효기간 · 교환처명(브랜드)&#10;[MNC] 제휴사명 · 상품명 · 상품가격 · 발급코드(발급일 포함) · 상품코드"
+        placeholder="여기에 붙여넣기 (Ctrl+V)&#10;&#10;[KT] goodsCd · goodsNm · brandNm · cnsmPriceAmt · sellPriceAmt · goodsExpl · goodsImg500 · goodsTypeDtlNm · validPrdDay&#10;[MST] prodId · prodName · prodPrice · prodType · brandName · expDays · useMsg · imgName"
         style="width:100%; padding:12px 14px; border:1px solid #e2e8f0; border-radius:10px; font-family:'Noto Sans KR',monospace; font-size:12px; outline:none; resize:vertical; line-height:1.6; color:#374151; background:#fafbfc; transition:border .15s;" onfocus="this.style.borderColor='#6366f1'; this.style.background='white'" onblur="this.style.borderColor='#e2e8f0'; this.style.background='#fafbfc'"></textarea>
       <div style="display:flex; gap:10px; margin-top:14px; align-items:center;">
         <button onclick="rmParsePaste()" style="padding:10px 26px; background:#6366f1; color:white; border:none; border-radius:9px; font-family:'Noto Sans KR',sans-serif; font-size:13px; font-weight:700; cursor:pointer; letter-spacing:-0.2px;">파싱하기 →</button>
@@ -622,7 +620,6 @@
             <option value="auto">🔍 자동 감지</option>
             <option value="KTA">KTA</option>
             <option value="MST">MST (미스틱)</option>
-            <option value="MNC">MNC</option>
           </select>
           <div id="rp-fmt-badge" style="display:none; font-size:11px; font-weight:700; padding:4px 10px; border-radius:20px; background:#dbeafe; color:#1d4ed8;"></div>
           <span style="font-size:11px; font-weight:600; color:#64748b; white-space:nowrap; margin-left:4px;">공급수수료 %</span>
@@ -4197,20 +4194,22 @@ function _buildTrendGroupRows(currRows, prevRows, keyFn, nameFn) {
 function exportTrendExcel() {
   if (!_trendRows || !_trendRows.length) { alert('먼저 조회를 실행해 주세요'); return; }
 
-  const mediaRows    = _buildTrendGroupRows(_trendRows, _trendPrevRows, r=>String(col(r,'매체명')||'').trim(), v=>MEDIA_MAP[v]||v);
-  const supplierRows = _buildTrendGroupRows(_trendRows, _trendPrevRows, r=>String(col(r,'공급사')||'').trim());
-  const brandRows    = _buildTrendGroupRows(_trendRows, _trendPrevRows, r=>String(col(r,'브랜드')||'').trim());
+  const withCategory = (keyFn, nameFn, label) =>
+    _buildTrendGroupRows(_trendRows, _trendPrevRows, keyFn, nameFn).map(r => ({ '구분': label, ...r }));
+
+  const rows = [
+    ...withCategory(r=>String(col(r,'매체명')||'').trim(), v=>MEDIA_MAP[v]||v, '매체'),
+    ...withCategory(r=>String(col(r,'브랜드')||'').trim(), null, '브랜드'),
+    ...withCategory(r=>String(col(r,'공급사')||'').trim(), null, '공급사'),
+  ];
+
+  const ws = XLSX.utils.json_to_sheet(rows);
+  ws['!cols'] = [{wch:8},{wch:18},{wch:14},{wch:16},{wch:11},{wch:10},{wch:12},{wch:8},{wch:12},{wch:9}];
+  _xlsxCommaFmt(ws, 1, rows.length, [2,3,5,6,7,8]);
+  ws['!autofilter'] = { ref: `A1:J${rows.length+1}` };
 
   const wb = XLSX.utils.book_new();
-  const addSheet = (rows, name) => {
-    const ws = XLSX.utils.json_to_sheet(rows);
-    ws['!cols'] = [{wch:18},{wch:14},{wch:16},{wch:11},{wch:10},{wch:12},{wch:8},{wch:12},{wch:9}];
-    _xlsxCommaFmt(ws, 1, rows.length, [1,2,4,5,6,7]);
-    XLSX.utils.book_append_sheet(wb, ws, name);
-  };
-  addSheet(mediaRows,    '매체별');
-  addSheet(brandRows,    '브랜드별');
-  addSheet(supplierRows, '공급사별');
+  XLSX.utils.book_append_sheet(wb, ws, '트렌드분석');
   XLSX.writeFile(wb, `NyumPick_트렌드분석_${new Date().toISOString().slice(0,10)}.xlsx`);
 }
 
@@ -4689,66 +4688,58 @@ function rpSetFee(v) {
 // ── 공급사별 포맷 정의
 const _SUPPLIER_FORMATS = {
   KT: {
+    // KT 실제 시스템 export 포맷 (영문 API 필드명 그대로). 예전 한글 템플릿(NO/브랜드명 등)은 더 이상 안 씀.
     name: 'KTA',
     color: '#dbeafe', textColor: '#1d4ed8',
-    detect: hdrs => hdrs.some(h => /^NO$/i.test(h) || /브랜드명/.test(h) || /^공급사코드$/.test(h)),
+    detect: hdrs => hdrs.includes('goodsCd') && hdrs.includes('goodsNm'),
     mapFn: hdr => {
-      if (/판매단가|판매가격|정상가/.test(hdr)) return '상품정상가';
-      if (/소비자가/.test(hdr))                 return '소비자가';
-      if (/유효일/.test(hdr))                   return '유효일';
-      if (/상품\s*설명|특이사항|비고|유의사항/.test(hdr)) return '상품설명';
-      if (/브랜드/.test(hdr))                   return '_brand';
-      if (/상품유형|유형/.test(hdr))             return '판매타입';
-      if (/상품코드|공급사상품코드/.test(hdr))   return '공급사상품코드';
-      if (/상품명|제품명/.test(hdr))             return '상품명';
-      if (/카테고리/.test(hdr))                  return '카테고리';
-      if (/교환처/.test(hdr))                    return '교환처';
-      if (/이미지/.test(hdr))                    return '이미지URL';
-      return null;
+      switch (hdr) {
+        case 'goodsCd':        return '공급사상품코드';
+        case 'goodsNm':        return '상품명';
+        case 'brandNm':        return '_brand';
+        case 'cnsmPriceAmt':   return '소비자가';
+        case 'sellPriceAmt':   return '_supplyPrice'; // KT가 공급가를 직접 내려줌 — 수수료 계산 없이 그대로 사용
+        case 'goodsExpl':      return '상품설명';
+        case 'goodsImg500':    return '이미지URL';
+        case 'goodsTypeDtlNm': return '카테고리';
+        case 'validPrdDay':    return '유효일'; // validPrdDate(만료일자)는 사용 안 함 — 일수인 validPrdDay 사용
+        default: return null;
+      }
     },
-    map: {
-      '브랜드명':'_brand', '브랜드':'_brand',
-      '상품유형':'판매타입', '유형':'판매타입',
-      '카테고리':'카테고리',
-      '상품코드':'공급사상품코드', '공급사상품코드':'공급사상품코드',
-      '상품명':'상품명', '제품명':'상품명',
-      '판매가격':'상품정상가', '정상가':'상품정상가', '판매단가':'상품정상가',
-      '소비자가격':'소비자가',
-      '유효일수':'유효일', '유효일':'유효일',
-      '교환처':'교환처',
-      '특이사항':'상품설명', '비고':'상품설명', '유의사항':'상품설명', '상품 설명':'상품설명', '상품설명':'상품설명',
-      '이미지 경로':'이미지URL', '이미지경로':'이미지URL', '이미지':'이미지URL',
-    },
+    map: {},
     skipRow: cells => false,
     postProcess: item => {
-      if (!item['소비자가']) item['소비자가'] = item['상품정상가'];
-      if (!item['상품정상가']) item['상품정상가'] = item['소비자가'];
+      item['상품정상가'] = item['소비자가'];
+      if (!item['교환처'] && item['_brand']) item['교환처'] = item['_brand'];
+      if (item['교환처'] && item['상품명']) {
+        item['상품명'] = _stripBrand(item['상품명'], item['교환처']) || item['상품명'];
+      }
       if (item['유효일'] && /^\d+$/.test(item['유효일'])) item['유효일'] += '일';
       const days = parseInt(String(item['유효일'] || '').replace(/[^0-9]/g, '')) || 0;
       item['판매타입'] = (days === 30 || days === 60) ? 'B2B' : 'B2C';
+      const supplyRaw = _parsePrice(item['_supplyPrice']);
+      if (supplyRaw > 0) item['공급가'] = Math.floor(supplyRaw);
     },
   },
   MST: {
+    // 미스틱 실제 시스템 export 포맷 (영문 API 필드명 그대로)
     name: 'MST (미스틱)',
     color: '#d1fae5', textColor: '#065f46',
-    // 미스틱 포함 헤더 or 교환처명 → MST
-    // 브랜드 + 정상가 → 미스틱 간소 포맷
-    detect: hdrs =>
-      hdrs.some(h => /미스틱/.test(h) || /교환처명/.test(h)) ||
-      (hdrs.some(h => /^브랜드$/.test(h)) && hdrs.some(h => /정상가/.test(h))),
+    detect: hdrs => hdrs.includes('prodId') && hdrs.includes('prodName'),
     mapFn: hdr => {
-      if (/미스틱/.test(hdr) && /코드/.test(hdr)) return '공급사상품코드';
-      return null;
+      switch (hdr) {
+        case 'prodId':    return '공급사상품코드';
+        case 'prodName':  return '상품명';
+        case 'prodPrice': return '소비자가';
+        case 'prodType':  return '_rm'; // A=RM상품(발행/Y), E=일반상품(사용/N)
+        case 'brandName': return '_brand';
+        case 'expDays':   return '유효일';
+        case 'useMsg':    return '상품설명';
+        case 'imgName':   return '이미지URL';
+        default: return null;
+      }
     },
-    map: {
-      '미스틱상품코드':'공급사상품코드',
-      '상품명':'상품명', '제품명':'상품명',
-      '판매가':'소비자가', '판매가격':'소비자가', '정상가':'소비자가',
-      '유효기간':'유효일', '유효일수':'유효일',
-      '교환처명':'교환처', '교환처':'교환처',
-      '브랜드':'_brand', '브랜드명':'_brand',
-      '유의사항':'상품설명', '비고':'상품설명', '특이사항':'상품설명',
-    },
+    map: {},
     skipRow: cells => false,
     postProcess: item => {
       item['상품정상가'] = item['소비자가'];
@@ -4766,6 +4757,10 @@ const _SUPPLIER_FORMATS = {
       if (item['유효일'] && /^\d+$/.test(item['유효일'])) {
         item['유효일'] = item['유효일'] + '일';
       }
+      // prodType → RM여부 (A=Y/발행, E=N/사용)
+      const rmRaw = String(item['_rm']||'').trim().toUpperCase();
+      if (rmRaw === 'A') item['RM'] = 'Y';
+      else if (rmRaw === 'E') item['RM'] = 'N';
     },
   },
   MNC: {
@@ -4806,7 +4801,8 @@ const _SUPPLIER_FORMATS = {
 
 function _detectSupplierFmt(headers, forceFmt) {
   if (forceFmt && forceFmt !== 'auto' && _SUPPLIER_FORMATS[forceFmt]) return forceFmt;
-  for (const key of ['MST','MNC','KT']) {
+  // MNC(머니콘)는 더 이상 쓰지 않아 자동 감지 대상에서 제외 (포맷 정의 자체는 남겨둠)
+  for (const key of ['MST','KT']) {
     if (_SUPPLIER_FORMATS[key].detect(headers)) return key;
   }
   return 'KT'; // fallback
@@ -4918,7 +4914,6 @@ function rmParsePaste() {
 
   const missing = [];
   if (!document.getElementById('rm-fee-input').value.trim()) missing.push('공급수수료');
-  if (!document.getElementById('rm-c-notes').value.trim()) missing.push('유의사항');
   if (missing.length > 0) {
     const ok = confirm(`⚠️ 공통설정에서 다음 항목이 비어있습니다:\n\n• ${missing.join('\n• ')}\n\n지금 채우고 파싱하는 것을 권장합니다.\n그래도 계속 진행하시겠습니까?`);
     if (!ok) return;
@@ -4960,6 +4955,8 @@ function _showMappingModal(text, forceFmt, savedColMap) {
     { value: '판매타입', label: '판매타입' },
     { value: '상품설명', label: '상품설명 (비고)' },
     { value: '이미지URL', label: '이미지 경로' },
+    { value: '_rm', label: 'RM여부 (원본값)' },
+    { value: '_supplyPrice', label: '공급가 (원본값)' },
   ];
 
   const unmappedCount = headers.filter((h, i) => !autoMap[i]).length;
@@ -5069,15 +5066,19 @@ function _showPreviewModal() {
       '공급수수료': fee, '판매시작일': '', '판매종료일': '',
       '배송상품여부': delivery, '_brand': _brand,
       '이미지URL': get('이미지URL'),
+      '_rm': get('_rm'), '_supplyPrice': get('_supplyPrice'),
     };
     if (fmt.postProcess) fmt.postProcess(item);
     // 교환처 없으면 브랜드로 폴백 (모든 포맷 공통)
     if (!item['교환처'] && _brand) item['교환처'] = _brand;
     // 카테고리: 브랜드맵 → 공통설정 순으로 폴백
     if (!item['카테고리']) item['카테고리'] = brandCatMap[item['교환처']] || catCommon;
-    const consumer = item['소비자가'] || 0;
-    item['공급가'] = Math.floor(consumer * (1 + fee / 100));
-    delete item['_brand'];
+    // 공급사가 공급가를 직접 내려주면(postProcess에서 세팅) 그대로 쓰고, 아니면 소비자가×수수료로 계산
+    if (!item['공급가']) {
+      const consumer = item['소비자가'] || 0;
+      item['공급가'] = Math.floor(consumer * (1 + fee / 100));
+    }
+    delete item['_brand']; delete item['_rm']; delete item['_supplyPrice'];
     previewItems.push(item);
   }
   _mappingState.previewItems = previewItems;

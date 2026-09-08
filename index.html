@@ -146,6 +146,10 @@
 
       <div style="margin-left:auto; display:flex; align-items:center; gap:12px;">
         <span id="sales-summary" style="font-size:12px; font-weight:400; color:#94a3b8;"></span>
+        <button onclick="exportSalesExcel()"
+          style="background:#475569; color:white; border:none; border-radius:8px; padding:6px 14px; font-size:12px; font-weight:500; cursor:pointer;">
+          엑셀저장
+        </button>
         <button id="lock-btn-sales" onclick="toggleLock('sales')"
           style="font-size:12px; color:#94a3b8; background:transparent; border:1px solid #e2e8f0; border-radius:20px; padding:4px 12px; cursor:pointer; font-family:'Noto Sans KR',sans-serif;">
           🔓 편집
@@ -787,12 +791,12 @@
     <div style="display:grid; grid-template-columns:minmax(320px,1.6fr) minmax(260px,1fr); gap:20px;">
       <div class="card" style="padding:22px 26px;">
         <div style="font-size:13px; font-weight:700; color:#374151; margin-bottom:2px;">날짜별 상담 건수 추이</div>
-        <div style="font-size:11px; color:#94a3b8; margin-bottom:16px;">그래프에 마우스를 올리면 날짜별 건수를 볼 수 있어요</div>
+        <div style="font-size:11px; color:#94a3b8; margin-bottom:16px;">상담과 안내청취를 나눠서 보여드려요 — 마우스를 올리면 건수 확인</div>
         <div style="height:280px;"><canvas id="cs-chart-daily"></canvas></div>
       </div>
       <div class="card" style="padding:22px 26px;">
         <div style="font-size:13px; font-weight:700; color:#374151; margin-bottom:2px;">시간대별 분포</div>
-        <div style="font-size:11px; color:#94a3b8; margin-bottom:16px;">전화가 몰리는 시간을 한눈에 확인하세요</div>
+        <div style="font-size:11px; color:#94a3b8; margin-bottom:16px;">상담과 안내청취를 나눠서 시간대별로 보여드려요</div>
         <div style="height:280px;"><canvas id="cs-chart-hour"></canvas></div>
       </div>
     </div>
@@ -1840,6 +1844,16 @@ function renderSalesDashboard() {
   });
   const byMedia = byGroup;
 
+  // 엑셀저장용 캐시 — 현재 조회기간·그룹기준으로 집계된 데이터를 그대로 내보낸다
+  window._salesExportGroupBy = groupBy;
+  window._salesExportRows = Object.entries(byGroup).flatMap(([gKey, gData]) =>
+    Object.values(gData.prods).map(p => ({
+      그룹: gKey, 브랜드: p.brand, 상품명: p.name, 공급사: p.supplier,
+      상품코드: p.code, 판매단가: p.salePrice, 정상가: p.normalPrice,
+      수량: p.qty, 거래금액: p.amt,
+    }))
+  );
+
   // KPI
   const kpis = document.getElementById('sales-kpis');
   kpis.innerHTML = [
@@ -2350,6 +2364,35 @@ document.getElementById('modal').addEventListener('click', e => {
   if (e.target === document.getElementById('modal')) closeModal();
 });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+// ════════════════════════════════════════════════════
+//  SALES EXCEL EXPORT
+// ════════════════════════════════════════════════════
+function exportSalesExcel() {
+  if (!window._salesExportRows?.length) { alert('먼저 엑셀을 업로드하고 조회하세요.'); return; }
+  const groupLabel = { media:'매체', brand:'브랜드', supplier:'공급사' }[window._salesExportGroupBy] || '그룹';
+
+  const detailRows = window._salesExportRows.map(r => ({
+    [groupLabel]: r.그룹, '브랜드': r.브랜드, '상품명': r.상품명, '공급사': r.공급사,
+    '상품코드': r.상품코드, '판매단가': r.판매단가, '정상가': r.정상가,
+    '수량': r.수량, '거래금액': r.거래금액,
+  }));
+
+  const summaryMap = {};
+  window._salesExportRows.forEach(r => {
+    if (!summaryMap[r.그룹]) summaryMap[r.그룹] = { qty:0, amt:0 };
+    summaryMap[r.그룹].qty += r.수량;
+    summaryMap[r.그룹].amt += r.거래금액;
+  });
+  const summaryRows = Object.entries(summaryMap)
+    .sort((a,b) => b[1].amt - a[1].amt)
+    .map(([g, v]) => ({ [groupLabel]: g, '판매수량': v.qty, '거래금액': v.amt }));
+
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(summaryRows), '요약');
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(detailRows), '상세');
+  XLSX.writeFile(wb, `NyumPick_판매분석_${new Date().toISOString().slice(0,10)}.xlsx`);
+}
 
 // ════════════════════════════════════════════════════
 //  EXCEL EXPORT
@@ -5527,6 +5570,16 @@ function renderCsDashboard() {
     });
   });
 
+  // 안내청취(정보청취) 건도 날짜별·시간대별로 따로 집계해서 분류해 보여준다
+  const infoByDate = {};
+  const infoByHour = Array(24).fill(0);
+  infoRows.forEach(r => {
+    const dt = _csRowDateTime(r);
+    const dateKey = dt ? fmtDate(dt) : '(날짜없음)';
+    infoByDate[dateKey] = (infoByDate[dateKey]||0) + 1;
+    if (dt) infoByHour[dt.getHours()]++;
+  });
+
   // KPI
   const peakHour = byHour.reduce((best,v,i) => v > byHour[best] ? i : best, 0);
   const topKeywordEntry = Object.entries(keywordCount).sort((a,b)=>b[1]-a[1])[0];
@@ -5548,43 +5601,54 @@ function renderCsDashboard() {
     </div>
   `).join('');
 
-  // 날짜별 추이
-  const dateKeys = Object.keys(byDate).filter(k => k !== '(날짜없음)').sort();
+  // 날짜별 추이 (상담 vs 안내청취 분류)
+  const dateKeys = [...new Set([...Object.keys(byDate), ...Object.keys(infoByDate)])]
+    .filter(k => k !== '(날짜없음)').sort();
   document.getElementById('cs-charts-1').style.display = 'block';
   _csDestroyChart('daily');
   _csCharts.daily = new Chart(document.getElementById('cs-chart-daily'), {
     type: 'line',
     data: {
       labels: dateKeys,
-      datasets: [{
-        label: '상담건수', data: dateKeys.map(k => byDate[k].count),
-        borderColor: '#4f46e5', backgroundColor: 'rgba(79,70,229,0.12)',
-        fill: true, tension: 0.3, pointRadius: 3,
-      }]
+      datasets: [
+        {
+          label: '상담', data: dateKeys.map(k => byDate[k]?.count || 0),
+          borderColor: '#4f46e5', backgroundColor: 'rgba(79,70,229,0.12)',
+          fill: true, tension: 0.3, pointRadius: 3,
+        },
+        {
+          label: '안내청취', data: dateKeys.map(k => infoByDate[k] || 0),
+          borderColor: '#f59e0b', backgroundColor: 'rgba(245,158,11,0.10)',
+          fill: true, tension: 0.3, pointRadius: 3,
+        },
+      ]
     },
     options: {
       responsive:true, maintainAspectRatio:false, plugins:{
-        legend:{display:false},
-        tooltip:{ callbacks:{ label: ctx => `${ctx.parsed.y.toLocaleString()}건` } }
+        legend:{ display:true, position:'top', align:'end', labels:{ boxWidth:10, font:{size:11} } },
+        tooltip:{ callbacks:{ label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y.toLocaleString()}건` } }
       },
       scales:{ y:{beginAtZero:true, ticks:{precision:0}} }
     }
   });
 
-  // 시간대별 분포
+  // 시간대별 분포 (상담 vs 안내청취 분류)
   _csDestroyChart('hour');
   _csCharts.hour = new Chart(document.getElementById('cs-chart-hour'), {
     type: 'bar',
     data: {
       labels: Array.from({length:24}, (_,i) => `${i}시`),
-      datasets: [{ data: byHour, backgroundColor: '#8b5cf6' }]
+      datasets: [
+        { label:'상담', data: byHour, backgroundColor: '#8b5cf6' },
+        { label:'안내청취', data: infoByHour, backgroundColor: '#f59e0b' },
+      ]
     },
     options: {
       responsive:true, maintainAspectRatio:false, plugins:{
-        legend:{display:false},
-        tooltip:{ callbacks:{ label: ctx => `${ctx.parsed.y.toLocaleString()}건` } }
+        legend:{ display:true, position:'top', align:'end', labels:{ boxWidth:10, font:{size:11} } },
+        tooltip:{ callbacks:{ label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y.toLocaleString()}건` } }
       },
-      scales:{ y:{beginAtZero:true, ticks:{precision:0}} }
+      scales:{ x:{stacked:true}, y:{stacked:true, beginAtZero:true, ticks:{precision:0}} }
     }
   });
 

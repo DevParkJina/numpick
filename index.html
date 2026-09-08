@@ -374,7 +374,6 @@
   <!-- 페이지 헤더 -->
   <div style="margin-bottom:28px;">
     <div style="font-size:22px; font-weight:700; color:#0f172a; letter-spacing:-0.5px; margin-bottom:6px;">📦 상품등록</div>
-    <div style="font-size:13px; color:#94a3b8;">공급사 엑셀 업로드 또는 복사(Ctrl+C) 후 붙여넣기(Ctrl+V) → 한 번에 파싱 · KT / MST 자동 감지</div>
   </div>
 
   <!-- 서브탭 -->
@@ -469,7 +468,7 @@
     <!-- 붙여넣기 영역 -->
     <div class="card reg-card" style="margin-bottom:20px;" ondragover="event.preventDefault(); this.style.borderColor='#6366f1';" ondragleave="this.style.borderColor=''" ondrop="event.preventDefault(); this.style.borderColor=''; const f=event.dataTransfer.files[0]; if(f&&/\.xlsx?$/i.test(f.name)) rmHandleExcelFile(f); else _regToast('xlsx / xls 파일만 지원합니다', 1);">
       <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
-        <div style="font-size:14px; font-weight:700; color:#0f172a;">📋 데이터 붙여넣기</div>
+        <div style="font-size:14px; font-weight:700; color:#0f172a;">📋 상품 데이터 업로드</div>
         <div style="display:flex; align-items:center; gap:8px;">
           <input type="file" id="rm-excel-file" accept=".xlsx,.xls" style="display:none" onchange="rmHandleExcelFile(this.files[0]); this.value=''">
           <button onclick="document.getElementById('rm-excel-file').click()" style="padding:7px 16px; background:#f0fdf4; color:#16a34a; border:1px solid #bbf7d0; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:12px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:5px; white-space:nowrap;">📂 엑셀 파일 업로드</button>
@@ -486,14 +485,16 @@
         </div>
         <div id="rm-fmt-badge" style="display:none; font-size:11px; font-weight:700; padding:5px 12px; border-radius:20px; background:#dbeafe; color:#1d4ed8;"></div>
         <div style="flex:1; font-size:11px; color:#94a3b8; line-height:1.6;">
-          헤더 포함 전체 행 선택 → Ctrl+C → 아래 Ctrl+V · 브랜드명 포함 시 상품명 자동 제거 · 판매시작일·종료일 자동 비움
+          브랜드명 포함 시 상품명 자동 제거 · 판매시작일·종료일 자동 비움
         </div>
       </div>
+      <!-- 데이터 붙여넣기(Ctrl+V) 방식은 이제 엑셀 파일 업로드만 쓰기로 해서 주석 처리함
       <textarea id="rm-paste-area" rows="10"
         placeholder="여기에 붙여넣기 (Ctrl+V)&#10;&#10;[KT] goodsCd · goodsNm · brandNm · cnsmPriceAmt · sellPriceAmt · goodsExpl · goodsImg500 · goodsTypeDtlNm · validPrdDate&#10;[MST] prodId · prodName · prodPrice · prodType · brandName · expDays · useMsg · imgName"
         style="width:100%; padding:12px 14px; border:1px solid #e2e8f0; border-radius:10px; font-family:'Noto Sans KR',monospace; font-size:12px; outline:none; resize:vertical; line-height:1.6; color:#374151; background:#fafbfc; transition:border .15s;" onfocus="this.style.borderColor='#6366f1'; this.style.background='white'" onblur="this.style.borderColor='#e2e8f0'; this.style.background='#fafbfc'"></textarea>
+      -->
       <div style="display:flex; gap:10px; margin-top:14px; align-items:center;">
-        <button onclick="rmParsePaste()" style="padding:10px 26px; background:#6366f1; color:white; border:none; border-radius:9px; font-family:'Noto Sans KR',sans-serif; font-size:13px; font-weight:700; cursor:pointer; letter-spacing:-0.2px;">파싱하기 →</button>
+        <!-- <button onclick="rmParsePaste()" style="padding:10px 26px; background:#6366f1; color:white; border:none; border-radius:9px; font-family:'Noto Sans KR',sans-serif; font-size:13px; font-weight:700; cursor:pointer; letter-spacing:-0.2px;">파싱하기 →</button> -->
         <button onclick="rmResetAll()" style="padding:10px 18px; background:transparent; border:1px solid #e2e8f0; color:#64748b; border-radius:9px; font-family:'Noto Sans KR',sans-serif; font-size:13px; font-weight:600; cursor:pointer;">초기화</button>
         <button onclick="_showBrandCatModal()" style="padding:10px 18px; background:transparent; border:1px solid #e2e8f0; color:#6366f1; border-radius:9px; font-family:'Noto Sans KR',sans-serif; font-size:13px; font-weight:600; cursor:pointer;">🏷 브랜드 카테고리</button>
         <div id="rm-parse-hint" style="font-size:12px; color:#94a3b8; flex:1;"></div>
@@ -4895,7 +4896,8 @@ function rmHandleExcelFile(file) {
 }
 
 function rmResetAll() {
-  document.getElementById('rm-paste-area').value = '';
+  const pasteArea = document.getElementById('rm-paste-area');
+  if (pasteArea) pasteArea.value = ''; // 붙여넣기 textarea는 주석 처리돼 있어 없을 수 있음
   document.getElementById('rm-fmt-badge').style.display = 'none';
   document.getElementById('rm-parse-hint').textContent = '';
   // 엑셀 업로드 초기화

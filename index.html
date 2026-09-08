@@ -1705,6 +1705,10 @@ function renderComposition(rows) {
     data[media][supplier][brand].amt += amt;
   });
 
+  // 엑셀저장용 캐시 — 지금 이 화면(매체 > 공급사 > 브랜드) 그대로 내보낸다
+  window._salesExportMode = 'composition';
+  window._salesCompositionData = data;
+
   const mediaList = Object.keys(data).sort((a, b) => {
     const qtyOf = m => Object.values(data[m]).reduce((s, brands) => s + Object.values(brands).reduce((ss, v) => ss + v.qty, 0), 0);
     return qtyOf(b) - qtyOf(a);
@@ -1845,6 +1849,7 @@ function renderSalesDashboard() {
   const byMedia = byGroup;
 
   // 엑셀저장용 캐시 — 현재 조회기간·그룹기준으로 집계된 데이터를 그대로 내보낸다
+  window._salesExportMode = 'group';
   window._salesExportGroupBy = groupBy;
   window._salesExportRows = Object.entries(byGroup).flatMap(([gKey, gData]) =>
     Object.values(gData.prods).map(p => ({
@@ -2369,6 +2374,8 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal()
 //  SALES EXCEL EXPORT
 // ════════════════════════════════════════════════════
 function exportSalesExcel() {
+  if (window._salesExportMode === 'composition') return exportSalesCompositionExcel();
+
   if (!window._salesExportRows?.length) { alert('먼저 엑셀을 업로드하고 조회하세요.'); return; }
   const groupLabel = { media:'매체', brand:'브랜드', supplier:'공급사' }[window._salesExportGroupBy] || '그룹';
 
@@ -2392,6 +2399,39 @@ function exportSalesExcel() {
   XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(summaryRows), '요약');
   XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(detailRows), '상세');
   XLSX.writeFile(wb, `NyumPick_판매분석_${new Date().toISOString().slice(0,10)}.xlsx`);
+}
+
+// 매체별 공급사 · 브랜드 구성 화면(그룹기준 매체별 + 정렬기준 공급사별) 그대로 내보내기
+function exportSalesCompositionExcel() {
+  const data = window._salesCompositionData;
+  if (!data || !Object.keys(data).length) { alert('먼저 엑셀을 업로드하고 조회하세요.'); return; }
+
+  // 화면과 동일하게 매체 → 공급사 → 브랜드 모두 수량 많은 순으로 정렬
+  const mediaList = Object.keys(data).sort((a, b) => {
+    const qtyOf = m => Object.values(data[m]).reduce((s, brands) => s + Object.values(brands).reduce((ss, v) => ss + v.qty, 0), 0);
+    return qtyOf(b) - qtyOf(a);
+  });
+
+  const rows = [];
+  mediaList.forEach(media => {
+    const mediaName = MEDIA_MAP[media] || media;
+    const suppliers = Object.entries(data[media]).map(([sup, brands]) => ({
+      sup,
+      qty: Object.values(brands).reduce((s, v) => s + v.qty, 0),
+      brands: Object.entries(brands).map(([br, v]) => ({ br, ...v })).sort((a,b) => b.qty - a.qty),
+    })).sort((a, b) => b.qty - a.qty);
+
+    suppliers.forEach(({ sup, brands }) => {
+      brands.forEach(b => {
+        rows.push({ '매체': mediaName, '공급사': sup, '브랜드': b.br, '수량': b.qty, '금액(정상가)': b.amt });
+      });
+    });
+  });
+
+  const ws = XLSX.utils.json_to_sheet(rows);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, '매체공급사브랜드');
+  XLSX.writeFile(wb, `NyumPick_매체별공급사브랜드_${new Date().toISOString().slice(0,10)}.xlsx`);
 }
 
 // ════════════════════════════════════════════════════

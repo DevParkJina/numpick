@@ -408,7 +408,7 @@
           </select>
         </div>
         <div style="display:flex; flex-direction:column; gap:6px;">
-          <label style="font-size:11px; font-weight:600; color:#64748b; letter-spacing:0.3px;">공급수수료 % <span style="font-size:10px; font-weight:400; color:#94a3b8;">음수=할인 양수=과금</span></label>
+          <label style="font-size:11px; font-weight:600; color:#64748b; letter-spacing:0.3px;">공급수수료 % <span style="font-size:10px; font-weight:400; color:#94a3b8;">음수=할인 양수=과금 · KT는 공급가가 엑셀에 직접 있어 미적용, MST에만 적용</span></label>
           <div style="display:flex; align-items:center; gap:8px;">
             <input type="number" id="rm-fee-input" step="0.1" placeholder="예: -2"
               oninput="_rmFee=parseFloat(this.value)||0; rmUpdateFeeHint(this.value);"
@@ -460,14 +460,14 @@
           </select>
         </div>
         <div style="display:flex; flex-direction:column; gap:6px;">
-          <label style="font-size:11px; font-weight:600; color:#64748b; letter-spacing:0.3px;">RM</label>
+          <label style="font-size:11px; font-weight:600; color:#64748b; letter-spacing:0.3px;">RM <span style="font-size:10px; font-weight:400; color:#94a3b8;">MST는 엑셀 값으로 자동 대체</span></label>
           <select id="rm-c-rm" style="padding:10px 12px; border:1px solid #e2e8f0; border-radius:9px; font-family:'Noto Sans KR',sans-serif; font-size:13px; outline:none; background:white;">
             <option value="N" selected>N</option>
             <option value="Y">Y</option>
           </select>
         </div>
         <div style="display:flex; flex-direction:column; gap:6px;">
-          <label style="font-size:11px; font-weight:600; color:#64748b; letter-spacing:0.3px;">판매타입</label>
+          <label style="font-size:11px; font-weight:600; color:#64748b; letter-spacing:0.3px;">판매타입 <span style="font-size:10px; font-weight:400; color:#94a3b8;">KT/MST 모두 유효일 93일 기준 자동계산 (미적용)</span></label>
           <select id="rm-c-saletype" style="padding:10px 12px; border:1px solid #e2e8f0; border-radius:9px; font-family:'Noto Sans KR',sans-serif; font-size:13px; outline:none; background:white;">
             <option value="B2B" selected>B2B</option>
             <option value="B2C">B2C</option>
@@ -4761,6 +4761,9 @@ const _SUPPLIER_FORMATS = {
       const rmRaw = String(item['_rm']||'').trim().toUpperCase();
       if (rmRaw === 'A') item['RM'] = 'Y';
       else if (rmRaw === 'E') item['RM'] = 'N';
+      // 유효일 기준 판매타입 (KT와 동일 규칙): 93일 미만=B2B, 93일 이상=B2C
+      const days = parseInt(String(item['유효일'] || '').replace(/[^0-9]/g, '')) || 0;
+      item['판매타입'] = days < 93 ? 'B2B' : 'B2C';
     },
   },
   MNC: {

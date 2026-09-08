@@ -2382,6 +2382,16 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal()
 // ════════════════════════════════════════════════════
 //  SALES EXCEL EXPORT
 // ════════════════════════════════════════════════════
+// 엑셀 시트의 숫자 셀에 천단위 콤마 서식을 입힌다 (값은 그대로 숫자, 표시만 콤마)
+function _xlsxCommaFmt(ws, rowStart, rowEnd, cols) {
+  for (let r = rowStart; r <= rowEnd; r++) {
+    cols.forEach(c => {
+      const cell = ws[XLSX.utils.encode_cell({ r, c })];
+      if (cell && cell.t === 'n') cell.z = '#,##0';
+    });
+  }
+}
+
 function exportSalesExcel() {
   if (window._salesExportMode === 'composition') return exportSalesCompositionExcel();
 
@@ -2420,15 +2430,20 @@ function exportSalesExcel() {
   const wsMerged = XLSX.utils.aoa_to_sheet(aoa);
   wsMerged['!merges'] = merges;
   wsMerged['!cols'] = cols;
+  _xlsxCommaFmt(wsMerged, 1, n, [5,6,7,8]);
 
   // 상세(필터용) — 그룹 값을 매 행에 채워서 자동필터가 정상 동작하도록 구성
   const flatAoa = [header, ...flat.map(toRow)];
   const wsFlat = XLSX.utils.aoa_to_sheet(flatAoa);
   wsFlat['!cols'] = cols;
   wsFlat['!autofilter'] = { ref: `A1:I${flatAoa.length}` };
+  _xlsxCommaFmt(wsFlat, 1, n, [5,6,7,8]);
+
+  const wsSummary = XLSX.utils.json_to_sheet(summaryRows);
+  _xlsxCommaFmt(wsSummary, 1, summaryRows.length, [1,2]);
 
   const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(summaryRows), '요약');
+  XLSX.utils.book_append_sheet(wb, wsSummary, '요약');
   XLSX.utils.book_append_sheet(wb, wsMerged, '상세(병합)');
   XLSX.utils.book_append_sheet(wb, wsFlat, '상세(필터용)');
   XLSX.writeFile(wb, `NyumPick_판매분석_${new Date().toISOString().slice(0,10)}.xlsx`);
@@ -2492,12 +2507,14 @@ function exportSalesCompositionExcel() {
   const wsMerged = XLSX.utils.aoa_to_sheet(aoa);
   wsMerged['!merges'] = merges;
   wsMerged['!cols'] = [{wch:16},{wch:14},{wch:16},{wch:10},{wch:14}];
+  _xlsxCommaFmt(wsMerged, 1, n, [3,4]);
 
   // 시트2: 필터용 — 매체·공급사 값을 매 행에 그대로 채워서 자동필터가 정상 동작하도록 구성
   const flatAoa = [header, ...flat.map(f => [f.media, f.sup, f.br, f.qty, f.amt])];
   const wsFlat = XLSX.utils.aoa_to_sheet(flatAoa);
   wsFlat['!cols'] = [{wch:16},{wch:14},{wch:16},{wch:10},{wch:14}];
   wsFlat['!autofilter'] = { ref: `A1:E${flatAoa.length}` };
+  _xlsxCommaFmt(wsFlat, 1, n, [3,4]);
 
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, wsMerged, '구성(병합)');

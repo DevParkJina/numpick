@@ -1227,7 +1227,9 @@ const MEDIA_MAP = {
   'dasom':         '다솜',
   'flowergil':     '꽃길',
   'raon_hana':     '하나부고',
-  'telent':        '달란트비즈'
+  'telent':        '달란트비즈',
+  'talent':        '달란트숍',
+  'md_sahaguminfh':'사하구민'
 };
 
 const CHART_COLORS = [
@@ -1848,15 +1850,21 @@ function renderSalesDashboard() {
   });
   const byMedia = byGroup;
 
-  // 엑셀저장용 캐시 — 현재 조회기간·그룹기준으로 집계된 데이터를 그대로 내보낸다
+  // 엑셀저장용 캐시 — 현재 조회기간·그룹기준으로 집계된 데이터를 그대로 내보낸다 (그룹 많은 순 → 그룹 내 금액 많은 순)
   window._salesExportMode = 'group';
   window._salesExportGroupBy = groupBy;
-  window._salesExportRows = Object.entries(byGroup).flatMap(([gKey, gData]) =>
-    Object.values(gData.prods).map(p => ({
-      그룹: gKey, 브랜드: p.brand, 상품명: p.name, 공급사: p.supplier,
-      상품코드: p.code, 판매단가: p.salePrice, 정상가: p.normalPrice,
-      수량: p.qty, 거래금액: p.amt,
-    }))
+  window._salesExportRows = Object.entries(byGroup)
+    .sort((a,b) => b[1].total.amt - a[1].total.amt)
+    .flatMap(([gKey, gData]) => {
+      const gLabel = groupBy === 'media' ? (MEDIA_MAP[gKey.trim()] || gKey) : gKey;
+      return Object.values(gData.prods)
+        .sort((a,b) => b.amt - a.amt)
+        .map(p => ({
+          그룹: gLabel, 브랜드: p.brand, 상품명: p.name, 공급사: p.supplier,
+          상품코드: p.code, 판매단가: p.salePrice, 정상가: p.normalPrice,
+          수량: p.qty, 거래금액: p.amt,
+        }));
+    }
   );
 
   // KPI
@@ -1890,14 +1898,15 @@ function renderSalesDashboard() {
   }
 
   // 상품별 보기: 매체 × 공급사 × 브랜드 구성 표
+  // 이 화면에는 매체 선택 칩이 노출되지 않으므로, 다른 화면(카드 보기)에서 걸어둔 매체 필터가
+  // 남아있어도 무시하고 항상 전체 매체를 보여준다 — 안 그러면 매체가 빠져 보이는 것처럼 느껴진다.
   if (groupBy === 'media' && sortBy === 'product') {
     document.getElementById('sales-heatmap').style.display = 'none';
     document.getElementById('sales-heatmap').innerHTML = '';
+    const mf = document.getElementById('sales-media-filter');
+    if (mf) mf.style.display = 'none'; // 이 화면은 매체 선택 칩과 무관하게 항상 전체를 보여준다
     grid.innerHTML = '';
-    const compRows = selectedMedias.size > 0
-      ? rows.filter(r => selectedMedias.has(String(col(r, '매체명') || '').trim()))
-      : rows;
-    renderComposition(compRows);
+    renderComposition(rows);
     return;
   }
   document.getElementById('sales-composition').style.display = 'none';
@@ -2376,17 +2385,13 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal()
 function exportSalesExcel() {
   if (window._salesExportMode === 'composition') return exportSalesCompositionExcel();
 
-  if (!window._salesExportRows?.length) { alert('먼저 엑셀을 업로드하고 조회하세요.'); return; }
+  const flat = window._salesExportRows; // 그룹 금액 많은 순 → 그룹 내 상품 금액 많은 순으로 이미 정렬됨
+  if (!flat?.length) { alert('먼저 엑셀을 업로드하고 조회하세요.'); return; }
   const groupLabel = { media:'매체', brand:'브랜드', supplier:'공급사' }[window._salesExportGroupBy] || '그룹';
 
-  const detailRows = window._salesExportRows.map(r => ({
-    [groupLabel]: r.그룹, '브랜드': r.브랜드, '상품명': r.상품명, '공급사': r.공급사,
-    '상품코드': r.상품코드, '판매단가': r.판매단가, '정상가': r.정상가,
-    '수량': r.수량, '거래금액': r.거래금액,
-  }));
-
+  // 요약 — 그룹별 합계
   const summaryMap = {};
-  window._salesExportRows.forEach(r => {
+  flat.forEach(r => {
     if (!summaryMap[r.그룹]) summaryMap[r.그룹] = { qty:0, amt:0 };
     summaryMap[r.그룹].qty += r.수량;
     summaryMap[r.그룹].amt += r.거래금액;
@@ -2395,9 +2400,37 @@ function exportSalesExcel() {
     .sort((a,b) => b[1].amt - a[1].amt)
     .map(([g, v]) => ({ [groupLabel]: g, '판매수량': v.qty, '거래금액': v.amt }));
 
+  const header = [groupLabel, '브랜드', '상품명', '공급사', '상품코드', '판매단가', '정상가', '수량', '거래금액'];
+  const toRow = r => [r.그룹, r.브랜드, r.상품명, r.공급사, r.상품코드, r.판매단가, r.정상가, r.수량, r.거래금액];
+  const cols = [{wch:16},{wch:14},{wch:22},{wch:14},{wch:16},{wch:12},{wch:12},{wch:10},{wch:14}];
+
+  // 상세(병합) — 같은 그룹이 연속되면 그룹 셀 병합 (보기용)
+  const aoa = [header, ...flat.map(toRow)];
+  const merges = [];
+  const n = flat.length;
+  for (let start = 0, i = 1; i <= n; i++) {
+    if (i === n || flat[i].그룹 !== flat[start].그룹) {
+      if (i - start > 1) {
+        merges.push({ s:{ r:start+1, c:0 }, e:{ r:i, c:0 } });
+        for (let j = start+1; j < i; j++) aoa[j+1][0] = '';
+      }
+      start = i;
+    }
+  }
+  const wsMerged = XLSX.utils.aoa_to_sheet(aoa);
+  wsMerged['!merges'] = merges;
+  wsMerged['!cols'] = cols;
+
+  // 상세(필터용) — 그룹 값을 매 행에 채워서 자동필터가 정상 동작하도록 구성
+  const flatAoa = [header, ...flat.map(toRow)];
+  const wsFlat = XLSX.utils.aoa_to_sheet(flatAoa);
+  wsFlat['!cols'] = cols;
+  wsFlat['!autofilter'] = { ref: `A1:I${flatAoa.length}` };
+
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(summaryRows), '요약');
-  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(detailRows), '상세');
+  XLSX.utils.book_append_sheet(wb, wsMerged, '상세(병합)');
+  XLSX.utils.book_append_sheet(wb, wsFlat, '상세(필터용)');
   XLSX.writeFile(wb, `NyumPick_판매분석_${new Date().toISOString().slice(0,10)}.xlsx`);
 }
 

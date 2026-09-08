@@ -2455,11 +2455,20 @@ function exportSalesCompositionExcel() {
     }
   }
 
-  const ws = XLSX.utils.aoa_to_sheet(aoa);
-  ws['!merges'] = merges;
-  ws['!cols'] = [{wch:16},{wch:14},{wch:16},{wch:10},{wch:14}];
+  // 시트1: 보기 좋은 병합본 (병합된 셀은 필터를 걸면 값이 깨져 보일 수 있어 열람용으로만 사용)
+  const wsMerged = XLSX.utils.aoa_to_sheet(aoa);
+  wsMerged['!merges'] = merges;
+  wsMerged['!cols'] = [{wch:16},{wch:14},{wch:16},{wch:10},{wch:14}];
+
+  // 시트2: 필터용 — 매체·공급사 값을 매 행에 그대로 채워서 자동필터가 정상 동작하도록 구성
+  const flatAoa = [header, ...flat.map(f => [f.media, f.sup, f.br, f.qty, f.amt])];
+  const wsFlat = XLSX.utils.aoa_to_sheet(flatAoa);
+  wsFlat['!cols'] = [{wch:16},{wch:14},{wch:16},{wch:10},{wch:14}];
+  wsFlat['!autofilter'] = { ref: `A1:E${flatAoa.length}` };
+
   const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, '매체공급사브랜드');
+  XLSX.utils.book_append_sheet(wb, wsMerged, '구성(병합)');
+  XLSX.utils.book_append_sheet(wb, wsFlat, '구성(필터용)');
   XLSX.writeFile(wb, `NyumPick_매체별공급사브랜드_${new Date().toISOString().slice(0,10)}.xlsx`);
 }
 

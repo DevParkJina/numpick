@@ -915,6 +915,8 @@
             style="background:#4f46e5; color:white; border:none; border-radius:10px; padding:8px 24px; font-size:13px; font-weight:700; cursor:pointer; font-family:'Noto Sans KR',sans-serif; letter-spacing:-0.2px;">조회</button>
           <button onclick="resetTrend()"
             style="background:#f8fafc; color:#64748b; border:1px solid #e2e8f0; border-radius:10px; padding:8px 16px; font-size:13px; font-weight:600; cursor:pointer; font-family:'Noto Sans KR',sans-serif;">초기화</button>
+          <button onclick="exportTrendExcel()"
+            style="background:#475569; color:white; border:none; border-radius:10px; padding:8px 16px; font-size:13px; font-weight:600; cursor:pointer; font-family:'Noto Sans KR',sans-serif;">엑셀저장</button>
           <button onclick="toggleReportBuilder()" id="report-builder-toggle-btn"
             style="background:#0f172a; color:white; border:none; border-radius:10px; padding:8px 18px; font-size:13px; font-weight:600; cursor:pointer; font-family:'Noto Sans KR',sans-serif;">📄 리포트</button>
         </div>
@@ -4154,6 +4156,62 @@ function renderTrendAll() {
   renderGroupTable(_trendRows, _trendPrevRows, r=>String(col(r,'브랜드')||'').trim(),  'trend-all-brand');
   renderSupplierMediaMatrix(_trendRows, 'trend-all-matrix');
   renderTimeseriesChart('trend-timeseries-chart', _trendRows, _trendPrevRows, _trendFromD, _trendToD);
+}
+
+// ════════════════════════════════════════════════════
+//  TREND EXCEL EXPORT — 매체별/브랜드별/공급사별 요약 (전체 항목, 화면은 상위 10개만 표시하지만 여기선 전부)
+// ════════════════════════════════════════════════════
+function _buildTrendGroupRows(currRows, prevRows, keyFn, nameFn) {
+  const buildMap = rows => {
+    const m = {};
+    rows.forEach(r => {
+      const k = keyFn(r); if (!k) return;
+      if (!m[k]) m[k] = { key:k, amt:0, qty:0, orders:new Set() };
+      m[k].amt += rowAmt(r);
+      m[k].qty += safeNum(col(r,'수량'));
+      const on = String(col(r,'주문번호')||'').trim();
+      if (on) m[k].orders.add(on);
+    });
+    return m;
+  };
+  const curr  = buildMap(currRows);
+  const prev  = buildMap(prevRows);
+  const total = Object.values(curr).reduce((s,v) => s+v.amt, 0) || 1;
+  return Object.values(curr).sort((a,b) => b.amt-a.amt).map(it => {
+    const p = prev[it.key];
+    const growth = (p && p.amt) ? Math.round((it.amt-p.amt)/p.amt*1000)/10 : '';
+    return {
+      '이름':            (nameFn||String)(it.key),
+      '거래금액':         it.amt,
+      '거래금액(비교기간)': p ? p.amt : '',
+      '증감률(%)':        growth,
+      '수량':             it.qty,
+      '수량(비교기간)':    p ? p.qty : '',
+      '주문':             it.orders.size,
+      '주문(비교기간)':    p ? p.orders.size : '',
+      '비중(%)':          Math.round(it.amt/total*1000)/10,
+    };
+  });
+}
+
+function exportTrendExcel() {
+  if (!_trendRows || !_trendRows.length) { alert('먼저 조회를 실행해 주세요'); return; }
+
+  const mediaRows    = _buildTrendGroupRows(_trendRows, _trendPrevRows, r=>String(col(r,'매체명')||'').trim(), v=>MEDIA_MAP[v]||v);
+  const supplierRows = _buildTrendGroupRows(_trendRows, _trendPrevRows, r=>String(col(r,'공급사')||'').trim());
+  const brandRows    = _buildTrendGroupRows(_trendRows, _trendPrevRows, r=>String(col(r,'브랜드')||'').trim());
+
+  const wb = XLSX.utils.book_new();
+  const addSheet = (rows, name) => {
+    const ws = XLSX.utils.json_to_sheet(rows);
+    ws['!cols'] = [{wch:18},{wch:14},{wch:16},{wch:11},{wch:10},{wch:12},{wch:8},{wch:12},{wch:9}];
+    _xlsxCommaFmt(ws, 1, rows.length, [1,2,4,5,6,7]);
+    XLSX.utils.book_append_sheet(wb, ws, name);
+  };
+  addSheet(mediaRows,    '매체별');
+  addSheet(brandRows,    '브랜드별');
+  addSheet(supplierRows, '공급사별');
+  XLSX.writeFile(wb, `NyumPick_트렌드분석_${new Date().toISOString().slice(0,10)}.xlsx`);
 }
 
 const _MATRIX_EXCLUDE_SUPPLIERS = new Set(['데브늄','TALAENT','티움']);

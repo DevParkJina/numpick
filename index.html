@@ -2412,7 +2412,8 @@ function exportSalesCompositionExcel() {
     return qtyOf(b) - qtyOf(a);
   });
 
-  const rows = [];
+  // 매체·공급사·브랜드 단위로 한 줄씩 펼치기 (병합 계산을 위해 원본 키를 같이 들고 있는다)
+  const flat = [];
   mediaList.forEach(media => {
     const mediaName = MEDIA_MAP[media] || media;
     const suppliers = Object.entries(data[media]).map(([sup, brands]) => ({
@@ -2423,12 +2424,40 @@ function exportSalesCompositionExcel() {
 
     suppliers.forEach(({ sup, brands }) => {
       brands.forEach(b => {
-        rows.push({ '매체': mediaName, '공급사': sup, '브랜드': b.br, '수량': b.qty, '금액(정상가)': b.amt });
+        flat.push({ media: mediaName, sup, br: b.br, qty: b.qty, amt: b.amt });
       });
     });
   });
 
-  const ws = XLSX.utils.json_to_sheet(rows);
+  const header = ['매체', '공급사', '브랜드', '수량', '금액(정상가)'];
+  const aoa = [header, ...flat.map(f => [f.media, f.sup, f.br, f.qty, f.amt])];
+  const merges = [];
+  const n = flat.length;
+
+  // 같은 매체가 연속되면 매체 셀 병합 (0열)
+  for (let start = 0, i = 1; i <= n; i++) {
+    if (i === n || flat[i].media !== flat[start].media) {
+      if (i - start > 1) {
+        merges.push({ s:{ r:start+1, c:0 }, e:{ r:i, c:0 } });
+        for (let j = start+1; j < i; j++) aoa[j+1][0] = '';
+      }
+      start = i;
+    }
+  }
+  // 같은 매체 안에서 공급사가 연속되면 공급사 셀 병합 (1열)
+  for (let start = 0, i = 1; i <= n; i++) {
+    if (i === n || flat[i].media !== flat[start].media || flat[i].sup !== flat[start].sup) {
+      if (i - start > 1) {
+        merges.push({ s:{ r:start+1, c:1 }, e:{ r:i, c:1 } });
+        for (let j = start+1; j < i; j++) aoa[j+1][1] = '';
+      }
+      start = i;
+    }
+  }
+
+  const ws = XLSX.utils.aoa_to_sheet(aoa);
+  ws['!merges'] = merges;
+  ws['!cols'] = [{wch:16},{wch:14},{wch:16},{wch:10},{wch:14}];
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, '매체공급사브랜드');
   XLSX.writeFile(wb, `NyumPick_매체별공급사브랜드_${new Date().toISOString().slice(0,10)}.xlsx`);

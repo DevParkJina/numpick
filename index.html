@@ -468,26 +468,16 @@
     <!-- 붙여넣기 영역 -->
     <div class="card reg-card" style="margin-bottom:20px;" ondragover="event.preventDefault(); this.style.borderColor='#6366f1';" ondragleave="this.style.borderColor=''" ondrop="event.preventDefault(); this.style.borderColor=''; const f=event.dataTransfer.files[0]; if(f&&/\.xlsx?$/i.test(f.name)) rmHandleExcelFile(f); else _regToast('xlsx / xls 파일만 지원합니다', 1);">
       <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
-        <div style="font-size:14px; font-weight:700; color:#0f172a;">📋 상품 데이터 업로드</div>
+        <div style="display:flex; align-items:center; gap:10px;">
+          <div style="font-size:14px; font-weight:700; color:#0f172a;">📋 상품 데이터 업로드</div>
+          <div id="rm-fmt-badge" style="display:none; font-size:11px; font-weight:700; padding:5px 12px; border-radius:20px; background:#dbeafe; color:#1d4ed8;"></div>
+        </div>
         <div style="display:flex; align-items:center; gap:8px;">
           <input type="file" id="rm-excel-file" accept=".xlsx,.xls" style="display:none" onchange="rmHandleExcelFile(this.files[0]); this.value=''">
           <button onclick="document.getElementById('rm-excel-file').click()" style="padding:7px 16px; background:#f0fdf4; color:#16a34a; border:1px solid #bbf7d0; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:12px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:5px; white-space:nowrap;">📂 엑셀 파일 업로드</button>
         </div>
       </div>
-      <div style="display:flex; gap:10px; margin-bottom:14px; align-items:center; flex-wrap:wrap;">
-        <div style="display:flex; align-items:center; gap:8px; background:#f8fafc; padding:6px 12px; border-radius:9px; border:1px solid #e4e9f0;">
-          <span style="font-size:11px; font-weight:700; color:#475569; white-space:nowrap;">공급사 포맷</span>
-          <select id="rm-supplier-fmt" style="padding:5px 8px; border:none; border-radius:6px; font-family:'Noto Sans KR',sans-serif; font-size:12px; outline:none; background:white; font-weight:600; border:1px solid #e2e8f0;">
-            <option value="auto">🔍 자동 감지</option>
-            <option value="KTA">KTA</option>
-            <option value="MST">MST (미스틱)</option>
-          </select>
-        </div>
-        <div id="rm-fmt-badge" style="display:none; font-size:11px; font-weight:700; padding:5px 12px; border-radius:20px; background:#dbeafe; color:#1d4ed8;"></div>
-        <div style="flex:1; font-size:11px; color:#94a3b8; line-height:1.6;">
-          브랜드명 포함 시 상품명 자동 제거 · 판매시작일·종료일 자동 비움
-        </div>
-      </div>
+      <!-- 공급사 포맷은 헤더로 자동 감지되어 수동 선택 필요 없음 (KT/MST 배지는 위 제목 옆에 자동 표시) -->
       <!-- 데이터 붙여넣기(Ctrl+V) 방식은 이제 엑셀 파일 업로드만 쓰기로 해서 주석 처리함
       <textarea id="rm-paste-area" rows="10"
         placeholder="여기에 붙여넣기 (Ctrl+V)&#10;&#10;[KT] goodsCd · goodsNm · brandNm · cnsmPriceAmt · sellPriceAmt · goodsExpl · goodsImg500 · goodsTypeDtlNm · validPrdDate&#10;[MST] prodId · prodName · prodPrice · prodType · brandName · expDays · useMsg · imgName"
@@ -4886,8 +4876,7 @@ function rmHandleExcelFile(file) {
       const tsv = rows
         .map(r => r.map(c => String(c ?? '').replace(/\t/g, ' ').replace(/\r\n|\r|\n/g, _CELL_NL)).join('\t'))
         .join('\n');
-      const forceFmt = document.getElementById('rm-supplier-fmt').value;
-      _showMappingModal(tsv, forceFmt, null);
+      _showMappingModal(tsv, 'auto', null); // 공급사 포맷은 항상 헤더로 자동 감지
     } catch(err) {
       _regToast('엑셀 읽기 오류: ' + err.message, 1);
     }
@@ -4921,8 +4910,7 @@ function rmParsePaste() {
     if (!ok) return;
   }
 
-  const forceFmt = document.getElementById('rm-supplier-fmt').value;
-  _showMappingModal(text, forceFmt, null);
+  _showMappingModal(text, 'auto', null);
 }
 
 function _showMappingModal(text, forceFmt, savedColMap) {

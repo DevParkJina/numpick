@@ -5857,7 +5857,7 @@ function renderCsDashboard() {
   // 날짜별 상세 테이블
   document.getElementById('cs-table-wrap').style.display = 'block';
   document.getElementById('cs-table-body').innerHTML = dateKeys.slice().reverse().map((k, i) => {
-    const d = byDate[k];
+    const d = byDate[k] || { count:0, durSum:0, durCnt:0, hours:{}, keywords:{} };
     const peakH = Object.entries(d.hours).sort((a,b)=>b[1]-a[1])[0];
     const topKw = Object.entries(d.keywords).sort((a,b)=>b[1]-a[1]).slice(0,5)
       .map(([kw,cnt]) => `<span title="${kw}: ${cnt}건" style="display:inline-block; cursor:default; background:#eef2ff; color:#4338ca; font-size:11px; font-weight:600; padding:3px 9px; border-radius:20px; margin:2px 3px 2px 0;">${kw}</span>`)

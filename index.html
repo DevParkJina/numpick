@@ -5671,7 +5671,9 @@ function _csEscAttr(s) {
 }
 
 function exportCsExcel() {
-  if (!_csTableRows.length) { alert('먼저 조회 후 내보내기하세요.'); return; }
+  if (!_csData) { alert('먼저 CS 파일을 업로드하세요.'); return; }
+  renderCsDashboard(); // 조회를 따로 누르지 않아도 현재 필터 기준 최신 데이터로 바로 받도록 갱신
+  if (!_csTableRows.length) { alert('내보낼 데이터가 없습니다.'); return; }
   const ws = XLSX.utils.json_to_sheet(_csTableRows);
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, '날짜별상세');
@@ -5998,9 +6000,6 @@ function openCsDateModal(dateKey) {
       </span>`;
   }).join('');
 
-  const directRows = dayRows.filter(r => !_csIsInfoOnly(r));
-  const infoRowsDay = dayRows.filter(r => _csIsInfoOnly(r));
-
   // 개별 콜마다 핵심키워드가 비어있는 경우가 많아서, 행별 표기 대신 '이날' 전체 기준 TOP 키워드를 요약해서 보여준다
   const dayKeywordCount = {};
   dayRows.forEach(r => {
@@ -6010,26 +6009,29 @@ function openCsDateModal(dateKey) {
   });
   const topDayKeywords = Object.entries(dayKeywordCount).sort((a,b)=>b[1]-a[1]).slice(0,6);
 
+  // 시간 순서를 그대로 보이게 나누지 않고 한 리스트로 — 유형은 컬럼으로만 구분
   const rowHtml = r => {
     const dt = _csRowDateTime(r);
+    const isInfo = _csIsInfoOnly(r);
     const timeStr = dt ? `${String(dt.getHours()).padStart(2,'0')}:${String(dt.getMinutes()).padStart(2,'0')}` : '-';
     const dur = _csDuration(r);
     return `<tr style="border-bottom:1px solid #f8fafc;">
       <td style="padding:8px 16px; font-size:12px; color:#334155; white-space:nowrap;">${timeStr}</td>
+      <td style="padding:8px 16px; font-size:11px; text-align:center; white-space:nowrap;">
+        <span style="background:${isInfo ? '#fffbeb' : '#eef2ff'}; color:${isInfo ? '#b45309' : '#4338ca'}; font-weight:700; padding:2px 9px; border-radius:20px;">${isInfo ? '안내청취' : '상담'}</span>
+      </td>
       <td style="padding:8px 16px; font-size:12px; text-align:right; color:#64748b; white-space:nowrap;">${dur != null ? _csFmtDur(dur) : '-'}</td>
     </tr>`;
   };
-  const sectionHead = (label, color, bg, count) => count ? `<tr><td colspan="2" style="padding:12px 16px 6px; background:white;">
-      <span style="font-size:12px; font-weight:700; color:${color}; background:${bg}; padding:4px 12px; border-radius:20px;">${label} ${count.toLocaleString()}건</span>
-    </td></tr>` : '';
 
   document.getElementById('modal-thead').innerHTML = `<tr>
     <th style="text-align:left; padding:10px 16px; font-size:11px; font-weight:600; color:#64748b; text-transform:uppercase; letter-spacing:0.5px; border-bottom:1px solid #f1f5f9;">시간</th>
+    <th style="text-align:center; padding:10px 16px; font-size:11px; font-weight:600; color:#64748b; text-transform:uppercase; letter-spacing:0.5px; border-bottom:1px solid #f1f5f9;">유형</th>
     <th style="text-align:right; padding:10px 16px; font-size:11px; font-weight:600; color:#64748b; text-transform:uppercase; letter-spacing:0.5px; border-bottom:1px solid #f1f5f9;">통화시간</th>
   </tr>`;
 
   document.getElementById('modal-body').innerHTML =
-    `<tr><td colspan="2" style="padding:16px 16px 4px; background:#fafbfc;">
+    `<tr><td colspan="3" style="padding:16px 16px 4px; background:#fafbfc;">
        <div style="display:flex; align-items:center; gap:14px; font-size:11px; color:#64748b; margin-bottom:10px;">
          <span style="display:inline-flex; align-items:center; gap:5px;"><span style="width:9px;height:9px;border-radius:2px;background:#6366f1;display:inline-block;"></span>상담(직접)</span>
          <span style="display:inline-flex; align-items:center; gap:5px;"><span style="width:9px;height:9px;border-radius:2px;background:#f59e0b;display:inline-block;"></span>안내청취</span>
@@ -6041,10 +6043,7 @@ function openCsDateModal(dateKey) {
            : '<span style="font-size:12px; color:#cbd5e1;">기록된 키워드 없음</span>'}
        </div>
      </td></tr>`
-    + sectionHead('🎧 직접 상담', '#4338ca', '#eef2ff', directRows.length)
-    + directRows.map(rowHtml).join('')
-    + sectionHead('🔔 안내청취', '#b45309', '#fffbeb', infoRowsDay.length)
-    + infoRowsDay.map(rowHtml).join('');
+    + dayRows.map(rowHtml).join('');
 
   document.getElementById('modal').style.display = 'flex';
 }

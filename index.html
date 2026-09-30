@@ -5502,6 +5502,42 @@ function rpGenerate() {
   else _regToast(`${added}개 매체상품 생성 완료`);
 }
 function rpGenerateFromMoche() { rpGenerate(); }
+// 엑셀에서 복사한 표 텍스트 → 2차원 배열. 줄바꿈·탭·따옴표가 든 셀은 "..."로 감싸지고 내부 "는 ""로 이스케이프되어 온다
+// (상품설명처럼 여러 줄인 셀이 있어도 한 행으로 읽기 위함)
+function _rpParseClipboardTable(text) {
+  text = text.replace(/\r\n?/g, '\n');
+  const rows = [];
+  let row = [], cell = '', i = 0;
+  while (i < text.length) {
+    const c = text[i];
+    if (c === '"' && cell === '') {
+      // 닫는 따옴표 뒤가 탭/줄바꿈/끝이 아니면 감싼 셀이 아니라 따옴표로 시작하는 일반 텍스트
+      const start = i;
+      let val = '', j = i + 1, closed = false;
+      while (j < text.length) {
+        if (text[j] === '"') {
+          if (text[j + 1] === '"') { val += '"'; j += 2; continue; }
+          closed = true; j++; break;
+        }
+        val += text[j++];
+      }
+      if (closed && (j >= text.length || text[j] === '\t' || text[j] === '\n')) {
+        cell = val; i = j;
+      } else {
+        const stop = [text.indexOf('\n', start), text.indexOf('\t', start)]
+          .filter(n => n >= 0).reduce((a, b) => Math.min(a, b), text.length);
+        cell = text.slice(start, stop); i = stop;
+      }
+      continue;
+    }
+    if (c === '\t') { row.push(cell); cell = ''; }
+    else if (c === '\n') { row.push(cell); rows.push(row); row = []; cell = ''; }
+    else cell += c;
+    i++;
+  }
+  if (cell !== '' || row.length) { row.push(cell); rows.push(row); }
+  return rows.filter(r => r.some(c => c.trim()));
+}
 function rpParsePaste() {
   const text = document.getElementById('rp-paste-area').value;
   if (!text.trim()) return _regToast('데이터를 먼저 붙여넣어 주세요', 1);
@@ -5509,6 +5545,41 @@ function rpParsePaste() {
   if (!media) return _regToast('공통 설정에서 매체명을 입력하세요', 1);
   const disc = parseFloat(document.getElementById('rp-c-discount').value);
   if (isNaN(disc)) return _regToast('공통 설정에서 할인율을 입력하세요', 1);
+
+  // 엑셀 업로드 양식(newGoodsSample: 공급사상품코드·교환처·상품명·소비자가·공급가 …)을 그대로 붙여넣은 경우
+  // → 엑셀 업로드 소스와 같은 규칙: 공급단가 = 공급가, 판매가 = 소비자가 × (1 - 할인율)
+  const table = _rpParseClipboardTable(text);
+  const hIdx  = table.findIndex(r => r.some(c => c.trim() === '공급사상품코드'));
+  if (hIdx >= 0) {
+    const headers = table[hIdx].map(h => h.trim());
+    const rows = table.slice(hIdx + 1)
+      .map(r => Object.fromEntries(headers.map((h, i) => [h, (r[i] ?? '').trim()])))
+      .filter(r => r['공급사상품코드'] && r['공급사상품코드'] !== '공급사상품코드');
+    if (!rows.length) return _regToast('공급사상품코드가 있는 행이 없습니다', 1);
+    rows.forEach(r => {
+      _rpMediaList.push({
+        '공급사상품코드': r['공급사상품코드'],
+        '공급사발급코드': r['공급사발급코드'] || '',
+        '공급단가':       safeNum(r['공급가']),
+        '상품명':         r['상품명'] || '',
+        '매체명':         media,
+        '판매가':         _ceil100(safeNum(r['소비자가']) * (1 - disc / 100)),
+        '할인율':         parseFloat(disc.toFixed(2)),
+      });
+    });
+    const badge = document.getElementById('rp-fmt-badge');
+    badge.textContent = '엑셀 업로드 양식 감지됨';
+    badge.style.background = '#d1fae5';
+    badge.style.color      = '#065f46';
+    badge.style.display    = 'inline-block';
+    rpRenderMedia();
+    const hint = document.getElementById('rp-parse-hint');
+    hint.textContent = `✅ 엑셀 업로드 양식 · ${rows.length}개 파싱 완료 (총 ${_rpMediaList.length}개)`;
+    hint.style.color = '#10b981';
+    _regToast(`엑셀 업로드 양식 · ${rows.length}개 매체상품 파싱 완료`);
+    return;
+  }
+
   const forceFmt = document.getElementById('rp-supplier-fmt').value;
   const parsed   = _parseTSV(text, forceFmt);
   if (!parsed) return _regToast('헤더 포함 2행 이상 필요합니다', 1);

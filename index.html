@@ -430,6 +430,10 @@
       style="padding:10px 24px; border-radius:9px; font-size:13px; font-weight:600; border:none; cursor:pointer; background:transparent; color:#64748b; font-family:'Noto Sans KR',sans-serif; transition:all .15s;">
       📡 매체상품 등록
     </button>
+    <button id="reg-tab-stop" onclick="switchRegTab('stop')"
+      style="padding:10px 24px; border-radius:9px; font-size:13px; font-weight:600; border:none; cursor:pointer; background:transparent; color:#64748b; font-family:'Noto Sans KR',sans-serif; transition:all .15s;">
+      ⛔ 판매중단
+    </button>
   </div>
 
   <!-- ── 모체코드 등록 ── -->
@@ -469,10 +473,11 @@
           </select>
         </div>
       </div>
+      <!-- 공통설정은 공급수수료·카테고리만 쓰기로 해서 아래(상품상태·보증타입·배송상품여부·RM·유의사항)는 숨김 — 기본값은 그대로 적용됨 -->
       <!-- 구분선 -->
-      <div style="height:1px; background:#f1f5f9; margin:0 -28px 14px;"></div>
+      <div style="display:none; height:1px; background:#f1f5f9; margin:0 -28px 14px;"></div>
       <!-- 2행: 상품상태 / 보증타입 / 배송상품여부 / RM -->
-      <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:12px 16px; margin-bottom:14px;">
+      <div style="display:none; grid-template-columns:repeat(4,1fr); gap:12px 16px; margin-bottom:14px;">
         <div style="display:flex; flex-direction:column; gap:6px;">
           <label style="font-size:11px; font-weight:600; color:#64748b; letter-spacing:0.3px;">상품상태</label>
           <select id="rm-c-status" style="padding:10px 12px; border:1px solid #e2e8f0; border-radius:9px; font-family:'Noto Sans KR',sans-serif; font-size:13px; outline:none; background:white;">
@@ -503,7 +508,7 @@
           </select>
         </div>
       </div>
-      <div style="display:flex; flex-direction:column; gap:6px;">
+      <div style="display:none; flex-direction:column; gap:6px;">
         <label style="font-size:11px; font-weight:600; color:#64748b; letter-spacing:0.3px;">공통 유의사항 <span style="font-size:10px; font-weight:400; color:#94a3b8;">— 엑셀에 이미 유의사항이 있으면 비워두세요, 입력 시 상품별 유의사항 뒤에 덧붙습니다 (선택)</span></label>
         <textarea id="rm-c-notes" rows="2" placeholder="엑셀에 유의사항이 없을 때만 사용 — 모든 상품에 공통으로 덧붙일 안내 문구" style="width:100%; padding:10px 12px; border:1px solid #e2e8f0; border-radius:9px; font-family:'Noto Sans KR',sans-serif; font-size:13px; outline:none; resize:vertical; line-height:1.6; transition:border .15s;" onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#e2e8f0'"></textarea>
       </div>
@@ -761,6 +766,52 @@
           <tbody id="rp-media-tbody">
             <tr><td colspan="8" style="text-align:center; padding:36px; color:#94a3b8; font-size:13px;">데이터를 소스에서 생성하거나 붙여넣기 후 파싱하세요</td></tr>
           </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 판매중단 ── -->
+  <!-- 어드민에서 받은 상품목록 파일에 있는 상품은 전부 판매중단 대상 → 상품상태만 2로 바꿔 newGoodsSample.xlsx 생성 -->
+  <div id="reg-panel-stop" style="display:none;">
+
+    <!-- 상품목록 업로드 -->
+    <div class="card reg-card" style="margin-bottom:20px;" ondragover="event.preventDefault();" ondrop="event.preventDefault(); const f=event.dataTransfer.files[0]; if(f) rsLoadFile(f);">
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;">
+        <div>
+          <div style="font-size:14px; font-weight:700; color:#0f172a;">📋 판매중단 상품목록 업로드</div>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <input type="file" id="rs-file" accept=".csv,.xlsx,.xls" style="display:none" onchange="rsLoadFile(this.files[0]); this.value=''">
+          <button onclick="document.getElementById('rs-file').click()" style="padding:7px 16px; background:#f0fdf4; color:#16a34a; border:1px solid #bbf7d0; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:12px; font-weight:700; cursor:pointer; white-space:nowrap;">📂 상품목록 파일 업로드</button>
+        </div>
+      </div>
+      <div id="rs-summary" style="display:none; margin-top:12px; background:#f8fafc; border-radius:8px; padding:10px 14px; font-size:12px; color:#64748b;"></div>
+    </div>
+
+    <!-- 판매중단 목록 -->
+    <div id="rs-list-card" class="card reg-card" style="display:none;">
+      <div style="font-size:14px; font-weight:700; color:#0f172a; margin-bottom:14px; display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+        판매중단 목록 <span id="rs-count" style="background:#dc2626; color:white; border-radius:20px; padding:2px 10px; font-size:12px; font-weight:700;">0</span>
+        <span id="rs-view-hint" style="font-size:11px; font-weight:400; color:#94a3b8;"></span>
+        <div style="flex:1;"></div>
+        <button onclick="rsReset()" style="padding:7px 14px; background:transparent; border:1px solid #e2e8f0; color:#64748b; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:12px; font-weight:600; cursor:pointer;">초기화</button>
+        <button onclick="rsExport()" style="padding:8px 18px; background:#dc2626; color:white; border:none; border-radius:9px; font-family:'Noto Sans KR',sans-serif; font-size:12px; font-weight:600; cursor:pointer; letter-spacing:-0.2px;">📥 newGoodsSample.xlsx (판매중단)</button>
+      </div>
+      <div style="overflow-x:auto; max-height:560px; overflow-y:auto;">
+        <table style="width:100%; border-collapse:collapse; font-size:12px;">
+          <thead style="position:sticky; top:0; z-index:1;">
+            <tr style="background:#f8fafc; border-bottom:2px solid #e2e8f0;">
+              <th style="padding:8px 12px; text-align:left; font-size:11px; color:#64748b; white-space:nowrap;">공급사상품코드</th>
+              <th style="padding:8px 12px; text-align:left; font-size:11px; color:#64748b; white-space:nowrap;">공급사</th>
+              <th style="padding:8px 12px; text-align:left; font-size:11px; color:#64748b; white-space:nowrap;">교환처</th>
+              <th style="padding:8px 12px; text-align:left; font-size:11px; color:#64748b; white-space:nowrap;">상품명</th>
+              <th style="padding:8px 12px; text-align:right; font-size:11px; color:#64748b; white-space:nowrap;">소비자가</th>
+              <th style="padding:8px 12px; text-align:center; font-size:11px; color:#64748b; white-space:nowrap;">변경</th>
+              <th style="padding:8px 12px; text-align:left; font-size:11px; color:#64748b; white-space:nowrap;">매체명</th>
+            </tr>
+          </thead>
+          <tbody id="rs-tbody"></tbody>
         </table>
       </div>
     </div>
@@ -4694,10 +4745,12 @@ let   _rpSource = 'moche';
 function switchRegTab(t) {
   document.getElementById('reg-panel-moche').style.display = t === 'moche' ? 'block' : 'none';
   document.getElementById('reg-panel-media').style.display = t === 'media' ? 'block' : 'none';
+  document.getElementById('reg-panel-stop').style.display  = t === 'stop'  ? 'block' : 'none';
   const on  = 'padding:8px 20px; border-radius:8px; font-size:13px; font-weight:600; border:none; cursor:pointer; background:#6366f1; color:white; font-family:\'Noto Sans KR\',sans-serif;';
   const off = 'padding:8px 20px; border-radius:8px; font-size:13px; font-weight:600; border:1px solid #e2e8f0; cursor:pointer; background:transparent; color:#64748b; font-family:\'Noto Sans KR\',sans-serif;';
   document.getElementById('reg-tab-moche').style.cssText = t === 'moche' ? on : off;
   document.getElementById('reg-tab-media').style.cssText = t === 'media' ? on : off;
+  document.getElementById('reg-tab-stop').style.cssText  = t === 'stop'  ? on : off;
   if (t === 'media') { rpUpdateMocheSummary(); rpRefreshBrandDiscUI(); }
 }
 
@@ -5705,6 +5758,109 @@ function rpExportMedia() {
   XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
   XLSX.writeFile(wb, 'newPlatformGoodsSample.xlsx');
   _regToast(`newPlatformGoodsSample.xlsx (${_rpMediaList.length}개) 다운로드 완료!`);
+}
+
+// ── 판매중단 (올린 상품목록 파일의 상품은 전부 판매중단 → 상품상태 2로 newGoodsSample.xlsx 생성)
+let   _rsRows = [];
+const _RS_RENDER_MAX = 500; // 목록이 크면 화면엔 앞부분만 (다운로드는 전체)
+
+function rsLoadFile(file) {
+  if (!file) return;
+  const isCsv = /\.csv$/i.test(file.name);
+  const reader = new FileReader();
+  reader.onload = e => {
+    let wb;
+    try {
+      if (isCsv) {
+        // 어드민 CSV는 UTF-8(BOM) — 깨지면 EUC-KR로 재시도 (rpLoadExcel과 동일)
+        let text;
+        try { text = new TextDecoder('utf-8', { fatal: true }).decode(e.target.result); }
+        catch { text = new TextDecoder('euc-kr').decode(e.target.result); }
+        wb = XLSX.read(text.replace(/^﻿/, ''), { type: 'string' });
+      } else {
+        wb = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
+      }
+    } catch (err) { return _regToast('파일 읽기 오류: ' + err.message, 1); }
+    const ws = wb.Sheets[wb.SheetNames[0]];
+    // newGoodsSample처럼 1행이 안내문구면 2행부터 헤더
+    const firstRow = XLSX.utils.sheet_to_json(ws, { header: 1, range: 0, defval: '' })[0] || [];
+    const headerRange = firstRow.some(c => String(c).trim() === '공급사상품코드') ? 0 : 1;
+    const rows = XLSX.utils.sheet_to_json(ws, { defval: '', range: headerRange, raw: false })
+      .filter(r => String(r['공급사상품코드'] || '').trim());
+    if (!rows.length) return _regToast('공급사상품코드 컬럼을 찾지 못했습니다. 상품목록 파일인지 확인해 주세요', 1);
+
+    _rsRows = rows;
+    const sumEl = document.getElementById('rs-summary');
+    sumEl.innerHTML = `<strong style="color:#0f172a;">${_csEscAttr(file.name)}</strong> · ${rows.length.toLocaleString()}개 상품 → 전부 판매중단(2)으로 변경`;
+    sumEl.style.display = 'block';
+    document.getElementById('rs-list-card').style.display = 'block';
+    rsRender();
+    _regToast(`${rows.length.toLocaleString()}개 상품 로드 완료`);
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function rsRender() {
+  document.getElementById('rs-tbody').innerHTML = _rsRows.slice(0, _RS_RENDER_MAX).map(r => {
+    return `<tr style="border-bottom:1px solid #f1f5f9;">
+      <td style="padding:7px 12px; font-family:monospace; white-space:nowrap;">${_csEscAttr(r['공급사상품코드'])}</td>
+      <td style="padding:7px 12px; white-space:nowrap;">${_csEscAttr(r['공급사'] || '')}</td>
+      <td style="padding:7px 12px; white-space:nowrap;">${_csEscAttr(r['교환처'] || '')}</td>
+      <td style="padding:7px 12px;">${_csEscAttr(r['상품명'] || '')}</td>
+      <td style="padding:7px 12px; text-align:right; white-space:nowrap;">${(_parsePrice(r['소비자가']) || 0).toLocaleString()}</td>
+      <td style="padding:7px 12px; text-align:center; white-space:nowrap;"><strong style="color:#dc2626;">판매중단</strong></td>
+      <td style="padding:7px 12px; font-size:11px; color:#94a3b8;">${_csEscAttr(r['매체명'] || '')}</td>
+    </tr>`;
+  }).join('');
+  document.getElementById('rs-count').textContent = _rsRows.length.toLocaleString();
+  document.getElementById('rs-view-hint').textContent = _rsRows.length > _RS_RENDER_MAX
+    ? `화면엔 ${_RS_RENDER_MAX}개까지만 표시 — 다운로드엔 ${_rsRows.length.toLocaleString()}개 전부 포함` : '';
+}
+
+function rsReset() {
+  _rsRows = [];
+  document.getElementById('rs-summary').style.display = 'none';
+  document.getElementById('rs-list-card').style.display = 'none';
+  document.getElementById('rs-tbody').innerHTML = '';
+}
+
+function rsExport() {
+  if (!_rsRows.length) return _regToast('먼저 상품목록 파일을 올려주세요', 1);
+  const list = _rsRows;
+  // 모체코드 등록(rmExportMoche)과 같은 양식 — 상품목록에 없는 보증타입은 기본값 1(사용분), 판매기간은 빈칸
+  const COLS = ['공급사상품코드','공급사발급코드','교환처','카테고리','상품명',
+    '상품정상가','소비자가','유효일','RM','상품상태','판매타입','상품설명',
+    '공급사','보증타입','공급가','공급수수료','판매시작일','판매종료일','배송상품여부'];
+  const num = v => { const n = parseFloat(String(v ?? '').replace(/,/g, '')); return isNaN(n) ? '' : n; };
+  const toRow = r => ({
+    '공급사상품코드': String(r['공급사상품코드']).trim(),
+    '공급사발급코드': r['공급사발급코드'] || '',
+    '교환처':   r['교환처'] || '',
+    '카테고리': r['카테고리'] || '',
+    '상품명':   r['상품명'] || '',
+    '상품정상가': num(r['상품정상가']),
+    '소비자가':   num(r['소비자가']),
+    '유효일':     String(r['유효일수'] ?? r['유효일'] ?? '').replace(/[^0-9]/g, ''),
+    'RM':         r['RM여부'] ?? r['RM'] ?? '',
+    '상품상태':   '2',
+    '판매타입':   r['판매타입'] || 'B2B',
+    '상품설명':   r['상품설명'] || '',
+    '공급사':     r['공급사'] || '',
+    '보증타입':   r['보증타입'] || '1',
+    '공급가':     num(r['공급가']),
+    '공급수수료': num(r['공급수수료']),
+    '판매시작일': r['판매시작일'] || '',
+    '판매종료일': r['판매종료일'] || '',
+    '배송상품여부': r['배송상품여부'] || 'N',
+  });
+  const instructionRow = ['※ 양식에 꼭 맞춰주세요', ...Array.from({length: COLS.length - 1}, (_, i) => i + 2)];
+  const data = [instructionRow, COLS, ...list.map(toRow).map(p => COLS.map(c => p[c]))];
+  const ws = XLSX.utils.aoa_to_sheet(data);
+  ws['!cols'] = COLS.map(c => ({ wch: Math.max(c.length * 1.8, 12) }));
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
+  XLSX.writeFile(wb, 'newGoodsSample.xlsx');
+  _regToast(`판매중단 newGoodsSample.xlsx (${list.length}개) 다운로드 완료!`);
 }
 function _regToast(msg, err) {
   let t = document.getElementById('_reg-toast');

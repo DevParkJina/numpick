@@ -271,12 +271,12 @@
         </div>
 
         <div style="display:flex; align-items:center; gap:6px;">
-          <span style="font-size:11px; font-weight:500; color:#94a3b8;">정산타입</span>
+          <span style="font-size:11px; font-weight:500; color:#94a3b8;">상품권여부</span>
           <select id="filter-rtype" onchange="renderProductsDashboard()"
             style="border:1px solid #e2e8f0; border-radius:8px; padding:6px 10px; font-size:13px; font-weight:400; color:#374151; outline:none; min-width:90px;">
             <option value="">전체</option>
-            <option value="사용">사용</option>
-            <option value="발행">발행</option>
+            <option value="상품권">상품권</option>
+            <option value="비상품권">비상품권</option>
           </select>
         </div>
 
@@ -2229,10 +2229,10 @@ async function resetProducts() {
 }
 
 
-// RM여부 → 정산타입 label
+// RM여부 → 상품권여부 label (RM Y = 상품권, N = 상품권 아님)
 function rmLabel(rm) {
   const v = String(rm||'').trim().toUpperCase();
-  return v === 'Y' ? '발행' : '사용';
+  return v === 'Y' ? '상품권' : '비상품권';
 }
 
 function renderProductsDashboard() {
@@ -2294,7 +2294,7 @@ function renderProductsDashboard() {
           <th style="text-align:left;   padding:12px 16px; font-size:11px; font-weight:600; color:#64748b; text-transform:uppercase; letter-spacing:0.5px;">교환처</th>
           <th style="text-align:center; padding:12px 16px; font-size:11px; font-weight:600; color:#64748b; text-transform:uppercase; letter-spacing:0.5px;">상품타입</th>
           <th style="text-align:center; padding:12px 16px; font-size:11px; font-weight:600; color:#64748b; text-transform:uppercase; letter-spacing:0.5px;">공급수수료</th>
-          <th style="text-align:center; padding:12px 16px; font-size:11px; font-weight:600; color:#64748b; text-transform:uppercase; letter-spacing:0.5px;">정산타입</th>
+          <th style="text-align:center; padding:12px 16px; font-size:11px; font-weight:600; color:#64748b; text-transform:uppercase; letter-spacing:0.5px;">상품권여부</th>
           <th style="text-align:center; padding:12px 16px; font-size:11px; font-weight:600; color:#64748b; text-transform:uppercase; letter-spacing:0.5px;">배송</th>
           <th style="text-align:center; padding:12px 16px; font-size:11px; font-weight:600; color:#64748b; text-transform:uppercase; letter-spacing:0.5px;">상품수량</th>
           <th style="text-align:center; padding:12px 16px; font-size:11px; font-weight:600; color:#64748b; text-transform:uppercase; letter-spacing:0.5px;">상세보기</th>
@@ -2326,7 +2326,7 @@ function renderProductsDashboard() {
             </td>
             <td style="padding:13px 16px; text-align:center;">
               <span style="padding:3px 10px; border-radius:20px; font-size:11px; font-weight:500;
-                ${g.rm==='발행'?'background:#fef3c7; color:#92400e':'background:#d1fae5; color:#065f46'}">
+                ${g.rm==='상품권'?'background:#fef3c7; color:#92400e':'background:#d1fae5; color:#065f46'}">
                 ${g.rm}
               </span>
             </td>
@@ -2580,7 +2580,7 @@ function exportProductsExcel() {
       '교환처':       g.brand,
       '상품타입':     g.ptype,
       '공급수수료':   g.feeRaw !== '' ? g.feeRaw + '%' : '',
-      '정산타입':     g.rm,
+      '상품권여부':   g.rm,
       '배송상품':     g.delivery,
       '공급사상품코드': String(col(p,'공급사상품코드','공급사발급코드')||''),
       '상품명':        String(col(p,'상품명')||''),

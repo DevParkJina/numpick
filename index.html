@@ -781,7 +781,7 @@
       style="border:2px dashed #a5b4fc; border-radius:16px; padding:80px 40px; text-align:center; background:white; cursor:pointer; transition:all 0.2s;">
       <div style="font-size:44px; margin-bottom:14px;">☎️</div>
       <div style="font-size:16px; font-weight:600; color:#374151; margin-bottom:6px;">상담 이력 엑셀 파일을 드래그하거나 클릭하세요</div>
-      <div style="font-size:13px; color:#94a3b8; font-weight:400;">날짜 · 시작시간 · 종료시간 · 핵심키워드 컬럼 포함 파일</div>
+      <div style="font-size:13px; color:#94a3b8; font-weight:400;">기존 양식(날짜 · 시작시간 · 종료시간 · 핵심키워드) / 10월~ 신규 양식(수신목록) 모두 가능</div>
       <input type="file" id="cs-file" accept=".xlsx,.xls" style="display:none" onchange="handleCsFile(this.files[0])">
     </div>
   </div>
@@ -840,7 +840,7 @@
   <div id="cs-charts-2" style="display:none; margin-bottom:12px; margin-top:24px;">
     <div style="font-size:14px; font-weight:700; color:#1e293b; margin-bottom:14px;">🔑 키워드 분석</div>
     <div class="card" style="padding:22px 26px;">
-      <div style="font-size:13px; font-weight:700; color:#374151; margin-bottom:2px;">핵심키워드 TOP 15</div>
+      <div id="cs-keyword-title" style="font-size:13px; font-weight:700; color:#374151; margin-bottom:2px;">핵심키워드 TOP 15</div>
       <div style="font-size:11px; color:#94a3b8; margin-bottom:16px;">어떤 문의가 가장 많은지 확인하세요</div>
       <div style="height:360px;"><canvas id="cs-chart-keyword"></canvas></div>
     </div>
@@ -4757,6 +4757,7 @@ const _SUPPLIER_FORMATS = {
         case 'goodsExpl':      return '상품설명';
         case 'goodsImg500':    return '이미지URL';
         case 'goodsTypeDtlNm': return '카테고리';
+        case 'goodsTypeCd':    return '_rm'; // CFG=발행당(RM Y), 그 외=N
         case 'validPrdDate':   return '유효일'; // 필드명과 달리 실제 값은 일수(예: 30)로 내려옴 — validPrdDay 아님
         default: return null;
       }
@@ -4770,6 +4771,9 @@ const _SUPPLIER_FORMATS = {
         item['상품명'] = _stripBrand(item['상품명'], item['교환처']) || item['상품명'];
       }
       if (item['유효일'] && /^\d+$/.test(item['유효일'])) item['유효일'] += '일';
+      // goodsTypeCd → RM여부 (CFG=발행당 Y, 나머지 N)
+      const rmRaw = String(item['_rm']||'').trim().toUpperCase();
+      if (rmRaw) item['RM'] = rmRaw === 'CFG' ? 'Y' : 'N';
       const days = parseInt(String(item['유효일'] || '').replace(/[^0-9]/g, '')) || 0;
       item['판매타입'] = days < 93 ? 'B2B' : 'B2C'; // 93일 미만=B2B, 93일 이상=B2C
       const supplyRaw = _parsePrice(item['_supplyPrice']);
@@ -5732,9 +5736,10 @@ const _csCharts = {};
 async function handleCsFile(file) {
   if (!file) return;
   try {
-    const rows = await parseExcel(file);
+    const rows = await _csReadRows(file);
+    if (!rows) return; // 비밀번호 입력 취소/불일치
     if (!rows.length) { alert('데이터가 없습니다.'); return; }
-    _csData = rows;
+    _csData = rows.map(_csNormalizeRow);
     document.getElementById('cs-upload-wrap').style.display = 'none';
     document.getElementById('cs-controls').style.display = 'block';
 
@@ -5749,8 +5754,127 @@ async function handleCsFile(file) {
     document.getElementById('cs-date-from').value = minD ? fmtDate(minD) : '';
     document.getElementById('cs-date-to').value   = maxD ? fmtDate(maxD) : '';
 
+    // 신규 양식엔 핵심키워드가 없어 '그룹'(상담분류)을 대신 쓰므로 차트 제목도 맞춰준다
+    const isNewFmt = _csData.some(r => r._csNewFmt);
+    document.getElementById('cs-keyword-title').textContent = isNewFmt ? '상담분류(그룹) TOP 15' : '핵심키워드 TOP 15';
+
     renderCsDashboard();
-  } catch(e) { alert('파일 오류: ' + e.message); }
+  } catch(e) {
+    if (/password|encrypt|암호화/i.test(e.message)) alert('비밀번호가 걸린 파일이에요. 엑셀에서 암호를 해제하고 저장한 뒤 다시 올려주세요.');
+    else alert('파일 오류: ' + e.message);
+  }
+}
+
+// ── 상담 이력 파일은 비밀번호(Office 암호화)가 걸려서 내려온다 → 브라우저에서 바로 풀어서 읽는다 ──
+// 저장소가 공개라 비밀번호를 코드에 넣지 않고, 처음 한 번 입력받아 이 브라우저(localStorage)에 기억해둔다.
+const _CS_PW_KEY = 'numpick_cs_pw';
+
+async function _csReadRows(file) {
+  let buf = new Uint8Array(await file.arrayBuffer());
+  if (_csIsEncrypted(buf)) {
+    let saved = '';
+    try { saved = localStorage.getItem(_CS_PW_KEY) || ''; } catch(e) {}
+    let out = saved ? await _csDecrypt(buf, saved) : null;
+    if (!out) {
+      const pw = prompt(saved
+        ? '저장된 비밀번호로 열리지 않아요. 바뀐 비밀번호를 입력하세요.'
+        : '비밀번호가 걸린 파일이에요. 비밀번호를 입력하세요.\n(한 번 입력하면 이 브라우저에 기억돼서 다음부턴 바로 열려요)');
+      if (!pw) return null;
+      out = await _csDecrypt(buf, pw);
+      if (!out) {
+        alert('비밀번호가 맞지 않아요.\n비밀번호가 바뀌었다면 엑셀에서 파일을 열어 암호를 해제하고 저장한 뒤 다시 올려주세요.');
+        return null;
+      }
+      try { localStorage.setItem(_CS_PW_KEY, pw); } catch(e) {}
+    }
+    buf = out;
+  }
+  const wb = XLSX.read(buf, { type: 'array', cellDates: true });
+  return XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { defval: '' });
+}
+
+function _csIsEncrypted(buf) {
+  if (!(buf[0] === 0xD0 && buf[1] === 0xCF && buf[2] === 0x11 && buf[3] === 0xE0)) return false; // CFB 컨테이너 아님 = 일반 xlsx
+  try { return !!XLSX.CFB.find(XLSX.CFB.read(buf, { type: 'array' }), 'EncryptionInfo'); } catch(e) { return false; }
+}
+
+// ECMA-376 Agile 암호화 해제 — 비밀번호가 틀리면 null
+async function _csDecrypt(buf, password) {
+  const cfb = XLSX.CFB.read(buf, { type: 'array' });
+  const info = Uint8Array.from(XLSX.CFB.find(cfb, 'EncryptionInfo').content);
+  const pkg  = Uint8Array.from(XLSX.CFB.find(cfb, 'EncryptedPackage').content);
+  if (info[0] !== 4 || info[2] !== 4) throw new Error('지원하지 않는 암호화 방식'); // Agile(4.4)만 지원
+
+  const doc = new DOMParser().parseFromString(new TextDecoder().decode(info.subarray(8)), 'application/xml');
+  const kd = doc.getElementsByTagNameNS('*', 'keyData')[0];
+  const ek = doc.getElementsByTagNameNS('*', 'encryptedKey')[0];
+  const b64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+  const alg = a => ({ SHA1:'SHA-1', SHA256:'SHA-256', SHA384:'SHA-384', SHA512:'SHA-512' })[a.replace('-', '')] || a;
+  const concat = (...arrs) => { const o = new Uint8Array(arrs.reduce((n,a)=>n+a.length,0)); let p = 0; arrs.forEach(a => { o.set(a,p); p += a.length; }); return o; };
+  const le32 = i => new Uint8Array(new Uint32Array([i]).buffer);
+  const digest = async (h, ...parts) => new Uint8Array(await crypto.subtle.digest(h, concat(...parts)));
+  // WebCrypto AES-CBC는 PKCS7 패딩을 강제 → 마지막에 '빈 패딩 블록'을 만들어 붙여서 무패딩 복호화
+  const aesDec = async (key, iv, data) => {
+    const k = await crypto.subtle.importKey('raw', key, 'AES-CBC', false, ['encrypt', 'decrypt']);
+    const pad = new Uint8Array(await crypto.subtle.encrypt({ name:'AES-CBC', iv: data.slice(-16) }, k, new Uint8Array(16).fill(16))).slice(0, 16);
+    return new Uint8Array(await crypto.subtle.decrypt({ name:'AES-CBC', iv }, k, concat(data, pad)));
+  };
+
+  // 비밀번호 → 키 (salt + 비밀번호 해시 후 spinCount회 반복)
+  const ekAlg = alg(ek.getAttribute('hashAlgorithm'));
+  const ekSalt = b64(ek.getAttribute('saltValue'));
+  const keyLen = +ek.getAttribute('keyBits') / 8;
+  const pwBytes = new Uint8Array(password.length * 2);
+  for (let i = 0; i < password.length; i++) { const c = password.charCodeAt(i); pwBytes[i*2] = c & 0xff; pwBytes[i*2+1] = c >> 8; }
+  let h = await digest(ekAlg, ekSalt, pwBytes);
+  const spin = +ek.getAttribute('spinCount');
+  for (let i = 0; i < spin; i++) h = await digest(ekAlg, le32(i), h);
+  const deriveKey = async blockKey => {
+    const d = await digest(ekAlg, h, new Uint8Array(blockKey));
+    const k = new Uint8Array(keyLen).fill(0x36); k.set(d.subarray(0, keyLen)); return k;
+  };
+
+  // 비밀번호 검증
+  const vIn  = (await aesDec(await deriveKey([0xfe,0xa7,0xd2,0x76,0x3b,0x4b,0x9e,0x79]), ekSalt, b64(ek.getAttribute('encryptedVerifierHashInput')))).subarray(0, +ek.getAttribute('saltSize'));
+  const vVal = await aesDec(await deriveKey([0xd7,0xaa,0x0f,0x6d,0x30,0x61,0x34,0x4e]), ekSalt, b64(ek.getAttribute('encryptedVerifierHashValue')));
+  const vHash = await digest(ekAlg, vIn);
+  if (vHash.some((b, i) => b !== vVal[i])) return null;
+
+  // 실제 파일 키로 본문(4096바이트 단위 세그먼트) 복호화
+  const secret = (await aesDec(await deriveKey([0x14,0x6e,0x0b,0xe7,0xab,0xac,0xd0,0xd6]), ekSalt, b64(ek.getAttribute('encryptedKeyValue')))).slice(0, keyLen);
+  const kdAlg = alg(kd.getAttribute('hashAlgorithm'));
+  const kdSalt = b64(kd.getAttribute('saltValue'));
+  const blockSize = +kd.getAttribute('blockSize');
+  const dv = new DataView(pkg.buffer, pkg.byteOffset, 8);
+  const size = dv.getUint32(0, true) + dv.getUint32(4, true) * 2**32;
+  const body = pkg.subarray(8);
+  const parts = [];
+  for (let off = 0, seg = 0; off < body.length; off += 4096, seg++) {
+    const iv = (await digest(kdAlg, kdSalt, le32(seg))).slice(0, blockSize);
+    parts.push(await aesDec(secret, iv, body.slice(off, Math.min(off + 4096, body.length))));
+  }
+  return concat(...parts).subarray(0, size);
+}
+
+// 2026-10월부터 바뀐 상담 이력 양식(수신목록) → 기존 양식 컬럼명으로 맞춰서 아래 집계 로직을 그대로 쓴다
+//   인입일시 → 날짜/시작시간, 통화 종료시간 → 종료시간, 그룹 → 핵심키워드, 통화 시간 → 통화시간
+//   상태 '자동응대(ARS)'는 기존 '안내(정보청취)'와 같은 의미 (_csIsInfoOnly에서 처리)
+function _csNormalizeRow(r) {
+  if (col(r, '날짜') || !col(r, '인입일시')) return r; // 기존 양식
+  const inAt = col(r, '인입일시');
+  let inTime = '';
+  if (inAt instanceof Date) inTime = `${pad2(inAt.getHours())}:${pad2(inAt.getMinutes())}:${pad2(inAt.getSeconds())}`;
+  else if (typeof inAt === 'number') { const s = Math.round((inAt % 1) * 86400); inTime = `${pad2(Math.floor(s/3600))}:${pad2(Math.floor(s%3600/60))}:${pad2(s%60)}`; }
+  else { const m = String(inAt).match(/\d{1,2}:\d{2}(?::\d{2})?/); inTime = m ? m[0] : ''; }
+  return {
+    ...r,
+    '날짜': inAt,
+    '시작시간': inTime,
+    '종료시간': col(r, '통화 종료시간'),
+    '핵심키워드': col(r, '핵심키워드') || col(r, '그룹'),
+    '통화시간': col(r, '통화 시간'),
+    _csNewFmt: true,
+  };
 }
 
 function resetCs() {
@@ -5831,6 +5955,9 @@ function _csRowDate(row) {
 }
 // 통화시간(초) = 종료시간 - 시작시간 (자정을 넘기면 하루를 더함)
 function _csDuration(row) {
+  // 신규 양식은 실제 통화시간 컬럼이 따로 있어 그걸 우선 사용 (연결된 콜만 값이 있음)
+  const talk = _csTimeToSec(col(row, '통화시간'));
+  if (talk != null) return talk;
   const s = _csTimeToSec(col(row, '시작시간'));
   const e = _csTimeToSec(col(row, '종료시간'));
   if (s == null || e == null) return null;
@@ -5846,7 +5973,7 @@ function _csFmtDur(sec) {
 // 상태값이 '안내(정보청취)' 등 — 상담원 연결 없이 안내멘트만 들은 콜인지 여부
 function _csIsInfoOnly(row) {
   const status = String(col(row, '상태')||'').replace(/\s/g, '');
-  return /안내\(?정보청취\)?/.test(status);
+  return /안내\(?정보청취\)?|자동응대/.test(status); // 신규 양식은 '자동응대(ARS)'
 }
 
 // 차트 안전 파괴 — canvas 재사용 충돌(Canvas is already in use) 방지
@@ -5967,7 +6094,7 @@ function renderCsDashboard() {
       <div style="width:38px; height:38px; border-radius:11px; background:${k.bg}; display:flex; align-items:center; justify-content:center; font-size:17px; flex-shrink:0;">${k.icon}</div>
       <div style="min-width:0;">
         <div style="font-size:10.5px; font-weight:600; color:#94a3b8; margin-bottom:3px; white-space:nowrap;">${k.label}</div>
-        <div style="font-size:17px; font-weight:800; color:#0f172a; line-height:1.25; white-space:nowrap;">${k.value}</div>
+        <div title="${_csEscAttr(k.value)}" style="font-size:17px; font-weight:800; color:#0f172a; line-height:1.25; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${k.value}</div>
         ${k.sub ? `<div style="font-size:11px; font-weight:600; color:${k.color}; white-space:nowrap;">${k.sub}</div>` : ''}
       </div>
     </div>

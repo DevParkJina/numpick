@@ -951,13 +951,13 @@
   <!-- ── 매체 정산: 매체 주문 다운로드 → 발송완료·전체취소 제외 → 브랜드 할인율로 판매수수료액 ── -->
   <div id="st-panel-media" style="display:none;">
     <div class="card" style="padding:20px 24px; margin-bottom:20px;">
-      <div style="font-size:15px; font-weight:700; color:#0f172a; margin-bottom:4px;">📡 매체 정산</div>
-      <div style="font-size:12px; color:#94a3b8; margin-bottom:16px;">발송완료만 · 전체취소 제외 · 주문일로 월 구분 · 판매수수료액 = 정상가 × 수량 × (브랜드할인율 − 운영대행 − PG − 고객할인) · 할인율·수수료 조건은 ②에 올린 지난달 거래상세내역에서 읽어요 · 정상가로 결제한 주문은 고객할인 없음</div>
+      <div style="font-size:15px; font-weight:700; color:#0f172a; margin-bottom:14px;">📡 매체 정산</div>
+      
       <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:12px;">
         <div ondragover="event.preventDefault();" ondrop="event.preventDefault(); const f=event.dataTransfer.files[0]; if(f) mdLoadOrders(f);" style="border:1px dashed #cbd5e1; border-radius:10px; padding:14px 16px; display:flex; align-items:center; justify-content:space-between; gap:10px;">
           <div style="min-width:0;">
             <div style="font-size:13px; font-weight:700; color:#0f172a;">① 매체 주문 다운로드</div>
-            <div id="md-file-info" style="font-size:12px; color:#94a3b8; margin-top:3px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">파일을 올려주세요 (예: 의전나라_자체답례주문 다운로드)</div>
+            <div id="md-file-info" style="font-size:12px; color:#94a3b8; margin-top:3px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">cs 딤 주문내역 파일을 올려주세요</div>
           </div>
           <input type="file" id="md-file" accept=".xlsx,.xls" style="display:none" onchange="mdLoadOrders(this.files[0]); this.value=''">
           <button onclick="document.getElementById('md-file').click()" style="padding:7px 14px; background:white; color:#334155; border:1px solid #e2e8f0; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:12px; font-weight:700; cursor:pointer; white-space:nowrap;">📂 업로드</button>
@@ -6048,6 +6048,9 @@ const _stOpen = new Set();   // 상품별 펼친 공급사
 
 async function stLoadPins(file) {
   if (!file) return;
+  return _withLoading('발송내역 불러오는 중…', () => _stLoadPins(file));
+}
+async function _stLoadPins(file) {
   try {
     const rows = await _csReadRows(file);
     if (!rows) return;
@@ -6073,6 +6076,9 @@ async function stLoadPins(file) {
 
 async function stLoadProds(file) {
   if (!file) return;
+  return _withLoading('상품목록 불러오는 중…', () => _stLoadProds(file));
+}
+async function _stLoadProds(file) {
   try {
     let rows;
     if (/\.csv$/i.test(file.name)) {
@@ -6298,6 +6304,25 @@ function stExport(i) {
   _regToast(`${fname} 다운로드 완료`);
 }
 
+// 엑셀 읽는 동안 '불러오는 중' 표시 — 큰 파일은 몇 초 걸려서 멈춘 것처럼 보이지 않게
+async function _withLoading(msg, fn) {
+  let el = document.getElementById('_loading');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = '_loading';
+    el.style.cssText = 'position:fixed; inset:0; z-index:9998; background:rgba(15,23,42,.25); display:flex; align-items:center; justify-content:center;';
+    el.innerHTML = `<style>@keyframes _spin{to{transform:rotate(360deg)}}</style>
+      <div style="background:white; border-radius:12px; padding:18px 26px; display:flex; align-items:center; gap:12px; box-shadow:0 10px 30px rgba(0,0,0,.15); font-size:14px; font-weight:600; color:#0f172a;">
+        <div style="width:20px; height:20px; border:3px solid #e2e8f0; border-top-color:#6366f1; border-radius:50%; animation:_spin .8s linear infinite;"></div>
+        <span id="_loading-msg"></span></div>`;
+    document.body.appendChild(el);
+  }
+  document.getElementById('_loading-msg').textContent = msg;
+  el.style.display = 'flex';
+  await new Promise(r => requestAnimationFrame(() => setTimeout(r, 30))); // 표시가 먼저 그려지게
+  try { return await fn(); } finally { el.style.display = 'none'; }
+}
+
 // ════════════════════════════════════════════════════
 //  정산 › 매체 정산 — 매체 주문 다운로드 + 매체별 브랜드 할인율
 //  1차: 발송완료만, 거래금액 = 취소금액(전체취소) 제외, 부분취소는 남김
@@ -6356,15 +6381,17 @@ function mdFillMedia(pick) {
   sel.style.display = names.length > 1 ? '' : 'none';
   const c = _mdCfgAll()[sel.value];
   document.getElementById('md-rate-info').innerHTML = c
-    ? `<strong style="color:#0f172a;">${_csEscAttr(sel.value)}</strong> · ` + (c.tables || [c.brands]).map((t, k) =>
-        (c.tables && c.tables.length > 1 ? (k ? `${((c.fees || [])[k] || {}).from || ''}~ ` : '~ ') : '') + Object.entries(t).map(([b, r]) => `${_csEscAttr(b)} ${r}%`).join(' · ')).join(' &nbsp;|&nbsp; ')
-    : '파일을 올려주세요 (예: 2610_모바일쿠폰 거래상세내역_9월_의전나라)';
+    ? `<strong style="color:#0f172a;">${_csEscAttr(sel.value)}</strong> 적용 중`
+    : '거래상세 파일을 올려주세요';
 }
 
 // 지난달 거래상세내역 엑셀의 Sheet2: '브랜드명' 칸 아래로 브랜드/할인율, 옆 칸 머리글이 매체 이름
 // 표가 여러 개면 왼쪽부터 수수료 조건 순서와 같음 (왼쪽 = 이전 조건, 오른쪽 = 바뀐 조건)
 async function mdImportRates(file) {
   if (!file) return;
+  return _withLoading('거래상세 불러오는 중…', () => _mdImportRates(file));
+}
+async function _mdImportRates(file) {
   try {
     const wb = XLSX.read(await file.arrayBuffer(), { type: 'array' });
     for (const sn of wb.SheetNames) {
@@ -6400,6 +6427,9 @@ async function mdImportRates(file) {
 
 async function mdLoadOrders(file) {
   if (!file) return;
+  return _withLoading('주문내역 불러오는 중…', () => _mdLoadOrders(file));
+}
+async function _mdLoadOrders(file) {
   try {
     const rows = await _csReadRows(file);
     if (!rows) return;

@@ -119,11 +119,15 @@
       </button>
       <button id="tab-register" onclick="switchTab('register')"
         style="padding:6px 16px; border-radius:8px; font-size:13px; font-weight:500; border:none; cursor:pointer; background:transparent; color:#64748b;">
-        📦 상품등록
+        📦 상품관리
       </button>
       <button id="tab-cs" onclick="switchTab('cs')"
         style="padding:6px 16px; border-radius:8px; font-size:13px; font-weight:500; border:none; cursor:pointer; background:transparent; color:#64748b;">
         ☎️ CS관리
+      </button>
+      <button id="tab-settle" onclick="switchTab('settle')"
+        style="padding:6px 16px; border-radius:8px; font-size:13px; font-weight:500; border:none; cursor:pointer; background:transparent; color:#64748b;">
+        💰 정산
       </button>
     </nav>
   </div>
@@ -411,13 +415,13 @@
 </div>
 
 <!-- ══════════════════════════════════════
-     PANEL: 상품등록
+     PANEL: 상품관리
 ══════════════════════════════════════ -->
 <div id="panel-register" class="tab-panel" style="display:none; max-width:1480px; margin:0 auto; padding:32px 36px;">
 
   <!-- 페이지 헤더 -->
   <div style="margin-bottom:28px;">
-    <div style="font-size:22px; font-weight:700; color:#0f172a; letter-spacing:-0.5px; margin-bottom:6px;">📦 상품등록</div>
+    <div style="font-size:22px; font-weight:700; color:#0f172a; letter-spacing:-0.5px; margin-bottom:6px;">📦 상품관리</div>
   </div>
 
   <!-- 서브탭 -->
@@ -924,6 +928,156 @@
     </div>
   </div>
 
+</div>
+
+<!-- ══════════════════════════════════════
+     PANEL: 정산
+══════════════════════════════════════ -->
+<div id="panel-settle" class="tab-panel" style="display:none; max-width:1400px; margin:0 auto; padding:28px 24px;">
+  <div style="font-size:22px; font-weight:700; color:#0f172a; letter-spacing:-0.5px; margin-bottom:20px;">💰 정산</div>
+
+  <!-- 서브탭 -->
+  <div style="display:flex; gap:4px; margin-bottom:24px; background:white; padding:4px; border-radius:12px; border:1px solid #e4e9f0; width:fit-content; box-shadow:0 1px 4px rgba(0,0,0,0.04);">
+    <button id="st-tab-sup" onclick="switchSettleTab('sup')"
+      style="padding:10px 24px; border-radius:9px; font-size:13px; font-weight:600; border:none; cursor:pointer; background:#6366f1; color:white; font-family:'Noto Sans KR',sans-serif; transition:all .15s;">
+      🏭 공급사 정산
+    </button>
+    <button id="st-tab-media" onclick="switchSettleTab('media')"
+      style="padding:10px 24px; border-radius:9px; font-size:13px; font-weight:600; border:none; cursor:pointer; background:transparent; color:#64748b; font-family:'Noto Sans KR',sans-serif; transition:all .15s;">
+      📡 매체 정산
+    </button>
+  </div>
+
+  <!-- ── 매체 정산: 매체 주문 다운로드 → 발송완료·전체취소 제외 → 브랜드 할인율로 판매수수료액 ── -->
+  <div id="st-panel-media" style="display:none;">
+    <div class="card" style="padding:20px 24px; margin-bottom:20px;">
+      <div style="font-size:15px; font-weight:700; color:#0f172a; margin-bottom:4px;">📡 매체 정산</div>
+      <div style="font-size:12px; color:#94a3b8; margin-bottom:16px;">발송완료만 · 전체취소 제외 · 주문일로 월 구분 · 판매수수료액 = 정상가 × 수량 × (브랜드할인율 − 운영대행 − PG − 고객할인) · 할인율·수수료 조건은 ②에 올린 지난달 거래상세내역에서 읽어요 · 정상가로 결제한 주문은 고객할인 없음</div>
+      <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:12px;">
+        <div ondragover="event.preventDefault();" ondrop="event.preventDefault(); const f=event.dataTransfer.files[0]; if(f) mdLoadOrders(f);" style="border:1px dashed #cbd5e1; border-radius:10px; padding:14px 16px; display:flex; align-items:center; justify-content:space-between; gap:10px;">
+          <div style="min-width:0;">
+            <div style="font-size:13px; font-weight:700; color:#0f172a;">① 매체 주문 다운로드</div>
+            <div id="md-file-info" style="font-size:12px; color:#94a3b8; margin-top:3px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">파일을 올려주세요 (예: 의전나라_자체답례주문 다운로드)</div>
+          </div>
+          <input type="file" id="md-file" accept=".xlsx,.xls" style="display:none" onchange="mdLoadOrders(this.files[0]); this.value=''">
+          <button onclick="document.getElementById('md-file').click()" style="padding:7px 14px; background:white; color:#334155; border:1px solid #e2e8f0; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:12px; font-weight:700; cursor:pointer; white-space:nowrap;">📂 업로드</button>
+        </div>
+        <div ondragover="event.preventDefault();" ondrop="event.preventDefault(); const f=event.dataTransfer.files[0]; if(f) mdImportRates(f);" style="border:1px dashed #cbd5e1; border-radius:10px; padding:14px 16px; display:flex; align-items:center; justify-content:space-between; gap:10px;">
+          <div style="min-width:0;">
+            <div style="font-size:13px; font-weight:700; color:#0f172a;">② 브랜드 할인율 (거래상세내역 Sheet2)</div>
+            <div style="display:flex; align-items:center; gap:8px; margin-top:4px;">
+              <select id="md-media" onchange="mdFillMedia(this.value); mdRender(true)" style="padding:4px 8px; border:1px solid #e2e8f0; border-radius:7px; font-family:'Noto Sans KR',sans-serif; font-size:12px;"></select>
+              <span id="md-rate-info" style="font-size:12px; color:#94a3b8; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"></span>
+            </div>
+          </div>
+          <input type="file" id="md-rate-file" accept=".xlsx,.xls" style="display:none" onchange="mdImportRates(this.files[0]); this.value=''">
+          <button onclick="document.getElementById('md-rate-file').click()" style="padding:7px 14px; background:white; color:#334155; border:1px solid #e2e8f0; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:12px; font-weight:700; cursor:pointer; white-space:nowrap;">📂 업로드</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="md-result" style="display:none;">
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:14px; flex-wrap:wrap;">
+        <span style="font-size:13px; font-weight:600; color:#334155;">정산월</span>
+        <select id="md-month" onchange="mdRender()" style="padding:7px 12px; border:1px solid #e2e8f0; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:13px;"></select>
+        <div style="flex:1;"></div>
+        <button onclick="mdMsg('jandi')" style="padding:8px 14px; background:white; color:#334155; border:1px solid #e2e8f0; border-radius:9px; font-family:'Noto Sans KR',sans-serif; font-size:12px; font-weight:600; cursor:pointer;">💬 잔디 공유 문구</button>
+        <button onclick="mdMsg('mail')" style="padding:8px 14px; background:white; color:#334155; border:1px solid #e2e8f0; border-radius:9px; font-family:'Noto Sans KR',sans-serif; font-size:12px; font-weight:600; cursor:pointer;">✉️ 메일 문구</button>
+        <button onclick="mdExport()" style="padding:8px 14px; background:white; color:#334155; border:1px solid #e2e8f0; border-radius:9px; font-family:'Noto Sans KR',sans-serif; font-size:12px; font-weight:600; cursor:pointer;">📥 검수용 엑셀</button>
+        <button onclick="mdExportDeliver()" style="padding:8px 18px; background:#0f172a; color:white; border:none; border-radius:9px; font-family:'Noto Sans KR',sans-serif; font-size:12px; font-weight:600; cursor:pointer;">📥 전달용 엑셀</button>
+      </div>
+      <div id="md-msg" class="card" style="display:none; padding:16px 20px; margin-bottom:16px;">
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+          <span id="md-msg-title" style="font-size:13px; font-weight:700; color:#0f172a;"></span>
+          <div style="flex:1;"></div>
+          <button onclick="navigator.clipboard.writeText(document.getElementById('md-msg-text').value).then(() => _regToast('복사했어요'))" style="padding:6px 14px; background:#0f172a; color:white; border:none; border-radius:8px; font-size:12px; font-weight:600; cursor:pointer;">📋 복사</button>
+          <button onclick="document.getElementById('md-msg').style.display='none'" style="padding:6px 10px; background:white; color:#64748b; border:1px solid #e2e8f0; border-radius:8px; font-size:12px; cursor:pointer;">닫기</button>
+        </div>
+        <div id="md-mail-cfg" style="display:none; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:8px; font-size:12px; color:#64748b;">
+          받는 분 <input id="md-mail-to" onchange="mdSaveMail()" placeholder="예: 홍길동 책임님" style="padding:5px 8px; border:1px solid #e2e8f0; border-radius:7px; font-size:12px; width:130px;">
+          보내는 분 <input id="md-mail-from" onchange="mdSaveMail()" placeholder="예: 홍길동" style="padding:5px 8px; border:1px solid #e2e8f0; border-radius:7px; font-size:12px; width:90px;">
+          세금계산서 메일 <input id="md-mail-tax" onchange="mdSaveMail()" placeholder="바뀌었을 때만" style="padding:5px 8px; border:1px solid #e2e8f0; border-radius:7px; font-size:12px; width:150px;">
+          <span style="color:#94a3b8;">이 브라우저에만 저장</span>
+        </div>
+        <textarea id="md-msg-text" rows="22" style="width:100%; box-sizing:border-box; padding:10px 12px; border:1px solid #e2e8f0; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:13px; line-height:1.6;"></textarea>
+      </div>
+      <div id="md-kpi" style="display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:12px; margin-bottom:16px;"></div>
+      <div id="md-warn" style="display:none; background:#f8fafc; border:1px solid #e2e8f0; color:#475569; border-radius:10px; padding:10px 14px; font-size:12px; margin-bottom:16px;"></div>
+      <div class="card" style="padding:16px 20px;">
+        <div style="overflow-x:auto;">
+          <table style="width:100%; border-collapse:collapse; font-size:13px;">
+            <thead>
+              <tr style="background:#f8fafc; border-bottom:2px solid #e2e8f0;">
+                <th style="padding:9px 12px; text-align:left; font-size:11px; color:#64748b;">브랜드</th>
+                <th style="padding:9px 12px; text-align:right; font-size:11px; color:#64748b;">브랜드할인율</th>
+                <th style="padding:9px 12px; text-align:right; font-size:11px; color:#64748b;">주문 건수</th>
+                <th style="padding:9px 12px; text-align:right; font-size:11px; color:#64748b;">수량</th>
+                <th style="padding:9px 12px; text-align:right; font-size:11px; color:#64748b;">매출액 (정상가)</th>
+                <th style="padding:9px 12px; text-align:right; font-size:11px; color:#4f46e5;">판매수수료액</th>
+              </tr>
+            </thead>
+            <tbody id="md-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 공급사 정산 ── -->
+  <div id="st-panel-sup">
+  <!-- 공급사 정산: 발송내역(pinList) 중 쿠폰상태 '사용' 건 · 사용일 월 기준 · 공급가 = 소비자가 × (1 + 공급수수료%) -->
+  <div class="card" style="padding:20px 24px; margin-bottom:20px;">
+    <div style="font-size:15px; font-weight:700; color:#0f172a; margin-bottom:4px;">🏭 공급사 정산</div>
+    <div style="font-size:12px; color:#94a3b8; margin-bottom:16px;">사용된 쿠폰만 · 사용한 날짜로 월 구분 · 재발송(같은 쿠폰번호)은 1건으로</div>
+    <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:12px;">
+      <div ondragover="event.preventDefault();" ondrop="event.preventDefault(); const f=event.dataTransfer.files[0]; if(f) stLoadPins(f);" style="border:1px dashed #cbd5e1; border-radius:10px; padding:14px 16px; display:flex; align-items:center; justify-content:space-between; gap:10px;">
+        <div style="min-width:0;">
+          <div style="font-size:13px; font-weight:700; color:#0f172a;">① 발송내역 (pinList)</div>
+          <div id="st-pin-info" style="font-size:12px; color:#94a3b8; margin-top:3px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">파일을 올려주세요</div>
+        </div>
+        <input type="file" id="st-pin-file" accept=".xlsx,.xls" style="display:none" onchange="stLoadPins(this.files[0]); this.value=''">
+        <button onclick="document.getElementById('st-pin-file').click()" style="padding:7px 14px; background:white; color:#334155; border:1px solid #e2e8f0; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:12px; font-weight:700; cursor:pointer; white-space:nowrap;">📂 업로드</button>
+      </div>
+      <div ondragover="event.preventDefault();" ondrop="event.preventDefault(); const f=event.dataTransfer.files[0]; if(f) stLoadProds(f);" style="border:1px dashed #cbd5e1; border-radius:10px; padding:14px 16px; display:flex; align-items:center; justify-content:space-between; gap:10px;">
+        <div style="min-width:0;">
+          <div style="font-size:13px; font-weight:700; color:#0f172a;">② 상품목록 (공급수수료)</div>
+          <div id="st-prod-info" style="font-size:12px; color:#94a3b8; margin-top:3px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">파일을 올려주세요</div>
+        </div>
+        <input type="file" id="st-prod-file" accept=".csv,.xlsx,.xls" style="display:none" onchange="stLoadProds(this.files[0]); this.value=''">
+        <button onclick="document.getElementById('st-prod-file').click()" style="padding:7px 14px; background:white; color:#334155; border:1px solid #e2e8f0; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:12px; font-weight:700; cursor:pointer; white-space:nowrap;">📂 업로드</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="st-result" style="display:none;">
+    <div style="display:flex; align-items:center; gap:10px; margin-bottom:14px; flex-wrap:wrap;">
+      <span style="font-size:13px; font-weight:600; color:#334155;">정산월</span>
+      <select id="st-month" onchange="stRender()" style="padding:7px 12px; border:1px solid #e2e8f0; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:13px;"></select>
+      <div style="flex:1;"></div>
+      <button onclick="stExport()" style="padding:8px 18px; background:#0f172a; color:white; border:none; border-radius:9px; font-family:'Noto Sans KR',sans-serif; font-size:12px; font-weight:600; cursor:pointer;">📥 정산서 엑셀 (전체)</button>
+    </div>
+    <div id="st-kpi" style="display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:12px; margin-bottom:16px;"></div>
+    <div id="st-unmatched" style="display:none; background:#f8fafc; border:1px solid #e2e8f0; color:#475569; border-radius:10px; padding:10px 14px; font-size:12px; margin-bottom:16px;"></div>
+    <div class="card" style="padding:16px 20px;">
+      <div style="overflow-x:auto;">
+        <table style="width:100%; border-collapse:collapse; font-size:13px;">
+          <thead>
+            <tr style="background:#f8fafc; border-bottom:2px solid #e2e8f0;">
+              <th style="padding:9px 12px; text-align:left; font-size:11px; color:#64748b;">공급사</th>
+              <th style="padding:9px 12px; text-align:right; font-size:11px; color:#64748b;">공급가</th>
+              <th style="padding:9px 12px; text-align:right; font-size:11px; color:#64748b;">사용 건수</th>
+              <th style="padding:9px 12px; text-align:right; font-size:11px; color:#64748b;">소비자가 합계</th>
+              <th style="padding:9px 12px; text-align:right; font-size:11px; color:#64748b;">정산금액 (수수료 기준)</th>
+              <th style="padding:9px 12px; text-align:right; font-size:11px; color:#4f46e5;">정산금액 (상품 기준)</th>
+              <th style="padding:9px 12px; text-align:center; font-size:11px; color:#64748b;">정산서</th>
+            </tr>
+          </thead>
+          <tbody id="st-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  </div>
 </div>
 
 <!-- ══════════════════════════════════════
@@ -1446,7 +1600,7 @@ function switchTab(tab) {
   document.querySelectorAll('.tab-panel').forEach(p => p.style.display = 'none');
   document.getElementById('panel-' + tab).style.display = 'block';
 
-  ['sales','products','media','trend','register','cs'].forEach(t => {
+  ['sales','products','media','trend','register','cs','settle'].forEach(t => {
     const btn = document.getElementById('tab-' + t);
     if (!btn) return;
     if (t === tab) {
@@ -5876,6 +6030,642 @@ function _regToast(msg, err) {
   t.style.opacity = '1'; t.style.transform = 'translateY(0)';
   clearTimeout(t._t); t._t = setTimeout(() => { t.style.opacity='0'; t.style.transform='translateY(20px)'; }, 2500);
 }
+
+function switchSettleTab(t) {
+  document.getElementById('st-panel-sup').style.display   = t === 'sup'   ? 'block' : 'none';
+  document.getElementById('st-panel-media').style.display = t === 'media' ? 'block' : 'none';
+  const on  = "padding:10px 24px; border-radius:9px; font-size:13px; font-weight:600; border:none; cursor:pointer; background:#6366f1; color:white; font-family:'Noto Sans KR',sans-serif; transition:all .15s;";
+  const off = "padding:10px 24px; border-radius:9px; font-size:13px; font-weight:600; border:none; cursor:pointer; background:transparent; color:#64748b; font-family:'Noto Sans KR',sans-serif; transition:all .15s;";
+  document.getElementById('st-tab-sup').style.cssText   = t === 'sup'   ? on : off;
+  document.getElementById('st-tab-media').style.cssText = t === 'media' ? on : off;
+}
+
+// ── 정산: 공급사 정산 (발송내역 중 쿠폰상태 '사용' 건을 사용일 월로 묶고, 상품목록의 공급수수료로 공급가 산출)
+let _stPins = null;          // 발송내역 행 (재발송 중복 제거 후)
+let _stDup = 0;              // 제거된 재발송 중복 건수
+let _stProds = null;         // 공급사상품코드 → { 공급사, 수수료 }
+const _stOpen = new Set();   // 상품별 펼친 공급사
+
+async function stLoadPins(file) {
+  if (!file) return;
+  try {
+    const rows = await _csReadRows(file);
+    if (!rows) return;
+    if (!rows.length || !Object.keys(rows[0]).some(k => k.trim() === '쿠폰상태'))
+      return _regToast('쿠폰상태 컬럼이 없어요. 발송내역(pinList) 파일인지 확인해 주세요', 1);
+    // 재발송 제외: 같은 쿠폰번호(핀번호)는 1건만 (사용 건이 있으면 그걸 남김)
+    const uniq = new Map(), noKey = [];
+    rows.forEach(r => {
+      const k = String(col(r, '쿠폰번호') || '').trim();
+      if (!k) return noKey.push(r);
+      const prev = uniq.get(k);
+      if (!prev || (!_stIsUsed(prev) && _stIsUsed(r))) uniq.set(k, r);
+    });
+    _stPins = [...uniq.values(), ...noKey];
+    _stDup = rows.length - _stPins.length;
+    _stOpen.clear();
+    const used = _stPins.filter(_stIsUsed).length;
+    document.getElementById('st-pin-info').innerHTML = `<strong style="color:#0f172a;">${_csEscAttr(file.name)}</strong> · ${_stPins.length.toLocaleString()}건 (사용 ${used.toLocaleString()}건)`
+      + (_stDup ? ` · <span style="color:#475569;">재발송 중복 ${_stDup.toLocaleString()}건 제외</span>` : '');
+    stRender(true);
+  } catch (err) { _regToast('발송내역 읽기 오류: ' + err.message, 1); }
+}
+
+async function stLoadProds(file) {
+  if (!file) return;
+  try {
+    let rows;
+    if (/\.csv$/i.test(file.name)) {
+      // 어드민 CSV는 UTF-8(BOM) — 깨지면 EUC-KR로 재시도
+      const buf = await file.arrayBuffer();
+      let text;
+      try { text = new TextDecoder('utf-8', { fatal: true }).decode(buf); }
+      catch { text = new TextDecoder('euc-kr').decode(buf); }
+      const wb = XLSX.read(text.replace(/^﻿/, ''), { type: 'string', raw: true });
+      rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { defval: '', raw: false });
+    } else {
+      rows = await _csReadRows(file);
+      if (!rows) return;
+    }
+    // 발송내역 상품코드(IU…/CN… 내부코드)는 GoodsList의 '상품코드'와 매칭, 옛 상품목록 CSV는 '공급사상품코드'로 대체
+    const map = new Map();
+    const put = (k, v) => { if (k && !map.has(k)) map.set(k, v); };
+    rows.forEach(r => {
+      const v = {
+        공급사: String(col(r, '공급사') || '').trim(),
+        수수료: Math.round(_parsePrice(col(r, '공급수수료')) * 1e4) / 1e4, // -2.4가 -2.40000009로 저장돼 있어 반올림
+        소비자가: _parsePrice(col(r, '소비자가')),
+        공급가: _parsePrice(col(r, '공급가')),
+      };
+      put(String(col(r, '상품코드') || '').trim(), v);
+      const sc = String(col(r, '공급사상품코드') || '').trim().replace(/^'/, '');
+      put(sc, v);
+      put(sc.replace(/^0+/, ''), v); // 숫자 셀로 저장돼 앞자리 0이 빠진 코드도 매칭
+    });
+    if (!map.size) return _regToast('상품코드 컬럼을 찾지 못했어요. 상품목록(GoodsList) 파일인지 확인해 주세요', 1);
+    _stProds = map;
+    document.getElementById('st-prod-info').innerHTML = `<strong style="color:#0f172a;">${_csEscAttr(file.name)}</strong> · ${rows.length.toLocaleString()}행`;
+    stRender();
+  } catch (err) { _regToast('상품목록 읽기 오류: ' + err.message, 1); }
+}
+
+function _stIsUsed(r) { return String(col(r, '쿠폰상태') || '').trim() === '사용'; }
+
+function _stMonth(v) {
+  if (v instanceof Date) return isNaN(v) ? '' : `${v.getFullYear()}-${String(v.getMonth() + 1).padStart(2, '0')}`;
+  const s = String(v || '').trim();
+  let m = s.match(/^(\d{4})\D?(\d{1,2})/);
+  if (m) return `${m[1]}-${m[2].padStart(2, '0')}`;
+  m = s.match(/^(\d{1,2})\/\d{1,2}\/(\d{2,4})/);
+  if (m) return `${m[2].length === 2 ? '20' + m[2] : m[2]}-${m[1].padStart(2, '0')}`;
+  return '';
+}
+
+function _stDateText(v) {
+  if (!(v instanceof Date)) return String(v || '');
+  const p = n => String(n).padStart(2, '0');
+  return `${v.getFullYear()}-${p(v.getMonth() + 1)}-${p(v.getDate())} ${p(v.getHours())}:${p(v.getMinutes())}:${p(v.getSeconds())}`;
+}
+
+// 선택한 정산월의 사용 건 → 공급사별 집계
+function _stCompute(month) {
+  const sups = new Map(), unmatched = new Map(), diffs = new Map();
+  _stPins.forEach(r => {
+    if (!_stIsUsed(r) || _stMonth(col(r, '사용일')) !== month) return;
+    const code = String(col(r, '상품코드') || '').trim();
+    const name = String(col(r, '상품명') || '').trim();
+    const p = _stProds && (_stProds.get(code) || _stProds.get(code.replace(/^0+/, '')));
+    if (!p) {
+      const u = unmatched.get(code) || { code, name, cnt: 0 };
+      u.cnt++; unmatched.set(code, u);
+      return;
+    }
+    // 정산은 등록된 공급가 그대로 — 소비자가(할인 상품은 할인가) × (1 + 수수료%) 버림과 안 맞으면 등록 오류일 수 있어 '수정 필요'로 표시
+    const list = p.소비자가 || _parsePrice(col(r, '정상가'));
+    const calc = Math.floor(list * (1 + p.수수료 / 100) + 1e-6);
+    const unit = p.공급가 || calc; // 정산금액 = 우리 DB 등록 공급가, camt = 수수료 기준
+    const bad = !!p.공급가 && p.공급가 !== calc;
+    if (bad) {
+      const d = diffs.get(code) || { code, name, list, fee: p.수수료, calc, goods: p.공급가, cnt: 0 };
+      d.cnt++; diffs.set(code, d);
+    }
+    const supName = p.공급사 || '(공급사 없음)';
+    let s = sups.get(supName);
+    if (!s) sups.set(supName, s = { name: supName, cnt: 0, list: 0, amt: 0, camt: 0, prods: new Map(), rows: [] });
+    s.cnt++; s.list += list; s.amt += unit; s.camt += calc;
+    const key = code + '|' + list;
+    const pr = s.prods.get(key) || { code, name, list, fee: p.수수료, unit, calc, bad, cnt: 0, amt: 0, camt: 0 };
+    pr.cnt++; pr.amt += unit; pr.camt += calc; s.prods.set(key, pr);
+    s.rows.push([supName, String(col(r, '거래번호') || ''), String(col(r, '주문번호') || ''), code, name,
+      String(col(r, '쿠폰번호') || ''), _stDateText(col(r, '사용일')), list, p.수수료, calc, unit, bad ? '공급가 확인' : '']);
+  });
+  return { sups: [...sups.values()].sort((a, b) => b.amt - a.amt), unmatched: [...unmatched.values()], diffs: [...diffs.values()] };
+}
+
+function stRender(resetMonth) {
+  if (!_stPins) return;
+  const sel = document.getElementById('st-month');
+  const months = [...new Set(_stPins.filter(_stIsUsed).map(r => _stMonth(col(r, '사용일'))).filter(Boolean))].sort().reverse();
+  const keep = !resetMonth && months.includes(sel.value) ? sel.value : months[0];
+  sel.innerHTML = months.map(m => `<option value="${m}">${m.replace('-', '년 ')}월</option>`).join('');
+  if (keep) sel.value = keep;
+  document.getElementById('st-result').style.display = 'block';
+
+  const kpi = document.getElementById('st-kpi'), tbody = document.getElementById('st-tbody'), um = document.getElementById('st-unmatched');
+  if (!months.length) {
+    kpi.innerHTML = ''; tbody.innerHTML = ''; um.style.display = 'none';
+    tbody.innerHTML = `<tr><td colspan="7" style="padding:30px; text-align:center; color:#94a3b8;">쿠폰상태가 '사용'인 건이 없어요</td></tr>`;
+    return;
+  }
+  if (!_stProds) {
+    kpi.innerHTML = ''; um.style.display = 'none';
+    tbody.innerHTML = `<tr><td colspan="7" style="padding:30px; text-align:center; color:#94a3b8;">② 상품목록을 올리면 공급사별 정산금액이 계산돼요</td></tr>`;
+    return;
+  }
+
+  const { sups, unmatched, diffs } = _stCompute(sel.value);
+  const tot = sups.reduce((a, s) => ({ cnt: a.cnt + s.cnt, list: a.list + s.list, amt: a.amt + s.amt, camt: a.camt + s.camt }), { cnt: 0, list: 0, amt: 0, camt: 0 });
+  const unCnt = unmatched.reduce((n, u) => n + u.cnt, 0);
+  const tile = (label, val, color, hl) => `<div class="card" style="padding:14px 18px;${hl ? ' border:2px solid #6366f1;' : ''}"><div style="font-size:12px; color:#64748b; margin-bottom:6px;">${label}</div><div style="font-size:20px; font-weight:700; color:${color || '#0f172a'};">${val}</div></div>`;
+  kpi.innerHTML = tile('공급사', sups.length + '곳')
+    + tile('사용 건수', tot.cnt.toLocaleString() + '건')
+    + tile('정산금액 (수수료 기준)', tot.camt.toLocaleString() + '원')
+    + tile('정산금액 (상품 기준)', tot.amt.toLocaleString() + '원', '#4f46e5', true)
+    + (unCnt ? tile('상품목록에 없는 상품', unCnt.toLocaleString() + '건') : ''); // 있을 때만
+
+  const warn = [];
+  if (unmatched.length) warn.push(`상품목록에 없는 상품코드 ${unmatched.length}개 (${unCnt.toLocaleString()}건)는 정산금액에서 빠졌어요 — 최신 상품목록을 올려주세요<br>`
+    + `<span style="font-family:monospace; font-size:11px;">${unmatched.slice(0, 10).map(u => _csEscAttr(u.code) + ' ' + _csEscAttr(u.name) + ' (' + u.cnt + ')').join(' · ')}${unmatched.length > 10 ? ' …' : ''}</span>`);
+  if (diffs.length) {
+    // 차액(등록 공급가 − 수수료 계산) × 건수가 큰 순으로 표 정리, 기본은 접어둠
+    const rows = diffs.map(d => ({ ...d, gap: d.goods - d.calc })).sort((a, b) => Math.abs(b.gap * b.cnt) - Math.abs(a.gap * a.cnt));
+    const gapCnt = rows.reduce((n, d) => n + d.cnt, 0), gapAmt = rows.reduce((n, d) => n + d.gap * d.cnt, 0);
+    const sign = v => (v > 0 ? '+' : '') + v.toLocaleString();
+    const th = 'padding:6px 10px; font-size:11px; color:#64748b; white-space:nowrap; border-bottom:1px solid #e2e8f0;';
+    const td = 'padding:6px 10px; white-space:nowrap; border-bottom:1px solid #f1f5f9;';
+    warn.push(`<details${_stOpen.has('__diff') ? ' open' : ''} ontoggle="this.open ? _stOpen.add('__diff') : _stOpen.delete('__diff')">
+      <summary style="cursor:pointer; font-weight:600;">공급가 확인 <span style="font-weight:400; color:#94a3b8;">${rows.length}개 상품 · ${gapCnt.toLocaleString()}건 · ${sign(gapAmt)}원</span></summary>
+      <div style="overflow-x:auto; margin-top:10px; background:white; border-radius:8px;">
+        <table style="width:100%; border-collapse:collapse; font-size:12px; color:#334155;">
+          <thead><tr>
+            <th style="${th} text-align:left;">상품</th><th style="${th} text-align:right;">소비자가</th><th style="${th} text-align:right;">수수료</th>
+            <th style="${th} text-align:right;">맞는 공급가 (수수료 계산)</th><th style="${th} text-align:right;">등록한 공급가</th><th style="${th} text-align:right;">1건 차이</th>
+            <th style="${th} text-align:right;">건수</th><th style="${th} text-align:right;">총 차이</th>
+          </tr></thead>
+          <tbody>${rows.map(d => `<tr>
+            <td style="${td}"><span style="font-family:monospace; color:#94a3b8; font-size:11px;">${_csEscAttr(d.code)}</span> ${_csEscAttr(d.name)}</td>
+            <td style="${td} text-align:right;">${d.list.toLocaleString()}</td>
+            <td style="${td} text-align:right;">${d.fee}%</td>
+            <td style="${td} text-align:right;">${d.calc.toLocaleString()}</td>
+            <td style="${td} text-align:right; font-weight:700;">${d.goods.toLocaleString()}</td>
+            <td style="${td} text-align:right;">${sign(d.gap)}</td>
+            <td style="${td} text-align:right;">${d.cnt.toLocaleString()}</td>
+            <td style="${td} text-align:right; font-weight:600;">${sign(d.gap * d.cnt)}</td>
+          </tr>`).join('')}</tbody>
+        </table>
+      </div>
+    </details>`);
+  }
+  um.innerHTML = warn.join('<div style="height:8px;"></div>');
+  um.style.display = warn.length ? 'block' : 'none';
+
+  const btn = 'padding:5px 10px; border-radius:7px; font-family:\'Noto Sans KR\',sans-serif; font-size:11px; font-weight:600; cursor:pointer;';
+  tbody.innerHTML = sups.map((s, i) => {
+    const open = _stOpen.has(s.name);
+    // 수정 필요 상품은 위쪽 경고 표에서만 보여주고, 상품별 목록은 공급가·건수·금액만
+    const prods = open ? [...s.prods.values()].sort((a, b) => b.amt - a.amt).map(p => `
+      <tr style="background:#f8fafc; border-bottom:1px solid #f1f5f9; font-size:12px;">
+        <td style="padding:6px 12px 6px 32px; color:#475569;"><span style="font-family:monospace; color:#94a3b8;">${_csEscAttr(p.code)}</span> ${_csEscAttr(p.name)}</td>
+        <td style="padding:6px 12px; text-align:right; color:#475569;">${p.unit.toLocaleString()}</td>
+        <td style="padding:6px 12px; text-align:right; color:#475569;">${p.cnt.toLocaleString()}</td>
+        <td style="padding:6px 12px; text-align:right; color:#475569;">${(p.list * p.cnt).toLocaleString()}</td>
+        <td style="padding:6px 12px; text-align:right; color:#475569;">${p.camt.toLocaleString()}</td>
+        <td style="padding:6px 12px; text-align:right; color:#475569;">${p.amt.toLocaleString()}</td>
+        <td></td>
+      </tr>`).join('') : '';
+    return `<tr style="border-bottom:1px solid #f1f5f9;">
+      <td style="padding:9px 12px; font-weight:600;"><span onclick="stToggle(${i})" style="cursor:pointer; color:#64748b; font-size:11px; margin-right:6px;">${open ? '▼' : '▶'}</span><span onclick="stToggle(${i})" style="cursor:pointer;">${_csEscAttr(s.name)}</span> <span style="font-size:11px; color:#94a3b8; font-weight:400;">${s.prods.size}개 상품</span></td>
+      <td></td>
+      <td style="padding:9px 12px; text-align:right;">${s.cnt.toLocaleString()}</td>
+      <td style="padding:9px 12px; text-align:right;">${s.list.toLocaleString()}</td>
+      <td style="padding:9px 12px; text-align:right; font-weight:700;">${s.camt.toLocaleString()}</td>
+      <td style="padding:9px 12px; text-align:right; font-weight:700; color:#4f46e5;">${s.amt.toLocaleString()}</td>
+      <td style="padding:9px 12px; text-align:center;"><button onclick="stExport(${i})" style="${btn} background:white; color:#475569; border:1px solid #e2e8f0;">📥</button></td>
+    </tr>${prods}`;
+  }).join('') + `<tr style="border-top:2px solid #e2e8f0; font-weight:700;">
+      <td style="padding:10px 12px;">합계</td>
+      <td></td>
+      <td style="padding:10px 12px; text-align:right;">${tot.cnt.toLocaleString()}</td>
+      <td style="padding:10px 12px; text-align:right;">${tot.list.toLocaleString()}</td>
+      <td style="padding:10px 12px; text-align:right;">${tot.camt.toLocaleString()}</td>
+      <td style="padding:10px 12px; text-align:right; color:#4f46e5;">${tot.amt.toLocaleString()}</td>
+      <td></td>
+    </tr>`;
+  stRender._sups = sups;
+}
+
+function stToggle(i) {
+  const s = (stRender._sups || [])[i];
+  if (!s) return;
+  _stOpen.has(s.name) ? _stOpen.delete(s.name) : _stOpen.add(s.name);
+  stRender();
+}
+
+// 정산서 엑셀: 요약 / 상품별 / 건별 시트 (i가 있으면 그 공급사만)
+function stExport(i) {
+  if (!_stPins || !_stProds) return _regToast('발송내역과 상품목록을 모두 올려주세요', 1);
+  const month = document.getElementById('st-month').value;
+  let { sups, unmatched, diffs } = _stCompute(month);
+  if (i != null) { const name = (stRender._sups || [])[i]?.name; sups = sups.filter(s => s.name === name); unmatched = []; diffs = []; }
+  if (!sups.length) return _regToast('정산할 건이 없어요', 1);
+
+  const wb = XLSX.utils.book_new();
+  const add = (name, aoa, widths) => { const ws = XLSX.utils.aoa_to_sheet(aoa); ws['!cols'] = widths.map(w => ({ wch: w })); XLSX.utils.book_append_sheet(wb, ws, name); };
+  const tot = sups.reduce((a, s) => [a[0] + s.cnt, a[1] + s.list, a[2] + s.camt, a[3] + s.amt], [0, 0, 0, 0]);
+  add('요약', [['정산월', '공급사', '사용 건수', '소비자가 합계', '정산금액(수수료 기준)', '정산금액(상품 기준)'],
+    ...sups.map(s => [month, s.name, s.cnt, s.list, s.camt, s.amt]),
+    ...(sups.length > 1 ? [['', '합계', ...tot]] : [])], [10, 16, 10, 14, 14, 18]);
+  add('상품별', [['공급사', '상품코드', '상품명', '소비자가', '공급수수료(%)', '공급가(수수료 기준)', '공급가(상품 기준)', '사용 건수', '정산금액(수수료 기준)', '정산금액(상품 기준)', '확인'],
+    ...sups.flatMap(s => [...s.prods.values()].sort((a, b) => (b.bad - a.bad) || (b.amt - a.amt)).map(p => [s.name, p.code, p.name, p.list, p.fee, p.calc, p.unit, p.cnt, p.camt, p.amt, p.bad ? '공급가 확인' : '']))],
+    [12, 18, 40, 10, 12, 10, 16, 10, 14, 18, 10]);
+  add('건별', [['공급사', '거래번호', '주문번호', '상품코드', '상품명', '쿠폰번호', '사용일', '소비자가', '공급수수료(%)', '공급가(수수료 기준)', '공급가(상품 기준)', '확인'],
+    ...sups.flatMap(s => s.rows)], [12, 18, 18, 18, 40, 22, 20, 10, 12, 10, 16, 10]);
+  if (diffs.length) add('공급가 확인', [['상품코드', '상품명', '소비자가', '공급수수료(%)', '맞는 공급가(수수료 계산)', '등록한 공급가', '1건 차이', '사용 건수', '총 차이'], ...diffs.map(d => [d.code, d.name, d.list, d.fee, d.calc, d.goods, d.goods - d.calc, d.cnt, (d.goods - d.calc) * d.cnt]).sort((x, y) => Math.abs(y[8]) - Math.abs(x[8]))], [18, 40, 10, 12, 16, 18, 10, 10, 12]);
+  if (unmatched.length) add('미매칭', [['상품코드', '상품명', '사용 건수'], ...unmatched.map(u => [u.code, u.name, u.cnt])], [18, 40, 10]);
+
+  const fname = `공급사정산_${month}${i != null ? '_' + sups[0].name : ''}.xlsx`;
+  XLSX.writeFile(wb, fname);
+  _regToast(`${fname} 다운로드 완료`);
+}
+
+// ════════════════════════════════════════════════════
+//  정산 › 매체 정산 — 매체 주문 다운로드 + 매체별 브랜드 할인율
+//  1차: 발송완료만, 거래금액 = 취소금액(전체취소) 제외, 부분취소는 남김
+//  2차: 판매수수료액 = 정상가 × 수량 × (브랜드할인율 − 운영대행 − PG − 프론트할인)
+//       정상가 그대로 결제(거래금액 = 정상가 × 수량)한 주문은 프론트할인 없음 (할인분을 부분취소로 돌려준 건 포함)
+//  브랜드 할인율·수수료 조건은 거래처 조건이라 공개 저장소(코드)에 넣지 않음
+//  → 지난달 거래상세내역 엑셀에서 읽어 이 브라우저(localStorage)에만 저장
+// ════════════════════════════════════════════════════
+const MD_KEY = 'numpick_media_rates';
+// 수수료 조건(운영대행·PG·프론트할인)은 거래상세내역 Sheet1의 열 값에서 읽음 — 조건이 바뀐 달이면 여러 개, 시작일 순
+// 어느 조건인지는 실제 결제 할인율(판매가/정상가)로 판단 — 조건이 바뀐 날에도 이전 할인율로 산 주문은 이전 조건
+// 할인 없이 정상가로 산 주문만 주문일로 판단
+function _mdFeeIdx(fees, date, list, price) {
+  const disc = list ? Math.round((1 - price / list) * 100) : 0;
+  const k = fees.findIndex(f => f.front === disc);
+  if (k >= 0) return k;
+  const d = _stDateText(date).slice(0, 10);
+  return fees.reduce((idx, f, i) => (d >= f.from ? i : idx), 0);
+}
+function _mdPct(v) { const x = parseFloat(v) || 0; return Math.round((Math.abs(x) <= 1 ? x * 100 : x) * 100) / 100; } // 0.03 → 3
+
+// 거래상세내역 Sheet1: 운영대행수수료 · PG수수료 · 프론트할인율 · 주문일시 열 → 조건별 첫 주문일
+function _mdReadFees(wb) {
+  for (const sn of wb.SheetNames) {
+    const aoa = XLSX.utils.sheet_to_json(wb.Sheets[sn], { header: 1, defval: '' });
+    const h = aoa.findIndex(row => row.some(v => String(v).trim() === '프론트할인율'));
+    if (h < 0) continue;
+    const at = name => aoa[h].findIndex(v => String(v).trim() === name);
+    const io = at('운영대행수수료'), ip = at('PG수수료'), ifr = at('프론트할인율'), id = at('주문일시');
+    const map = new Map();
+    aoa.slice(h + 1).forEach(row => {
+      if (row[ifr] === '' || row[ifr] == null) return;
+      const f = { ops: _mdPct(row[io]), pg: _mdPct(row[ip]), front: _mdPct(row[ifr]) };
+      if (!f.front) return; // 정상가 결제 행(프론트 0)은 조건 판단에서 제외
+      const key = `${f.ops}|${f.pg}|${f.front}`, d = _stDateText(row[id]).slice(0, 10);
+      const cur = map.get(key);
+      if (!cur || (d && d < cur.from)) map.set(key, { ...f, from: d || (cur && cur.from) || '' });
+    });
+    const fees = [...map.values()].sort((x, y) => x.from.localeCompare(y.from));
+    if (fees.length) { fees[0].from = ''; return fees; }
+  }
+  return [];
+}
+let _mdRows = null, _mdFileName = '';
+
+function _mdCfgAll() { try { return JSON.parse(localStorage.getItem(MD_KEY)) || {}; } catch { return {}; } }
+function _mdCfgSave(all) { try { localStorage.setItem(MD_KEY, JSON.stringify(all)); } catch {} }
+function _mdNum(v) { return typeof v === 'number' ? v : _parsePrice(v); }
+
+function mdFillMedia(pick) {
+  const sel = document.getElementById('md-media');
+  const names = Object.keys(_mdCfgAll());
+  const cur = pick || sel.value;
+  sel.innerHTML = names.length ? names.map(n => `<option value="${_csEscAttr(n)}">${_csEscAttr(n)}</option>`).join('') : '<option value="">할인율 설정 필요</option>';
+  if (names.includes(cur)) sel.value = cur;
+  sel.style.display = names.length > 1 ? '' : 'none';
+  const c = _mdCfgAll()[sel.value];
+  document.getElementById('md-rate-info').innerHTML = c
+    ? `<strong style="color:#0f172a;">${_csEscAttr(sel.value)}</strong> · ` + (c.tables || [c.brands]).map((t, k) =>
+        (c.tables && c.tables.length > 1 ? (k ? `${((c.fees || [])[k] || {}).from || ''}~ ` : '~ ') : '') + Object.entries(t).map(([b, r]) => `${_csEscAttr(b)} ${r}%`).join(' · ')).join(' &nbsp;|&nbsp; ')
+    : '파일을 올려주세요 (예: 2610_모바일쿠폰 거래상세내역_9월_의전나라)';
+}
+
+// 지난달 거래상세내역 엑셀의 Sheet2: '브랜드명' 칸 아래로 브랜드/할인율, 옆 칸 머리글이 매체 이름
+// 표가 여러 개면 왼쪽부터 수수료 조건 순서와 같음 (왼쪽 = 이전 조건, 오른쪽 = 바뀐 조건)
+async function mdImportRates(file) {
+  if (!file) return;
+  try {
+    const wb = XLSX.read(await file.arrayBuffer(), { type: 'array' });
+    for (const sn of wb.SheetNames) {
+      const aoa = XLSX.utils.sheet_to_json(wb.Sheets[sn], { header: 1, defval: '' });
+      const tables = [];
+      let media = '';
+      aoa.forEach((row, r) => row.forEach((v, c) => {
+        if (String(v).trim() !== '브랜드명') return;
+        media = media || String(row[c + 1] || '').trim();
+        const brands = {};
+        for (let k = r + 1; k < aoa.length; k++) {
+          const b = String(aoa[k][c] || '').trim(), x = parseFloat(aoa[k][c + 1]);
+          if (!b) break;
+          if (!isNaN(x)) brands[b] = Math.round((x <= 1 ? x * 100 : x) * 100) / 100; // 0.17 → 17
+        }
+        if (Object.keys(brands).length) tables.push({ c, brands });
+      }));
+      if (!tables.length) continue;
+      tables.sort((x, y) => x.c - y.c);
+      const name = media || file.name.replace(/\.[^.]+$/, '');
+      const all = _mdCfgAll();
+      const fees = _mdReadFees(wb);
+      if (!fees.length) return _regToast('수수료 조건(운영대행수수료·PG수수료·프론트할인율 열)을 찾지 못했어요. Sheet1까지 있는 거래상세내역 파일을 올려주세요', 1);
+      all[name] = { brands: tables[0].brands, tables: tables.map(t => t.brands), fees };
+      _mdCfgSave(all); // 다음 달엔 다시 안 올려도 되게 이 브라우저에 기억
+      mdFillMedia(name);
+      _regToast(`${name} 브랜드 할인율 표 ${tables.length}개 적용`);
+      return mdRender(true);
+    }
+    _regToast("'브랜드명' 칸을 찾지 못했어요. Sheet2에 브랜드명 | 할인율 표가 있는 파일인지 확인해 주세요", 1);
+  } catch (err) { _regToast('엑셀 읽기 오류: ' + err.message, 1); }
+}
+
+async function mdLoadOrders(file) {
+  if (!file) return;
+  try {
+    const rows = await _csReadRows(file);
+    if (!rows) return;
+    const keys = rows.length ? Object.keys(rows[0]).map(k => k.trim()) : [];
+    if (!keys.includes('발송상태') || !keys.includes('교환처')) return _regToast('발송상태·교환처 컬럼이 없어요. 매체 주문 다운로드 파일인지 확인해 주세요', 1);
+    _mdRows = rows; _mdFileName = file.name;
+    // 파일 이름에 매체 이름이 있으면 자동 선택
+    const hit = Object.keys(_mdCfgAll()).find(n => file.name.includes(n));
+    if (hit) mdFillMedia(hit);
+    document.getElementById('md-file-info').innerHTML = `<strong style="color:#0f172a;">${_csEscAttr(file.name)}</strong> · ${rows.length.toLocaleString()}건`;
+    mdRender(true);
+  } catch (err) { _regToast('주문 파일 읽기 오류: ' + err.message, 1); }
+}
+
+function _mdCompute(month) {
+  const cfg = _mdCfgAll()[document.getElementById('md-media').value];
+  const st = { all: 0, notSent: 0, full: [], partial: [], noRate: new Map(), fees: new Set() };
+  const brands = new Map(), lines = [];
+  _mdRows.forEach(r => {
+    if (_stMonth(col(r, '주문일')) !== month) return;
+    st.all++;
+    if (String(col(r, '발송상태') || '').trim() !== '발송완료') { st.notSent++; return; }
+    const deal = _mdNum(col(r, '거래금액')), cancel = _mdNum(col(r, '취소금액'));
+    if (cancel && cancel === deal) { st.full.push(r); return; }
+    const brand = String(col(r, '교환처') || '').trim();
+    const list = _mdNum(col(r, '정상가')), price = _mdNum(col(r, '판매가'));
+    let qty = _mdNum(col(r, '수량'));
+    // 부분취소 두 종류
+    //  ① 할인을 못 받고 정상가로 결제 → 할인분만 돌려줌: 수량 그대로, 고객할인 0 (아래 front)
+    //  ② 진짜 부분취소(몇 개 취소): 취소금액 = 개수 × 1개 결제가 → 수량에서 뺌
+    //  둘 다 아니면 확인 필요로 표시
+    if (cancel) {
+      const refund = deal === list * qty && cancel < deal * 0.1;
+      const cutQty = !refund && price > 0 && cancel % price === 0 ? cancel / price : 0;
+      if (cutQty) qty -= cutQty;
+      st.partial.push({ r, kind: refund ? '할인분 환불' : cutQty ? `${cutQty}개 취소` : '확인 필요' });
+    }
+    const sales = list * qty;
+    const fk = cfg && cfg.fees ? _mdFeeIdx(cfg.fees, col(r, '주문일'), list, price) : 0, fc = cfg && cfg.fees && cfg.fees[fk];
+    const tables = cfg && (cfg.tables || [cfg.brands]);
+    const rate = tables && tables[Math.min(fk, tables.length - 1)][brand];
+    if (rate == null || !fc) { st.noRate.set(brand, (st.noRate.get(brand) || 0) + 1); return; }
+    st.fees.add(fc);
+    const front = deal === list * _mdNum(col(r, '수량')) ? 0 : fc.front; // 정상가 그대로 결제(할인분을 취소로 돌려준 것 포함) → 고객할인 칸은 0
+    const feeRate = rate - fc.ops - fc.pg - front;
+    const fee = sales * feeRate / 100;
+    const b = brands.get(brand) || { brand, rates: new Set(), cnt: 0, qty: 0, sales: 0, fee: 0 };
+    b.rates.add(rate); b.cnt++; b.qty += qty; b.sales += sales; b.fee += fee; brands.set(brand, b);
+    lines.push({ r, brand, list, qty, sales, rate, paid: deal - cancel, ops: fc.ops, pg: fc.pg, front, feeRate, fee });
+  });
+  return { cfg, st, brands: [...brands.values()].sort((a, b) => b.fee - a.fee), lines };
+}
+
+function mdRender(resetMonth) {
+  if (!_mdRows) return;
+  const sel = document.getElementById('md-month');
+  const months = [...new Set(_mdRows.map(r => _stMonth(col(r, '주문일'))).filter(Boolean))].sort().reverse();
+  const keep = !resetMonth && months.includes(sel.value) ? sel.value : (months[1] || months[0]); // 기본은 지난달(정산월)
+  sel.innerHTML = months.map(m => `<option value="${m}">${m.replace('-', '년 ')}월</option>`).join('');
+  if (keep) sel.value = keep;
+  document.getElementById('md-result').style.display = 'block';
+  const kpi = document.getElementById('md-kpi'), tbody = document.getElementById('md-tbody'), warnEl = document.getElementById('md-warn');
+  if (!_mdCfgAll()[document.getElementById('md-media').value]) {
+    kpi.innerHTML = ''; warnEl.style.display = 'none';
+    tbody.innerHTML = `<tr><td colspan="6" style="padding:30px; text-align:center; color:#94a3b8;">② 브랜드 할인율 파일(거래상세내역 Sheet2)을 올리면 계산돼요</td></tr>`;
+    return;
+  }
+  const { st, brands, lines } = _mdCompute(sel.value);
+  const tot = brands.reduce((a, b) => ({ cnt: a.cnt + b.cnt, qty: a.qty + b.qty, sales: a.sales + b.sales, fee: a.fee + b.fee }), { cnt: 0, qty: 0, sales: 0, fee: 0 });
+  const R = v => Math.round(v).toLocaleString();
+  const tile = (label, val, hl) => `<div class="card" style="padding:14px 18px;${hl ? ' border:2px solid #6366f1;' : ''}"><div style="font-size:12px; color:#64748b; margin-bottom:6px;">${label}</div><div style="font-size:20px; font-weight:700; color:${hl ? '#4f46e5' : '#0f172a'};">${val}</div></div>`;
+  kpi.innerHTML = tile('주문 건수', tot.cnt.toLocaleString() + '건')
+    + tile('매출액 (정상가)', R(tot.sales) + '원')
+    + tile('판매수수료액', R(tot.fee) + '원')
+    + tile('정산금액 (VAT 포함)', (Math.round(tot.fee) + _mdVat(tot.fee)).toLocaleString() + '원', true);
+
+  const warn = [];
+  warn.push(`<details${mdRender._open ? ' open' : ''} ontoggle="mdRender._open = this.open"><summary style="cursor:pointer; font-weight:600;">1차 정리 <span style="font-weight:400; color:#94a3b8;">전체 ${st.all.toLocaleString()}건 · 발송완료 아님 ${st.notSent}건 제외 · 전체취소 ${st.full.length}건 제외 · 부분취소 ${st.partial.length}건 포함</span></summary>`
+    + (st.full.length + st.partial.length ? `<div style="margin-top:8px; font-family:monospace; font-size:11px; line-height:1.7;">`
+      + st.full.map(r => `전체취소 · ${_csEscAttr(col(r, '주문번호') || '(번호 없음)')} · ${_csEscAttr(col(r, '교환처'))} · ${_mdNum(col(r, '거래금액')).toLocaleString()}원`).join('<br>')
+      + (st.full.length && st.partial.length ? '<br>' : '')
+      + st.partial.map(({ r, kind }) => `부분취소(${kind}) · ${_csEscAttr(col(r, '주문번호'))} · ${_csEscAttr(col(r, '교환처'))} · ${_mdNum(col(r, '수량'))}개 · 거래 ${_mdNum(col(r, '거래금액')).toLocaleString()}원 · 취소 ${_mdNum(col(r, '취소금액')).toLocaleString()}원`).join('<br>')
+      + `</div>` : '') + `</details>`);
+  if (st.noRate.size) warn.push(`할인율이 없는 브랜드는 빠졌어요 — Sheet2에 추가해서 다시 올려주세요: ${[...st.noRate].map(([b, n]) => `<strong>${_csEscAttr(b)}</strong> ${n}건`).join(' · ')}`);
+  warnEl.innerHTML = warn.join('<div style="height:8px;"></div>');
+  warnEl.style.display = 'block';
+
+  tbody.innerHTML = brands.map(b => `<tr style="border-bottom:1px solid #f1f5f9;">
+      <td style="padding:9px 12px; font-weight:600;">${_csEscAttr(b.brand)}</td>
+      <td style="padding:9px 12px; text-align:right;">${[...b.rates].sort((x, y) => x - y).join('% → ')}%</td>
+      <td style="padding:9px 12px; text-align:right;">${b.cnt.toLocaleString()}</td>
+      <td style="padding:9px 12px; text-align:right;">${b.qty.toLocaleString()}</td>
+      <td style="padding:9px 12px; text-align:right;">${R(b.sales)}</td>
+      <td style="padding:9px 12px; text-align:right; font-weight:700; color:#4f46e5;">${R(b.fee)}</td>
+    </tr>`).join('') + `<tr style="border-top:2px solid #e2e8f0; font-weight:700;">
+      <td style="padding:10px 12px;">합계</td><td></td>
+      <td style="padding:10px 12px; text-align:right;">${tot.cnt.toLocaleString()}</td>
+      <td style="padding:10px 12px; text-align:right;">${tot.qty.toLocaleString()}</td>
+      <td style="padding:10px 12px; text-align:right;">${R(tot.sales)}</td>
+      <td style="padding:10px 12px; text-align:right; color:#4f46e5;">${R(tot.fee)}</td>
+    </tr><tr><td colspan="5" style="padding:6px 12px; text-align:right; font-size:12px; color:#64748b;">VAT 포함</td>
+      <td style="padding:6px 12px; text-align:right; font-weight:700; color:#4f46e5;">${(Math.round(tot.fee) + _mdVat(tot.fee)).toLocaleString()}</td></tr>`;
+}
+
+// 거래상세내역 엑셀: 기존 수기 시트(Sheet1/Sheet2)와 같은 열 구성 + 제외 내역
+function mdExport() {
+  if (!_mdRows) return _regToast('매체 주문 파일을 올려주세요', 1);
+  const media = document.getElementById('md-media').value, month = document.getElementById('md-month').value;
+  const { cfg, st, lines } = _mdCompute(month);
+  if (!cfg) return _regToast('할인율 설정이 필요해요', 1);
+  if (!lines.length) return _regToast('정산할 주문이 없어요', 1);
+  const wb = XLSX.utils.book_new();
+  const p = v => Math.round(v * 1e6) / 1e6;
+  const s1 = [['주문번호', '브랜드', '상품명', '정상가', '수량', '매출액(정상가)', '브랜드할인율', '고객결제액', '정상가결제확인', '운영대행수수료', 'PG수수료', '프론트할인율', '판매수수료율', '판매수수료액', '주문일시', '발송일시', '주문상태'],
+    ...lines.map(l => [String(col(l.r, '주문번호') || ''), l.brand, String(col(l.r, '상품명') || ''), l.list, l.qty, l.sales, p(l.rate / 100), l.paid,
+      l.front ? 'FALSE' : 'TRUE', p(l.ops / 100), p(l.pg / 100), p(l.front / 100), p(l.feeRate / 100), Math.round(l.fee * 100) / 100, // 행은 반올림 안 함 (합계와 맞추려고)
+      _stDateText(col(l.r, '주문일')), _stDateText(col(l.r, '발송일')), _mdNum(col(l.r, '취소금액')) ? '부분취소' : '완료'])];
+  const fee = lines.reduce((a, l) => a + l.fee, 0);
+  s1.push([], ['', '', '', '', '', '', '', '', '', '', '', '', '합계', Math.round(fee)], ['', '', '', '', '', '', '', '', '', '', '', '', 'VAT 포함', Math.round(fee * 1.1)]);
+  const ws1 = XLSX.utils.aoa_to_sheet(s1);
+  ws1['!cols'] = [18, 14, 44, 10, 6, 14, 10, 12, 10, 10, 10, 10, 10, 12, 20, 20, 10].map(w => ({ wch: w }));
+  XLSX.utils.book_append_sheet(wb, ws1, 'Sheet1');
+  const ws2 = XLSX.utils.aoa_to_sheet([['브랜드명', media], ...Object.entries(cfg.brands).map(([b, r]) => [b, p(r / 100)]), [],
+    ['적용 시작일', '운영대행수수료', 'PG수수료', '프론트할인율'], ...cfg.fees.map(f => [f.from || '처음부터', p(f.ops / 100), p(f.pg / 100), p(f.front / 100)])]);
+  ws2['!cols'] = [{ wch: 16 }, { wch: 10 }];
+  XLSX.utils.book_append_sheet(wb, ws2, 'Sheet2');
+  const ex = st.full.map(r => ['전체취소', r]);
+  if (ex.length) {
+    const ws3 = XLSX.utils.aoa_to_sheet([['구분', '주문번호', '브랜드', '상품명', '수량', '거래금액', '취소금액', '주문일'],
+      ...ex.map(([k, r]) => [k, String(col(r, '주문번호') || ''), col(r, '교환처'), col(r, '상품명'), _mdNum(col(r, '수량')), _mdNum(col(r, '거래금액')), _mdNum(col(r, '취소금액')), _stDateText(col(r, '주문일'))])]);
+    ws3['!cols'] = [10, 18, 14, 44, 6, 12, 12, 20].map(w => ({ wch: w }));
+    XLSX.utils.book_append_sheet(wb, ws3, '전체취소');
+  }
+  const fname = _mdFileBase(month, media) + '.xlsx';
+  XLSX.writeFile(wb, fname);
+  _regToast(`${fname} 다운로드 완료`);
+}
+
+// 정산은 다음 달에 나가서 파일 앞자리는 다음 달 (예: 9월분 → 2610_…_9월_의전나라)
+function _mdFileBase(month, media) {
+  const [y, m] = month.split('-').map(Number);
+  const next = new Date(y, m, 1);
+  return `${String(next.getFullYear()).slice(2)}${String(next.getMonth() + 1).padStart(2, '0')}_모바일쿠폰 거래상세내역_${m}월_${media}`;
+}
+
+let _excelJs = null;
+function _loadExcelJs() {
+  if (window.ExcelJS) return Promise.resolve();
+  return _excelJs || (_excelJs = new Promise((res, rej) => {
+    const s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js';
+    s.onload = res; s.onerror = () => { _excelJs = null; rej(new Error('ExcelJS 로드 실패')); };
+    document.head.appendChild(s);
+  }));
+}
+
+// 업체 전달용: 기존 '_전달용' 파일과 같은 12개 열 (운영대행·PG·프론트는 빼고 판매수수료율만), 판매수수료액 노란색, 합계 + VAT
+async function mdExportDeliver() {
+  if (!_mdRows) return _regToast('매체 주문 파일을 올려주세요', 1);
+  const media = document.getElementById('md-media').value, month = document.getElementById('md-month').value;
+  const { cfg, lines } = _mdCompute(month);
+  if (!cfg) return _regToast('브랜드 할인율 파일을 올려주세요', 1);
+  if (!lines.length) return _regToast('정산할 주문이 없어요', 1);
+  try { await _loadExcelJs(); } catch (e) { return _regToast(e.message + ' — 인터넷 연결을 확인해 주세요', 1); }
+  const wb = new ExcelJS.Workbook();
+  const ws = wb.addWorksheet('Sheet1', { views: [{ state: 'frozen', ySplit: 1 }] });
+  const yellow = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFF00' } };
+  const won = '_-* #,##0_-;\\-* #,##0_-;_-* "-"_-;_-@_-';
+  ws.columns = [16, 12, 40, 10, 6, 15, 11, 11, 13, 20, 20, 9].map(width => ({ width }));
+  ws.addRow(['주문번호', '브랜드', '상품명', '정상가', '수량', '매출액(정상가)', '브랜드할인율', '판매수수료율', '판매수수료액', '주문일시', '발송일시', '주문상태']);
+  ws.getCell('I1').fill = yellow;
+  lines.forEach((l, k) => {
+    const n = k + 2;
+    ws.addRow([String(col(l.r, '주문번호') || ''), l.brand, String(col(l.r, '상품명') || ''), l.list, l.qty,
+      { formula: `E${n}*D${n}`, result: l.sales }, l.rate / 100, Math.round(l.feeRate * 1e4) / 1e6,
+      Math.round(l.fee * 100) / 100, _stDateText(col(l.r, '주문일')), _stDateText(col(l.r, '발송일')), '완료']);
+    ws.getCell(`F${n}`).numFmt = won; ws.getCell(`G${n}`).numFmt = '0%'; ws.getCell(`H${n}`).numFmt = '0%';
+    const c = ws.getCell(`I${n}`); c.numFmt = won; c.fill = yellow;
+  });
+  const last = lines.length + 1, fee = lines.reduce((a, l) => a + l.fee, 0);
+  const sum = ws.getCell(`I${last + 1}`); sum.value = { formula: `SUM(I2:I${last})`, result: fee }; sum.numFmt = won; sum.fill = yellow;
+  const vat = ws.getCell(`I${last + 2}`); vat.value = { formula: `I${last + 1}*1.1`, result: fee * 1.1 }; vat.numFmt = won; vat.fill = yellow;
+  ws.getCell(`J${last + 2}`).value = 'vat';
+  const buf = await wb.xlsx.writeBuffer();
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }));
+  a.download = _mdFileBase(month, media) + '_전달용.xlsx';
+  a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  _regToast(`${a.download} 다운로드 완료`);
+}
+
+// 부가세는 원 단위 버림 (예: 13,787,793 → 1,378,779)
+function _mdVat(fee) { return Math.floor(Math.round(fee) * 0.1); }
+
+// 메일 받는 분·보내는 분·세금계산서 메일은 개인정보라 저장소에 안 넣고 이 브라우저에만 매체별로 기억
+const MD_MAIL_KEY = 'numpick_media_mail';
+function _mdMailCfg(media) { try { return (JSON.parse(localStorage.getItem(MD_MAIL_KEY)) || {})[media] || {}; } catch { return {}; } }
+function mdSaveMail() {
+  const media = document.getElementById('md-media').value;
+  let all = {}; try { all = JSON.parse(localStorage.getItem(MD_MAIL_KEY)) || {}; } catch {}
+  all[media] = { to: document.getElementById('md-mail-to').value.trim(), from: document.getElementById('md-mail-from').value.trim(), tax: document.getElementById('md-mail-tax').value.trim() };
+  try { localStorage.setItem(MD_MAIL_KEY, JSON.stringify(all)); } catch {}
+  mdMsg('mail');
+}
+
+// 잔디(내부 검수 공유) / 메일(업체 전달) 문구 — 지금 쓰는 양식 그대로, 복사해서 붙여넣기용
+function mdMsg(kind) {
+  if (!_mdRows) return _regToast('매체 주문 파일을 올려주세요', 1);
+  const media = document.getElementById('md-media').value, month = document.getElementById('md-month').value;
+  const { cfg, st, brands } = _mdCompute(month);
+  if (!cfg) return _regToast('브랜드 할인율 파일을 올려주세요', 1);
+  const m = Number(month.split('-')[1]);
+  const tot = brands.reduce((a, b) => ({ cnt: a.cnt + b.cnt, sales: a.sales + b.sales, fee: a.fee + b.fee }), { cnt: 0, sales: 0, fee: 0 });
+  const N = v => Math.round(v).toLocaleString();
+  const fee = Math.round(tot.fee), vat = _mdVat(fee);
+  // 수수료 산정 기준: 이 달에 조건이 바뀌었으면 날짜별로 두 줄
+  const used = cfg.fees.filter(f => st.fees.has(f));
+  const rule = f => `정가 × (브랜드 할인율 − 운영 수수료 ${f.ops}% − PG 수수료 ${f.pg}% − 고객 할인율 ${f.front}%)`;
+  const ruleLines = used.length <= 1 ? [rule(used[0] || cfg.fees[cfg.fees.length - 1])] : used.map((f, k) => {
+    if (k === 0) { const end = new Date(used[1].from); end.setDate(end.getDate() - 1); return `${_stDateText(end).slice(0, 10)} 까지 ${rule(f)}`; }
+    return `${f.from} 부터 ${rule(f)}`;
+  });
+  const shop = (_mdFileName.match(/_([^_]+?)주문/) || [])[1]; // 파일 이름 '…_의전나라_자체답례주문 다운로드' → 자체답례
+  let title, text;
+  const mail = document.getElementById('md-mail-cfg');
+  if (kind === 'jandi') {
+    title = '💬 잔디 공유 문구';
+    mail.style.display = 'none';
+    text = [`${shop ? shop + '몰_' : ''}${media} 정산`, '',
+      `[${String(m).padStart(2, '0')}월 정산 내역]`,
+      `- 주문 수: ${N(tot.cnt)}건`,
+      `- 매출액: ${N(tot.sales)} 원`,
+      `- 판매 수수료액: ${N(fee)} 원`,
+      '※ 수수료 산정 기준', ...ruleLines, '',
+      '▶ 최종 입금액',
+      `- 공급가액: ${N(fee)} 원`,
+      `- 부가세액: ${N(vat)} 원`,
+      `- 합계금액: ${N(fee + vat)} 원`].join('\n');
+  } else {
+    title = '✉️ 메일 문구';
+    const mc = _mdMailCfg(media);
+    mail.style.display = 'flex';
+    document.getElementById('md-mail-to').value = mc.to || '';
+    document.getElementById('md-mail-from').value = mc.from || '';
+    document.getElementById('md-mail-tax').value = mc.tax || '';
+    text = [`안녕하세요 ${mc.to || '○○○ 님'}`, `데브늄 ${mc.from || '○○○'} 입니다.`, '',
+      `${m}월 거래내역 및 정산내역 전달드립니다.`, '',
+      `[${m}월 정산 내역]`,
+      `- 주문 수: ${N(tot.cnt)} 건`,
+      `- 매출액: ${N(tot.sales)} 원 (정상가 기준입니다.)`,
+      `- 판매 수수료액: ${N(fee)} 원`,
+      '※ 수수료 산정 기준', ...ruleLines, '',
+      '판매 수수료액은 부가세 포함으로', '세금계산서 발행 부탁드립니다.',
+      `- 공급가액: ${N(fee)} 원`,
+      `- 부가세액: ${N(vat)} 원`,
+      `- 합계금액: ${N(fee + vat)} 원`, '',
+      ...(mc.tax ? ['세금계산서 발행 메일이 변경 되었습니다.', '아래 메일 주소로 전달 부탁드립니다.', `-${mc.tax}`, ''] : []),
+      '확인 부탁드립니다.', '', '감사합니다.', '', `-${mc.from || '○○○'} 드림`].join('\n');
+  }
+  document.getElementById('md-msg-title').textContent = title;
+  document.getElementById('md-msg-text').value = text;
+  document.getElementById('md-msg').style.display = 'block';
+}
+
+mdFillMedia();
+
 // 초기 상태
 // 모체코드 공급수수료는 매번 실제 값을 입력해야 하므로 기본값을 미리 채워두지 않는다 (빈 칸으로 시작 → 강조 테두리로 입력 유도)
 rpSetFee(-2);

@@ -34,8 +34,27 @@
     /* Consistent number display */
     .num { font-variant-numeric: tabular-nums; }
 
-    input[type="date"] { cursor: pointer; }
-    input[type="date"]::-webkit-calendar-picker-indicator { opacity: 0.4; }
+    /* 날짜 칸 — 기본 달력 아이콘 대신 같은 모양 아이콘, 누르면 아래 .dp-pop 달력 */
+    input[type="date"] { cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round'%3E%3Crect x='3' y='5' width='18' height='16' rx='2'/%3E%3Cpath d='M3 10h18M8 3v4M16 3v4'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; padding-right: 30px !important; }
+    input[type="date"]::-webkit-calendar-picker-indicator { display: none; }
+    .dp-pop { display:none; position:fixed; z-index:9999; width:300px; background:white; border:1px solid #e2e8f0; border-radius:16px; box-shadow:0 12px 32px rgba(15,23,42,0.14); padding:14px 16px 10px; font-family:'Noto Sans KR',sans-serif; }
+    .dp-title { font-size:12px; font-weight:600; color:#64748b; margin-bottom:8px; }
+    .dp-head { display:flex; align-items:center; justify-content:space-between; font-size:15px; font-weight:700; color:#0f172a; margin-bottom:10px; }
+    .dp-nav { width:28px; height:28px; border:none; background:transparent; border-radius:8px; font-size:18px; color:#64748b; cursor:pointer; }
+    .dp-nav:hover { background:#f1f5f9; }
+    .dp-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:4px 0; justify-items:center; }
+    .dp-week span { font-size:12px; color:#94a3b8; padding:4px 0 6px; }
+    .dp-week .sun, .dp-day.sun { color:#e11d48; }
+    .dp-week .sat, .dp-day.sat { color:#0284c7; }
+    .dp-day { width:34px; height:34px; border:1px solid transparent; border-radius:50%; background:transparent; font-size:14px; color:#334155; cursor:pointer; font-family:inherit; }
+    .dp-day:hover { background:#f1f5f9; }
+    .dp-day.today { border-color:#a5b4fc; }
+    .dp-day.start { background:#e0e7ff; color:#4338ca; font-weight:600; }
+    .dp-day.mid { background:#f5f7ff; }
+    .dp-day:disabled { color:#cbd5e1; cursor:default; background:transparent; }
+    .dp-day.sel { background:#4f46e5; border-color:#4f46e5; color:white; font-weight:600; }
+    .dp-foot { border-top:1px solid #f1f5f9; margin-top:10px; padding-top:8px; }
+    .dp-foot button { border:none; background:transparent; color:#4f46e5; font-size:12px; font-weight:600; cursor:pointer; padding:4px 2px; font-family:inherit; }
 
     /* Modal backdrop */
     .modal-wrap { backdrop-filter: blur(3px); }
@@ -7627,6 +7646,92 @@ function openCsDateModal(dateKey) {
 
   document.getElementById('modal').style.display = 'flex';
 }
+
+// ════════════════════════════════════════════════════
+//  날짜 고르기 달력 — 모든 input[type=date]에 공통 (브라우저 기본 달력 대신)
+//  일요일 빨강·토요일 파랑, 오늘은 보라 테두리, 고른 날은 보라 채움, 아래 '오늘'
+// ════════════════════════════════════════════════════
+const _dp = { el: null, input: null, y: 0, m: 0 };
+const _dpYmd = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+function _dpTitle(input) {
+  const id = input.id || '';
+  return /from|start/i.test(id) ? '시작일 고르기' : /to$|end/i.test(id) ? '종료일 고르기' : '날짜 고르기';
+}
+// 시작일 칸의 짝(종료일 칸) — 화면에 보일 때만
+function _dpPair(input) {
+  const id = input.id || '';
+  const cand = id === 'trend-start-date' ? 'trend-custom-end' : id.replace(/from$/, 'to').replace(/start$/, 'end');
+  const el = cand !== id && document.getElementById(cand);
+  return el && el.type === 'date' && el.offsetParent ? el : null;
+}
+function _dpStartOf(input) { // 종료일 칸이면 짝인 시작일 칸
+  return [...document.querySelectorAll('input[type="date"]')].find(el => el !== input && _dpPair(el) === input) || null;
+}
+function _dpOpen(input) {
+  if (!_dp.el) {
+    _dp.el = document.createElement('div');
+    _dp.el.className = 'dp-pop';
+    _dp.el.addEventListener('mousedown', e => e.preventDefault()); // 달력 누를 때 입력칸 포커스 유지
+    document.body.appendChild(_dp.el);
+  }
+  _dp.input = input;
+  const st = _dpStartOf(input); // 종료일이 비어 있으면 시작일 달부터 보여줌
+  const base = input.value || (st && st.value) || '';
+  const v = base ? new Date(base + 'T00:00:00') : new Date();
+  _dp.y = v.getFullYear(); _dp.m = v.getMonth();
+  _dpRender();
+  _dp.el.style.display = 'block';
+  const r = input.getBoundingClientRect(), w = _dp.el.offsetWidth, h = _dp.el.offsetHeight;
+  let left = Math.min(r.left, window.innerWidth - w - 8), top = r.bottom + 6;
+  if (top + h > window.innerHeight - 8) top = Math.max(8, r.top - h - 6); // 아래 자리가 없으면 위로
+  _dp.el.style.left = Math.max(8, left) + 'px';
+  _dp.el.style.top = top + 'px';
+}
+function _dpClose() { if (_dp.el) _dp.el.style.display = 'none'; _dp.input = null; }
+function _dpMove(n) { const d = new Date(_dp.y, _dp.m + n, 1); _dp.y = d.getFullYear(); _dp.m = d.getMonth(); _dpRender(); }
+function _dpPick(ymd) {
+  const input = _dp.input; if (!input) return;
+  input.value = ymd;
+  input.dispatchEvent(new Event('input', { bubbles: true }));
+  input.dispatchEvent(new Event('change', { bubbles: true }));
+  _dpClose();
+  const end = _dpPair(input); // 시작일을 골랐으면 종료일 달력을 바로 이어서 띄움
+  if (end) { if (end.value && end.value < ymd) end.value = ''; end.focus(); _dpOpen(end); }
+}
+function _dpRender() {
+  const { y, m } = _dp, today = _dpYmd(new Date()), sel = _dp.input ? _dp.input.value : '';
+  const st = _dp.input && _dpStartOf(_dp.input), start = st ? st.value : '';
+  const first = new Date(y, m, 1).getDay(), days = new Date(y, m + 1, 0).getDate();
+  let cells = '';
+  for (let i = 0; i < first; i++) cells += '<span></span>';
+  for (let d = 1; d <= days; d++) {
+    const ymd = `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`, dow = (first + d - 1) % 7;
+    const off = start && ymd < start;
+    const cls = ['dp-day', dow === 0 ? 'sun' : dow === 6 ? 'sat' : '', ymd === today ? 'today' : '', ymd === start ? 'start' : '',
+      start && sel && ymd > start && ymd < sel ? 'mid' : '', ymd === sel ? 'sel' : ''].join(' ');
+    cells += `<button type="button" class="${cls}" ${off ? 'disabled' : `onclick="_dpPick('${ymd}')"`}>${d}</button>`;
+  }
+  _dp.el.innerHTML = `
+    <div class="dp-title">${_dpTitle(_dp.input)}</div>
+    <div class="dp-head">
+      <button type="button" class="dp-nav" onclick="_dpMove(-1)">‹</button>
+      <span>${y}년 ${m + 1}월</span>
+      <button type="button" class="dp-nav" onclick="_dpMove(1)">›</button>
+    </div>
+    <div class="dp-grid dp-week"><span class="sun">일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span class="sat">토</span></div>
+    <div class="dp-grid">${cells}</div>
+    <div class="dp-foot"><button type="button" onclick="_dpPick('${today}')">오늘</button></div>`;
+}
+// 날짜 칸을 누르면 기본 달력 대신 이 달력 (나중에 생기는 칸도 포함)
+document.addEventListener('click', e => {
+  const input = e.target.closest && e.target.closest('input[type="date"]');
+  if (input) { e.preventDefault(); return _dp.input === input ? _dpClose() : _dpOpen(input); }
+  // 달력 안을 누른 경우는 닫지 않음 — 누르는 동안 달력이 다시 그려져도 알 수 있게 composedPath로 확인
+  if (_dp.el && !e.composedPath().includes(_dp.el)) _dpClose();
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') _dpClose(); });
+window.addEventListener('resize', _dpClose);
+window.addEventListener('scroll', _dpClose, true);
 </script>
 </body>
 </html>

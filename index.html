@@ -13,12 +13,17 @@
   <style>*,:after,:before{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgba(59,130,246,.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgba(59,130,246,.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }/*! tailwindcss v3.4.17 | MIT License | https://tailwindcss.com*/*,:after,:before{box-sizing:border-box;border:0 solid #e5e7eb}:after,:before{--tw-content:""}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;-o-tab-size:4;tab-size:4;font-family:ui-sans-serif,system-ui,sans-serif,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,Noto Color Emoji;font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,Liberation Mono,Courier New,monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0}fieldset,legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::-moz-placeholder,textarea::-moz-placeholder{opacity:1;color:#9ca3af}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}</style>
   <style>
     * { font-family: 'Noto Sans KR', 'Apple SD Gothic Neo', sans-serif; }
+    html { scrollbar-gutter: stable; } /* 스크롤바가 생겼다 없어져도 화면이 좌우로 밀리지 않게 */
     body { background: #eef1f7; min-height: 100vh; }
 
     /* Scrollbar */
     ::-webkit-scrollbar { width: 5px; height: 5px; }
     ::-webkit-scrollbar-track { background: #f1f5f9; }
     ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+
+    /* 잠금 버튼 — 모든 탭 같은 모양 */
+    .lock-btn { font-size:12px; font-weight:500; color:#94a3b8; background:transparent; border:1px solid #e2e8f0; border-radius:20px; padding:4px 12px; cursor:pointer; font-family:'Noto Sans KR',sans-serif; white-space:nowrap; }
+    .lock-btn.locked { background:#4f46e5; border-color:#4f46e5; color:white; }
 
     /* Upload drag state */
     .drag-over { border-color: #6366f1 !important; background-color: #eef2ff !important; }
@@ -136,85 +141,69 @@
 <!-- ══════════════════════════════════════
      PANEL: 판매 분석
 ══════════════════════════════════════ -->
-<div id="panel-sales" class="tab-panel" style="max-width:1280px; margin:0 auto; padding:28px 24px;">
+<div id="panel-sales" class="tab-panel" style="max-width:1400px; margin:0 auto; padding:28px 24px;">
 
   <!-- Upload -->
   <div id="sales-upload-wrap">
     <div id="sales-upload-area" onclick="document.getElementById('sales-file').click()"
-      style="border:2px dashed #a5b4fc; border-radius:16px; padding:80px 40px; text-align:center; background:white; cursor:pointer; transition:all 0.2s;">
-      <div style="font-size:44px; margin-bottom:14px;">📂</div>
-      <div style="font-size:16px; font-weight:600; color:#374151; margin-bottom:6px;">주문 엑셀 파일을 드래그하거나 클릭하세요</div>
-      <div style="font-size:13px; color:#94a3b8; font-weight:400;">주문번호 · 브랜드 · 상품명 · 거래금액 · 수량 · 매체명 · 주문일시 컬럼 포함 파일</div>
+      style="border:2px solid transparent; border-radius:16px; padding:80px 40px; text-align:center; background:white; box-shadow:0 1px 4px rgba(0,0,0,0.06); cursor:pointer; transition:all 0.2s;">
+      <div style="font-size:44px; margin-bottom:16px;">📊</div>
+      <div style="font-size:16px; font-weight:600; color:#374151; margin-bottom:8px;">주문내역 엑셀 파일을 드래그하거나 클릭하세요</div>
+      <div style="font-size:13px; color:#94a3b8;">주문번호 · 브랜드 · 상품명 · 거래금액 · 수량 · 매체명 · 주문일시 컬럼 포함 파일</div>
+      <button type="button" style="margin-top:20px; background:#4f46e5; color:white; border:none; border-radius:10px; padding:10px 24px; font-size:13px; font-weight:600; cursor:pointer; font-family:'Noto Sans KR',sans-serif;">파일 선택</button>
       <input type="file" id="sales-file" accept=".xlsx,.xls" style="display:none" onchange="handleSalesFile(event)">
     </div>
   </div>
 
-  <!-- Controls -->
-  <div id="sales-controls" style="display:none; margin-bottom:20px;">
-    <div class="card" style="padding:14px 20px; display:flex; flex-wrap:wrap; align-items:center; gap:20px;">
-
-      <div style="display:flex; align-items:center; gap:8px;">
-        <span style="font-size:12px; font-weight:500; color:#94a3b8;">조회기간</span>
-        <input type="date" id="date-from"
-          style="border:1px solid #e2e8f0; border-radius:8px; padding:6px 10px; font-size:13px; font-weight:400; color:#374151; outline:none;">
+  <!-- Controls — 1줄: 기간·조회 / 요약, 2줄: 그룹·정렬 / 엑셀·편집·초기화 (라벨 폭·높이 맞춤) -->
+  <div id="sales-controls" style="display:none; margin-bottom:16px;">
+    <div class="card" style="padding:16px 20px; display:flex; flex-direction:column; gap:12px;">
+      <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+        <span style="width:56px; flex-shrink:0; font-size:12px; font-weight:500; color:#64748b;">조회기간</span>
+        <input type="date" id="date-from" style="height:32px; box-sizing:border-box; border:1px solid #e2e8f0; border-radius:8px; padding:0 10px; font-size:13px; color:#374151; outline:none;">
         <span style="color:#cbd5e1; font-size:12px;">~</span>
-        <input type="date" id="date-to"
-          style="border:1px solid #e2e8f0; border-radius:8px; padding:6px 10px; font-size:13px; font-weight:400; color:#374151; outline:none;">
-        <button onclick="renderSalesDashboard()"
-          style="background:#4f46e5; color:white; border:none; border-radius:8px; padding:7px 16px; font-size:13px; font-weight:500; cursor:pointer;">
-          조회
-        </button>
+        <input type="date" id="date-to" style="height:32px; box-sizing:border-box; border:1px solid #e2e8f0; border-radius:8px; padding:0 10px; font-size:13px; color:#374151; outline:none;">
+        <button onclick="renderSalesDashboard()" style="height:32px; box-sizing:border-box; padding:0 14px; border-radius:8px; font-size:12px; font-weight:500; cursor:pointer; font-family:'Noto Sans KR',sans-serif; background:#4f46e5; color:white; border:none;">조회</button>
       </div>
-
-      <div style="display:flex; align-items:center; gap:8px;">
-        <span style="font-size:12px; font-weight:500; color:#94a3b8;">그룹기준</span>
+      <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+        <span style="width:56px; flex-shrink:0; font-size:12px; font-weight:500; color:#64748b;">그룹기준</span>
         <div style="display:flex; background:#f1f5f9; border-radius:8px; padding:3px; gap:2px;">
-          <button id="group-media" onclick="setGroupBy('media')" class="tog-btn on"
-            style="padding:4px 14px; border-radius:6px; font-size:12px; font-weight:500; border:none;">매체별</button>
-          <button id="group-brand" onclick="setGroupBy('brand')" class="tog-btn off"
-            style="padding:4px 14px; border-radius:6px; font-size:12px; font-weight:500; border:none; background:transparent;">브랜드별</button>
-          <button id="group-supplier" onclick="setGroupBy('supplier')" class="tog-btn off"
-            style="padding:4px 14px; border-radius:6px; font-size:12px; font-weight:500; border:none; background:transparent;">공급사별</button>
+          <button id="group-media" onclick="setGroupBy('media')" class="tog-btn on" style="height:26px; padding:0 14px; border-radius:6px; font-size:12px; font-weight:500; border:none;">매체별</button>
+          <button id="group-brand" onclick="setGroupBy('brand')" class="tog-btn off" style="height:26px; padding:0 14px; border-radius:6px; font-size:12px; font-weight:500; border:none; background:transparent;">브랜드별</button>
+          <button id="group-supplier" onclick="setGroupBy('supplier')" class="tog-btn off" style="height:26px; padding:0 14px; border-radius:6px; font-size:12px; font-weight:500; border:none; background:transparent;">공급사별</button>
         </div>
-      </div>
-
-      <div style="display:flex; align-items:center; gap:8px;">
-        <span style="font-size:12px; font-weight:500; color:#94a3b8;">정렬기준</span>
+        <span style="width:56px; flex-shrink:0; font-size:12px; font-weight:500; color:#64748b; margin-left:16px;">정렬기준</span>
         <div style="display:flex; background:#f1f5f9; border-radius:8px; padding:3px; gap:2px;">
-          <button id="sort-qty" onclick="setSortBy('qty')" class="tog-btn on"
-            style="padding:4px 14px; border-radius:6px; font-size:12px; font-weight:500; border:none;">수량순</button>
-          <button id="sort-amt" onclick="setSortBy('amt')" class="tog-btn off"
-            style="padding:4px 14px; border-radius:6px; font-size:12px; font-weight:500; border:none; background:transparent;">금액순</button>
-          <button id="sort-brand" onclick="setSortBy('brand')" class="tog-btn off"
-            style="padding:4px 14px; border-radius:6px; font-size:12px; font-weight:500; border:none; background:transparent;">브랜드별</button>
-          <button id="sort-product" onclick="setSortBy('product')" class="tog-btn off"
-            style="padding:4px 14px; border-radius:6px; font-size:12px; font-weight:500; border:none; background:transparent;">공급사별</button>
+          <button id="sort-qty" onclick="setSortBy('qty')" class="tog-btn on" style="height:26px; padding:0 14px; border-radius:6px; font-size:12px; font-weight:500; border:none;">수량순</button>
+          <button id="sort-amt" onclick="setSortBy('amt')" class="tog-btn off" style="height:26px; padding:0 14px; border-radius:6px; font-size:12px; font-weight:500; border:none; background:transparent;">금액순</button>
+          <button id="sort-brand" onclick="setSortBy('brand')" class="tog-btn off" style="height:26px; padding:0 14px; border-radius:6px; font-size:12px; font-weight:500; border:none; background:transparent;">브랜드별</button>
+          <button id="sort-product" onclick="setSortBy('product')" class="tog-btn off" style="height:26px; padding:0 14px; border-radius:6px; font-size:12px; font-weight:500; border:none; background:transparent;">공급사별</button>
         </div>
-      </div>
-
-      <div style="margin-left:auto; display:flex; align-items:center; gap:12px;">
-        <span id="sales-summary" style="font-size:12px; font-weight:400; color:#94a3b8;"></span>
-        <button onclick="exportSalesExcel()"
-          style="background:#475569; color:white; border:none; border-radius:8px; padding:6px 14px; font-size:12px; font-weight:500; cursor:pointer;">
-          엑셀저장
-        </button>
-        <button id="lock-btn-sales" onclick="toggleLock('sales')"
-          style="font-size:12px; color:#94a3b8; background:transparent; border:1px solid #e2e8f0; border-radius:20px; padding:4px 12px; cursor:pointer; font-family:'Noto Sans KR',sans-serif;">
-          🔓 편집
-        </button>
-        <button onclick="resetSales()"
-          style="font-size:12px; color:#94a3b8; background:none; border:none; cursor:pointer; font-weight:400;">초기화</button>
+        <div style="flex:1;"></div>
+        <button onclick="exportSalesExcel()" style="background:#475569; color:white; border:none; border-radius:8px; padding:6px 14px; font-size:12px; font-weight:500; cursor:pointer;">엑셀저장</button>
+        <button id="lock-btn-sales" class="lock-btn" onclick="toggleLock('sales')">🔓 편집</button>
+        <button onclick="resetSales()" style="font-size:12px; color:#94a3b8; background:none; border:none; cursor:pointer; font-weight:400;">초기화</button>
       </div>
     </div>
   </div>
 
-  <!-- Media filter chips -->
+  <!-- Media filter chips — 라벨 옆 칸 안에서 줄바꿈되게 -->
   <div id="sales-media-filter" style="display:none; margin-bottom:16px;">
-    <div class="card" style="padding:10px 16px; display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
-      <span style="font-size:11px; font-weight:500; color:#94a3b8; flex-shrink:0;">매체 선택</span>
-      <button id="media-chip-all" onclick="toggleMediaAll()"
-        style="padding:4px 12px; border-radius:20px; font-size:11px; font-weight:600; border:none; cursor:pointer; background:#4f46e5; color:white;">전체</button>
-      <div id="media-chips" style="display:flex; flex-wrap:wrap; gap:6px;"></div>
+    <!-- 검색 드롭다운 + 고른 매체 칩(앞 3개만, 나머지는 더보기) + 오른쪽 개수 -->
+    <div class="card" style="padding:12px 20px; display:flex; align-items:flex-start; gap:12px;">
+      <span style="width:56px; flex-shrink:0; font-size:12px; font-weight:500; color:#64748b; line-height:32px;">매체 선택</span>
+      <div id="media-search-wrap" style="position:relative; width:280px; flex-shrink:0;">
+        <div style="display:flex; align-items:center; height:32px; border:1px solid #e2e8f0; border-radius:8px; padding:0 10px; gap:6px; background:white;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+          <input id="media-search" placeholder="매체 검색 (매체명 입력)" autocomplete="off"
+            onfocus="openMediaDropdown()" oninput="renderMediaDropdown()"
+            style="flex:1; min-width:0; border:none; outline:none; font-size:13px; color:#374151; font-family:'Noto Sans KR',sans-serif; background:transparent;">
+          <svg onclick="toggleMediaDropdown()" style="cursor:pointer; flex-shrink:0;" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+        </div>
+        <div id="media-dropdown" style="display:none; position:absolute; top:36px; left:0; right:0; z-index:50; background:white; border:1px solid #e2e8f0; border-radius:8px; box-shadow:0 8px 24px rgba(15,23,42,0.10); max-height:280px; overflow-y:auto; padding:4px;"></div>
+      </div>
+      <div id="media-chips" style="flex:1; display:flex; flex-wrap:wrap; align-items:center; gap:6px; min-height:32px;"></div>
+      <span id="media-count" style="flex-shrink:0; height:26px; line-height:26px; margin-top:3px; padding:0 10px; border-radius:6px; background:#f1f5f9; font-size:12px; font-weight:500; color:#475569;"></span>
     </div>
   </div>
 
@@ -232,15 +221,16 @@
 <!-- ══════════════════════════════════════
      PANEL: 상품 현황
 ══════════════════════════════════════ -->
-<div id="panel-products" class="tab-panel" style="display:none; max-width:1280px; margin:0 auto; padding:28px 24px;">
+<div id="panel-products" class="tab-panel" style="display:none; max-width:1400px; margin:0 auto; padding:28px 24px;">
 
   <!-- Upload -->
   <div id="products-upload-wrap">
     <div id="products-upload-area" onclick="document.getElementById('products-file').click()"
-      style="border:2px dashed #6ee7b7; border-radius:16px; padding:80px 40px; text-align:center; background:white; cursor:pointer; transition:all 0.2s;">
-      <div style="font-size:44px; margin-bottom:14px;">📋</div>
-      <div style="font-size:16px; font-weight:600; color:#374151; margin-bottom:6px;">상품 목록 엑셀 파일을 드래그하거나 클릭하세요</div>
-      <div style="font-size:13px; color:#94a3b8; font-weight:400;">공급사상품코드 · 상품명 · 공급사 · 교환처 · 공급수수료 · 상품상태 · 판매타입 · 매체명 포함 파일</div>
+      style="border:2px solid transparent; border-radius:16px; padding:80px 40px; text-align:center; background:white; box-shadow:0 1px 4px rgba(0,0,0,0.06); cursor:pointer; transition:all 0.2s;">
+      <div style="font-size:44px; margin-bottom:16px;">📋</div>
+      <div style="font-size:16px; font-weight:600; color:#374151; margin-bottom:8px;">상품 목록 엑셀 파일을 드래그하거나 클릭하세요</div>
+      <div style="font-size:13px; color:#94a3b8;">공급사상품코드 · 상품명 · 공급사 · 교환처 · 공급수수료 · 상품상태 · 판매타입 · 매체명 포함 파일</div>
+      <button type="button" style="margin-top:20px; background:#4f46e5; color:white; border:none; border-radius:10px; padding:10px 24px; font-size:13px; font-weight:600; cursor:pointer; font-family:'Noto Sans KR',sans-serif;">파일 선택</button>
       <input type="file" id="products-file" accept=".xlsx,.xls" style="display:none" onchange="handleProductsFile(event)">
     </div>
   </div>
@@ -310,10 +300,7 @@
 
         <div style="margin-left:auto; display:flex; align-items:center; gap:12px;">
           <span id="products-summary" style="font-size:12px; font-weight:400; color:#94a3b8;"></span>
-          <button id="lock-btn-products" onclick="toggleLock('products')"
-            style="font-size:12px; color:#94a3b8; background:transparent; border:1px solid #e2e8f0; border-radius:20px; padding:4px 12px; cursor:pointer; font-family:'Noto Sans KR',sans-serif;">
-            🔓 편집
-          </button>
+          <button id="lock-btn-products" class="lock-btn" onclick="toggleLock('products')">🔓 편집</button>
           <button onclick="resetProducts()"
             style="font-size:12px; color:#94a3b8; background:none; border:none; cursor:pointer; font-weight:400;">초기화</button>
         </div>
@@ -328,15 +315,16 @@
 <!-- ══════════════════════════════════════
      PANEL: 매체 상품현황
 ══════════════════════════════════════ -->
-<div id="panel-media" class="tab-panel" style="display:none; max-width:1280px; margin:0 auto; padding:28px 24px;">
+<div id="panel-media" class="tab-panel" style="display:none; max-width:1400px; margin:0 auto; padding:28px 24px;">
 
   <!-- Upload -->
   <div id="media-upload-wrap">
     <div id="media-upload-area" onclick="document.getElementById('media-file').click()"
-      style="border:2px dashed #f9a8d4; border-radius:16px; padding:80px 40px; text-align:center; background:white; cursor:pointer; transition:all 0.2s;">
-      <div style="font-size:44px; margin-bottom:14px;">📺</div>
-      <div style="font-size:16px; font-weight:600; color:#374151; margin-bottom:6px;">매체 상품 엑셀 파일을 드래그하거나 클릭하세요</div>
-      <div style="font-size:13px; color:#94a3b8; font-weight:400;">상품코드 · 교환처 · 상품명 · 판매가 · 할인율 · 상품상태 · 매체노출 · 공급사 · 등록일 · 매체명 포함 파일</div>
+      style="border:2px solid transparent; border-radius:16px; padding:80px 40px; text-align:center; background:white; box-shadow:0 1px 4px rgba(0,0,0,0.06); cursor:pointer; transition:all 0.2s;">
+      <div style="font-size:44px; margin-bottom:16px;">📺</div>
+      <div style="font-size:16px; font-weight:600; color:#374151; margin-bottom:8px;">매체 상품 엑셀 파일을 드래그하거나 클릭하세요</div>
+      <div style="font-size:13px; color:#94a3b8;">상품코드 · 교환처 · 상품명 · 판매가 · 할인율 · 상품상태 · 매체노출 · 공급사 · 등록일 · 매체명 포함 파일</div>
+      <button type="button" style="margin-top:20px; background:#4f46e5; color:white; border:none; border-radius:10px; padding:10px 24px; font-size:13px; font-weight:600; cursor:pointer; font-family:'Noto Sans KR',sans-serif;">파일 선택</button>
       <input type="file" id="media-file" accept=".xlsx,.xls" style="display:none" onchange="handleMediaFile(event)">
     </div>
   </div>
@@ -381,10 +369,7 @@
 
         <div style="margin-left:auto; display:flex; align-items:center; gap:12px;">
           <span id="media-summary" style="font-size:12px; font-weight:400; color:#94a3b8;"></span>
-          <button id="lock-btn-media" onclick="toggleLock('media')"
-            style="font-size:12px; color:#94a3b8; background:transparent; border:1px solid #e2e8f0; border-radius:20px; padding:4px 12px; cursor:pointer; font-family:'Noto Sans KR',sans-serif;">
-            🔓 편집
-          </button>
+          <button id="lock-btn-media" class="lock-btn" onclick="toggleLock('media')">🔓 편집</button>
           <button onclick="resetMedia()"
             style="font-size:12px; color:#94a3b8; background:none; border:none; cursor:pointer; font-weight:400;">초기화</button>
         </div>
@@ -417,26 +402,21 @@
 <!-- ══════════════════════════════════════
      PANEL: 상품관리
 ══════════════════════════════════════ -->
-<div id="panel-register" class="tab-panel" style="display:none; max-width:1480px; margin:0 auto; padding:32px 36px;">
-
-  <!-- 페이지 헤더 -->
-  <div style="margin-bottom:28px;">
-    <div style="font-size:22px; font-weight:700; color:#0f172a; letter-spacing:-0.5px; margin-bottom:6px;">📦 상품관리</div>
-  </div>
+<div id="panel-register" class="tab-panel" style="display:none; max-width:1400px; margin:0 auto; padding:28px 24px;">
 
   <!-- 서브탭 -->
   <div style="display:flex; gap:4px; margin-bottom:24px; background:white; padding:4px; border-radius:12px; border:1px solid #e4e9f0; width:fit-content; box-shadow:0 1px 4px rgba(0,0,0,0.04);">
     <button id="reg-tab-moche" onclick="switchRegTab('moche')"
-      style="padding:10px 24px; border-radius:9px; font-size:13px; font-weight:600; border:none; cursor:pointer; background:#6366f1; color:white; font-family:'Noto Sans KR',sans-serif; transition:all .15s;">
-      📋 모체코드 등록
+      style="padding:10px 24px; border-radius:9px; font-size:13px; font-weight:600; border:none; cursor:pointer; background:#4f46e5; color:white; font-family:'Noto Sans KR',sans-serif; transition:all .15s;">
+      모체코드 등록
     </button>
     <button id="reg-tab-media" onclick="switchRegTab('media')"
       style="padding:10px 24px; border-radius:9px; font-size:13px; font-weight:600; border:none; cursor:pointer; background:transparent; color:#64748b; font-family:'Noto Sans KR',sans-serif; transition:all .15s;">
-      📡 매체상품 등록
+      매체상품 등록
     </button>
     <button id="reg-tab-stop" onclick="switchRegTab('stop')"
       style="padding:10px 24px; border-radius:9px; font-size:13px; font-weight:600; border:none; cursor:pointer; background:transparent; color:#64748b; font-family:'Noto Sans KR',sans-serif; transition:all .15s;">
-      ⛔ 판매중단
+      판매중단
     </button>
   </div>
 
@@ -446,11 +426,11 @@
     <!-- 공통 설정 -->
     <div class="card reg-card" style="margin-bottom:20px;">
       <div style="font-size:14px; font-weight:700; color:#0f172a; margin-bottom:18px; display:flex; align-items:center; gap:8px;">
-        ⚙️ 공통 설정
-        <span style="font-size:11px; font-weight:400; color:#94a3b8; background:#f8fafc; padding:3px 10px; border-radius:20px; border:1px solid #e2e8f0;">붙여넣은 전체 상품에 동일 적용</span>
+        공통 설정
+        <span style="font-size:12px; font-weight:400; color:#94a3b8;">올린 상품 전체에 같이 적용돼요</span>
       </div>
       <!-- 1행: 공급수수료 / 카테고리 (공급사는 헤더로 자동 감지되어 수동 입력 제거) -->
-      <div style="display:grid; grid-template-columns:0.8fr 1.2fr; gap:12px 20px; margin-bottom:14px;">
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px 20px;">
         <div style="display:flex; flex-direction:column; gap:6px;">
           <label style="font-size:11px; font-weight:600; color:#64748b; letter-spacing:0.3px;">공급수수료 % <span style="color:#ef4444; font-weight:800;">*</span> <span style="font-size:10px; font-weight:400; color:#94a3b8;" title="MST는 이 값으로 공급가를 계산합니다. KT는 실제 공급가를 그대로 쓰고, 이 값 대신 실제 마진율을 역산해서 표시만 합니다.">음수=할인 양수=과금 · MST만 적용 ⓘ</span></label>
           <div style="display:flex; align-items:center; gap:8px;">
@@ -520,14 +500,16 @@
 
     <!-- 붙여넣기 영역 -->
     <div class="card reg-card" style="margin-bottom:20px;" ondragover="event.preventDefault(); this.style.borderColor='#6366f1';" ondragleave="this.style.borderColor=''" ondrop="event.preventDefault(); this.style.borderColor=''; const f=event.dataTransfer.files[0]; if(f&&/\.xlsx?$/i.test(f.name)) rmHandleExcelFile(f); else _regToast('xlsx / xls 파일만 지원합니다', 1);">
-      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
+      <div style="display:flex; align-items:center; justify-content:space-between;">
         <div style="display:flex; align-items:center; gap:10px;">
-          <div style="font-size:14px; font-weight:700; color:#0f172a;">📋 상품 데이터 업로드</div>
+          <div style="font-size:14px; font-weight:700; color:#0f172a;">상품 데이터 업로드</div>
           <div id="rm-fmt-badge" style="display:none; font-size:11px; font-weight:700; padding:5px 12px; border-radius:20px; background:#dbeafe; color:#1d4ed8;"></div>
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
           <input type="file" id="rm-excel-file" accept=".xlsx,.xls" style="display:none" onchange="rmHandleExcelFile(this.files[0]); this.value=''">
-          <button onclick="document.getElementById('rm-excel-file').click()" style="padding:7px 16px; background:#f0fdf4; color:#16a34a; border:1px solid #bbf7d0; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:12px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:5px; white-space:nowrap;">📂 엑셀 파일 업로드</button>
+          <button onclick="rmResetAll()" style="padding:8px 14px; background:white; color:#64748b; border:1px solid #e2e8f0; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:12px; font-weight:600; cursor:pointer; white-space:nowrap;">초기화</button>
+          <button onclick="_showBrandCatModal()" style="padding:8px 14px; background:white; color:#64748b; border:1px solid #e2e8f0; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:12px; font-weight:600; cursor:pointer; white-space:nowrap;">브랜드 카테고리</button>
+          <button onclick="document.getElementById('rm-excel-file').click()" style="padding:8px 16px; background:#4f46e5; color:white; border:none; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:12px; font-weight:600; cursor:pointer; white-space:nowrap;">엑셀 파일 업로드</button>
         </div>
       </div>
       <!-- 공급사 포맷은 헤더로 자동 감지되어 수동 선택 필요 없음 (KT/MST 배지는 위 제목 옆에 자동 표시) -->
@@ -536,22 +518,17 @@
         placeholder="여기에 붙여넣기 (Ctrl+V)&#10;&#10;[KT] goodsCd · goodsNm · brandNm · cnsmPriceAmt · sellPriceAmt · goodsExpl · goodsImg500 · goodsTypeDtlNm · validPrdDate&#10;[MST] prodId · prodName · prodPrice · prodType · brandName · expDays · useMsg · imgName"
         style="width:100%; padding:12px 14px; border:1px solid #e2e8f0; border-radius:10px; font-family:'Noto Sans KR',monospace; font-size:12px; outline:none; resize:vertical; line-height:1.6; color:#374151; background:#fafbfc; transition:border .15s;" onfocus="this.style.borderColor='#6366f1'; this.style.background='white'" onblur="this.style.borderColor='#e2e8f0'; this.style.background='#fafbfc'"></textarea>
       -->
-      <div style="display:flex; gap:10px; margin-top:14px; align-items:center;">
-        <!-- <button onclick="rmParsePaste()" style="padding:10px 26px; background:#6366f1; color:white; border:none; border-radius:9px; font-family:'Noto Sans KR',sans-serif; font-size:13px; font-weight:700; cursor:pointer; letter-spacing:-0.2px;">파싱하기 →</button> -->
-        <button onclick="rmResetAll()" style="padding:10px 18px; background:transparent; border:1px solid #e2e8f0; color:#64748b; border-radius:9px; font-family:'Noto Sans KR',sans-serif; font-size:13px; font-weight:600; cursor:pointer;">초기화</button>
-        <button onclick="_showBrandCatModal()" style="padding:10px 18px; background:transparent; border:1px solid #e2e8f0; color:#6366f1; border-radius:9px; font-family:'Noto Sans KR',sans-serif; font-size:13px; font-weight:600; cursor:pointer;">🏷 브랜드 카테고리</button>
-        <div id="rm-parse-hint" style="font-size:12px; color:#94a3b8; flex:1;"></div>
-      </div>
+      <div id="rm-parse-hint" style="font-size:12px; color:#94a3b8; margin-top:8px;"></div>
     </div>
 
     <!-- 등록 목록 -->
     <div class="card reg-card">
-      <div style="font-size:14px; font-weight:700; color:#0f172a; margin-bottom:18px; display:flex; align-items:center; gap:10px;">
-        등록 목록 <span id="rm-moche-count" style="background:#6366f1; color:white; border-radius:20px; padding:2px 10px; font-size:12px; font-weight:700;">0</span>
+      <div style="font-size:14px; font-weight:700; color:#0f172a; margin-bottom:18px; display:flex; align-items:center; gap:8px;">
+        등록 목록 <span id="rm-moche-count" style="background:#4f46e5; color:white; border-radius:20px; padding:2px 10px; font-size:12px; font-weight:700;">0</span>
         <div style="flex:1;"></div>
-        <button onclick="_rmMocheList.length=0; rmRenderMoche();" style="padding:7px 16px; background:transparent; border:1px solid #fca5a5; color:#dc2626; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:12px; font-weight:600; cursor:pointer; margin-right:8px;">전체 삭제</button>
-        <button id="rm-img-dl-btn" onclick="rmExportImgExcel()" style="display:none; padding:8px 16px; background:#f0f9ff; color:#0369a1; border:1px solid #bae6fd; border-radius:9px; font-family:'Noto Sans KR',sans-serif; font-size:12px; font-weight:600; cursor:pointer; margin-right:8px; letter-spacing:-0.2px;">📥 newGoodsImgSample.xlsx</button>
-        <button onclick="rmExportMoche()" style="padding:8px 18px; background:#10b981; color:white; border:none; border-radius:9px; font-family:'Noto Sans KR',sans-serif; font-size:12px; font-weight:600; cursor:pointer; letter-spacing:-0.2px;">📥 newGoodsSample.xlsx</button>
+        <button onclick="_rmMocheList.length=0; rmRenderMoche();" style="padding:8px 14px; background:white; color:#64748b; border:1px solid #e2e8f0; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:12px; font-weight:600; cursor:pointer; white-space:nowrap;">전체 삭제</button>
+        <button id="rm-img-dl-btn" onclick="rmExportImgExcel()" style="display:none; padding:8px 16px; background:#f0f9ff; color:#0369a1; border:1px solid #bae6fd; border-radius:9px; font-family:'Noto Sans KR',sans-serif; font-size:12px; font-weight:600; cursor:pointer; letter-spacing:-0.2px;">newGoodsImgSample.xlsx</button>
+        <button onclick="rmExportMoche()" style="padding:8px 16px; background:#0f172a; color:white; border:none; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:12px; font-weight:600; cursor:pointer; white-space:nowrap;">newGoodsSample.xlsx 다운로드</button>
       </div>
       <!-- 카테고리 일괄 적용 바 -->
       <div id="rm-bulk-bar" style="display:none; align-items:center; gap:10px; background:#ede9fe; border-radius:10px; padding:10px 16px; margin-bottom:14px; flex-wrap:wrap;">
@@ -609,17 +586,17 @@
     <!-- ① 데이터 소스 -->
     <div class="card reg-card" style="margin-bottom:20px;">
       <div style="font-size:14px; font-weight:700; color:#0f172a; margin-bottom:16px;">① 데이터 소스</div>
-      <div style="display:flex; gap:6px; margin-bottom:16px; background:#f8fafc; padding:4px; border-radius:10px; border:1px solid #e4e9f0; width:fit-content;">
+      <div style="display:flex; gap:2px; margin-bottom:16px; background:#f1f5f9; padding:3px; border-radius:9px; width:fit-content;">
         <button id="rp-src-moche" onclick="rpSetSource('moche')"
-          style="padding:8px 20px; border-radius:8px; font-size:12px; font-weight:600; border:none; cursor:pointer; background:#6366f1; color:white; font-family:'Noto Sans KR',sans-serif;">
+          style="padding:7px 18px; border-radius:7px; font-size:12px; font-weight:600; border:none; cursor:pointer; background:white; color:#1e293b; box-shadow:0 1px 3px rgba(0,0,0,0.1); font-family:'Noto Sans KR',sans-serif;">
           모체 목록 사용
         </button>
         <button id="rp-src-excel" onclick="rpSetSource('excel')"
-          style="padding:8px 20px; border-radius:8px; font-size:12px; font-weight:600; border:1px solid #e2e8f0; cursor:pointer; background:transparent; color:#64748b; font-family:'Noto Sans KR',sans-serif;">
+          style="padding:7px 18px; border-radius:7px; font-size:12px; font-weight:600; border:none; cursor:pointer; background:transparent; color:#64748b; font-family:'Noto Sans KR',sans-serif;">
           엑셀 업로드
         </button>
         <button id="rp-src-paste" onclick="rpSetSource('paste')"
-          style="padding:8px 20px; border-radius:8px; font-size:12px; font-weight:600; border:1px solid #e2e8f0; cursor:pointer; background:transparent; color:#64748b; font-family:'Noto Sans KR',sans-serif;">
+          style="padding:7px 18px; border-radius:7px; font-size:12px; font-weight:600; border:none; cursor:pointer; background:transparent; color:#64748b; font-family:'Noto Sans KR',sans-serif;">
           새로 붙여넣기
         </button>
       </div>
@@ -633,9 +610,8 @@
 
       <!-- 엑셀 업로드 -->
       <div id="rp-excel-wrap" style="display:none;">
-        <label for="rp-excel-file" style="display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; border:2px dashed #a5b4fc; border-radius:12px; padding:28px; cursor:pointer; background:#fafbff; transition:background 0.15s;" onmouseover="this.style.background='#eef2ff'" onmouseout="this.style.background='#fafbff'">
-          <span style="font-size:28px;">📂</span>
-          <span style="font-size:13px; font-weight:600; color:#4338ca;">newGoodsSample.xlsx / 상품목록 CSV 업로드</span>
+        <label for="rp-excel-file" style="display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; border:2px dashed #cbd5e1; border-radius:12px; padding:28px; cursor:pointer; background:white; transition:background 0.15s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='white'">
+          <span style="font-size:13px; font-weight:600; color:#334155;">newGoodsSample.xlsx / 상품목록 CSV 업로드</span>
           <span style="font-size:11px; color:#94a3b8;">클릭하여 파일 선택 · 늄픽에 상품등록 없이 이미 등록된 상품목록(.csv/.xlsx)도 지원</span>
           <input type="file" id="rp-excel-file" accept=".xlsx,.xls,.csv" style="display:none;" onchange="rpLoadExcel(event)">
         </label>
@@ -647,7 +623,7 @@
         <div style="display:flex; gap:12px; margin-bottom:10px; align-items:center; flex-wrap:wrap;">
           <span style="font-size:11px; font-weight:600; color:#64748b; white-space:nowrap;">공급사 포맷</span>
           <select id="rp-supplier-fmt" style="padding:7px 10px; border:1px solid #e2e8f0; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:12px; outline:none; background:white; font-weight:600;">
-            <option value="auto">🔍 자동 감지</option>
+            <option value="auto">자동 감지</option>
             <option value="KTA">KTA</option>
             <option value="MST">MST (미스틱)</option>
           </select>
@@ -735,23 +711,22 @@
 
       <!-- 생성하기 -->
       <div id="rp-generate-wrap" style="display:flex; justify-content:flex-end; border-top:1px solid #f1f5f9; padding-top:16px;">
-        <button onclick="rpGenerate()" style="padding:11px 36px; background:#6366f1; color:white; border:none; border-radius:10px; font-family:'Noto Sans KR',sans-serif; font-size:14px; font-weight:700; cursor:pointer; letter-spacing:-0.2px;">생성하기 →</button>
+        <button onclick="rpGenerate()" style="padding:10px 28px; background:#4f46e5; color:white; border:none; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:13px; font-weight:600; cursor:pointer;">생성하기</button>
       </div>
     </div>
 
     <!-- 안내 -->
-    <div style="display:flex; align-items:center; gap:10px; background:#fffbeb; border:1px solid #fde68a; border-radius:12px; padding:14px 20px; font-size:12px; color:#78350f; margin-bottom:20px;">
-      <span style="font-size:18px;">📌</span>
-      <span><strong style="color:#92400e;">업로드 후:</strong> 자체답례/플랫폼상품관리 → 등록된 <strong>매체상품코드</strong>(모체 아님) 확인 → 수정 → <strong>매체 판매가</strong> 입력</span>
+    <div style="display:flex; align-items:center; gap:10px; background:white; border:1px solid #e2e8f0; border-radius:12px; padding:12px 28px; font-size:12px; color:#64748b; margin-bottom:20px;">
+      <span><strong style="color:#334155;">업로드 후:</strong> 자체답례/플랫폼상품관리 → 등록된 <strong>매체상품코드</strong>(모체 아님) 확인 → 수정 → <strong>매체 판매가</strong> 입력</span>
     </div>
 
     <!-- ④ 등록 목록 -->
     <div class="card reg-card">
-      <div style="font-size:14px; font-weight:700; color:#0f172a; margin-bottom:18px; display:flex; align-items:center; gap:10px;">
-        등록 목록 <span id="rp-media-count" style="background:#6366f1; color:white; border-radius:20px; padding:2px 10px; font-size:12px; font-weight:700;">0</span>
+      <div style="font-size:14px; font-weight:700; color:#0f172a; margin-bottom:18px; display:flex; align-items:center; gap:8px;">
+        등록 목록 <span id="rp-media-count" style="background:#4f46e5; color:white; border-radius:20px; padding:2px 10px; font-size:12px; font-weight:700;">0</span>
         <div style="flex:1;"></div>
-        <button onclick="_rpMediaList.length=0; rpRenderMedia();" style="padding:7px 16px; background:transparent; border:1px solid #fca5a5; color:#dc2626; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:12px; font-weight:600; cursor:pointer; margin-right:8px;">전체 삭제</button>
-        <button onclick="rpExportMedia()" style="padding:8px 18px; background:#10b981; color:white; border:none; border-radius:9px; font-family:'Noto Sans KR',sans-serif; font-size:12px; font-weight:600; cursor:pointer; letter-spacing:-0.2px;">📥 newPlatformGoodsSample.xlsx</button>
+        <button onclick="_rpMediaList.length=0; rpRenderMedia();" style="padding:8px 14px; background:white; color:#64748b; border:1px solid #e2e8f0; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:12px; font-weight:600; cursor:pointer; white-space:nowrap;">전체 삭제</button>
+        <button onclick="rpExportMedia()" style="padding:8px 16px; background:#0f172a; color:white; border:none; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:12px; font-weight:600; cursor:pointer; white-space:nowrap;">newPlatformGoodsSample.xlsx 다운로드</button>
       </div>
       <div style="overflow-x:auto;">
         <table style="width:100%; border-collapse:collapse; font-size:12px;">
@@ -783,11 +758,11 @@
     <div class="card reg-card" style="margin-bottom:20px;" ondragover="event.preventDefault();" ondrop="event.preventDefault(); const f=event.dataTransfer.files[0]; if(f) rsLoadFile(f);">
       <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;">
         <div>
-          <div style="font-size:14px; font-weight:700; color:#0f172a;">📋 판매중단 상품목록 업로드</div>
+          <div style="font-size:14px; font-weight:700; color:#0f172a;">판매중단 상품목록 업로드</div>
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
           <input type="file" id="rs-file" accept=".csv,.xlsx,.xls" style="display:none" onchange="rsLoadFile(this.files[0]); this.value=''">
-          <button onclick="document.getElementById('rs-file').click()" style="padding:7px 16px; background:#f0fdf4; color:#16a34a; border:1px solid #bbf7d0; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:12px; font-weight:700; cursor:pointer; white-space:nowrap;">📂 상품목록 파일 업로드</button>
+          <button onclick="document.getElementById('rs-file').click()" style="padding:8px 16px; background:#4f46e5; color:white; border:none; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:12px; font-weight:600; cursor:pointer; white-space:nowrap;">상품목록 파일 업로드</button>
         </div>
       </div>
       <div id="rs-summary" style="display:none; margin-top:12px; background:#f8fafc; border-radius:8px; padding:10px 14px; font-size:12px; color:#64748b;"></div>
@@ -796,11 +771,11 @@
     <!-- 판매중단 목록 -->
     <div id="rs-list-card" class="card reg-card" style="display:none;">
       <div style="font-size:14px; font-weight:700; color:#0f172a; margin-bottom:14px; display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
-        판매중단 목록 <span id="rs-count" style="background:#dc2626; color:white; border-radius:20px; padding:2px 10px; font-size:12px; font-weight:700;">0</span>
+        판매중단 목록 <span id="rs-count" style="background:#4f46e5; color:white; border-radius:20px; padding:2px 10px; font-size:12px; font-weight:700;">0</span>
         <span id="rs-view-hint" style="font-size:11px; font-weight:400; color:#94a3b8;"></span>
         <div style="flex:1;"></div>
-        <button onclick="rsReset()" style="padding:7px 14px; background:transparent; border:1px solid #e2e8f0; color:#64748b; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:12px; font-weight:600; cursor:pointer;">초기화</button>
-        <button onclick="rsExport()" style="padding:8px 18px; background:#dc2626; color:white; border:none; border-radius:9px; font-family:'Noto Sans KR',sans-serif; font-size:12px; font-weight:600; cursor:pointer; letter-spacing:-0.2px;">📥 newGoodsSample.xlsx (판매중단)</button>
+        <button onclick="rsReset()" style="padding:8px 14px; background:white; color:#64748b; border:1px solid #e2e8f0; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:12px; font-weight:600; cursor:pointer; white-space:nowrap;">초기화</button>
+        <button onclick="rsExport()" style="padding:8px 16px; background:#0f172a; color:white; border:none; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:12px; font-weight:600; cursor:pointer; white-space:nowrap;">newGoodsSample.xlsx 다운로드 (판매중단)</button>
       </div>
       <div style="overflow-x:auto; max-height:560px; overflow-y:auto;">
         <table style="width:100%; border-collapse:collapse; font-size:12px;">
@@ -831,12 +806,13 @@
   <div id="cs-upload-wrap">
     <div id="cs-upload-area" onclick="document.getElementById('cs-file').click()"
       ondragover="event.preventDefault(); this.style.borderColor='#4f46e5';"
-      ondragleave="this.style.borderColor='#a5b4fc'"
-      ondrop="event.preventDefault(); this.style.borderColor='#a5b4fc'; const f=event.dataTransfer.files[0]; if(f) handleCsFile(f);"
-      style="border:2px dashed #a5b4fc; border-radius:16px; padding:80px 40px; text-align:center; background:white; cursor:pointer; transition:all 0.2s;">
-      <div style="font-size:44px; margin-bottom:14px;">☎️</div>
-      <div style="font-size:16px; font-weight:600; color:#374151; margin-bottom:6px;">상담 이력 엑셀 파일을 드래그하거나 클릭하세요</div>
-      <div style="font-size:13px; color:#94a3b8; font-weight:400;">기존 양식(날짜 · 시작시간 · 종료시간 · 핵심키워드) / 10월~ 신규 양식(수신목록) 모두 가능</div>
+      ondragleave="this.style.borderColor='transparent'"
+      ondrop="event.preventDefault(); this.style.borderColor='transparent'; const f=event.dataTransfer.files[0]; if(f) handleCsFile(f);"
+      style="border:2px solid transparent; border-radius:16px; padding:80px 40px; text-align:center; background:white; box-shadow:0 1px 4px rgba(0,0,0,0.06); cursor:pointer; transition:all 0.2s;">
+      <div style="font-size:44px; margin-bottom:16px;">☎️</div>
+      <div style="font-size:16px; font-weight:600; color:#374151; margin-bottom:8px;">상담 이력 엑셀 파일을 드래그하거나 클릭하세요</div>
+      <div style="font-size:13px; color:#94a3b8;">기존 양식(날짜 · 시작시간 · 종료시간 · 핵심키워드) / 10월~ 신규 양식(수신목록) 모두 가능</div>
+      <button type="button" style="margin-top:20px; background:#4f46e5; color:white; border:none; border-radius:10px; padding:10px 24px; font-size:13px; font-weight:600; cursor:pointer; font-family:'Noto Sans KR',sans-serif;">파일 선택</button>
       <input type="file" id="cs-file" accept=".xlsx,.xls" style="display:none" onchange="handleCsFile(this.files[0])">
     </div>
   </div>
@@ -934,35 +910,36 @@
      PANEL: 정산
 ══════════════════════════════════════ -->
 <div id="panel-settle" class="tab-panel" style="display:none; max-width:1400px; margin:0 auto; padding:28px 24px;">
-  <div style="font-size:22px; font-weight:700; color:#0f172a; letter-spacing:-0.5px; margin-bottom:20px;">💰 정산</div>
-
-  <!-- 서브탭 -->
-  <div style="display:flex; gap:4px; margin-bottom:24px; background:white; padding:4px; border-radius:12px; border:1px solid #e4e9f0; width:fit-content; box-shadow:0 1px 4px rgba(0,0,0,0.04);">
+  <!-- 서브탭 + 잠금 (잠그면 올린 파일이 이 브라우저에 저장돼 새로고침해도 유지) -->
+  <div style="display:flex; align-items:center; gap:12px; margin-bottom:24px;">
+    <div style="display:flex; gap:4px; background:white; padding:4px; border-radius:12px; border:1px solid #e4e9f0; width:fit-content; box-shadow:0 1px 4px rgba(0,0,0,0.04);">
     <button id="st-tab-sup" onclick="switchSettleTab('sup')"
-      style="padding:10px 24px; border-radius:9px; font-size:13px; font-weight:600; border:none; cursor:pointer; background:#6366f1; color:white; font-family:'Noto Sans KR',sans-serif; transition:all .15s;">
-      🏭 공급사 정산
+      style="padding:10px 24px; border-radius:9px; font-size:13px; font-weight:600; border:none; cursor:pointer; background:#4f46e5; color:white; font-family:'Noto Sans KR',sans-serif; transition:all .15s;">
+      공급사 정산
     </button>
     <button id="st-tab-media" onclick="switchSettleTab('media')"
       style="padding:10px 24px; border-radius:9px; font-size:13px; font-weight:600; border:none; cursor:pointer; background:transparent; color:#64748b; font-family:'Noto Sans KR',sans-serif; transition:all .15s;">
-      📡 매체 정산
+      매체 정산
     </button>
+  </div>
+    <div style="flex:1;"></div>
+    <button id="lock-btn-settle" class="lock-btn" onclick="toggleLock('settle')">🔓 편집</button>
   </div>
 
   <!-- ── 매체 정산: 매체 주문 다운로드 → 발송완료·전체취소 제외 → 브랜드 할인율로 판매수수료액 ── -->
   <div id="st-panel-media" style="display:none;">
-    <div class="card" style="padding:20px 24px; margin-bottom:20px;">
-      <div style="font-size:15px; font-weight:700; color:#0f172a; margin-bottom:14px;">📡 매체 정산</div>
-      
+    <div class="card" style="padding:24px 28px; margin-bottom:20px;">
+      <div style="font-size:14px; font-weight:700; color:#0f172a; margin-bottom:16px;">파일 업로드</div>
       <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:12px;">
-        <div ondragover="event.preventDefault();" ondrop="event.preventDefault(); const f=event.dataTransfer.files[0]; if(f) mdLoadOrders(f);" style="border:1px dashed #cbd5e1; border-radius:10px; padding:14px 16px; display:flex; align-items:center; justify-content:space-between; gap:10px;">
+        <div ondragover="event.preventDefault();" ondrop="event.preventDefault(); const f=event.dataTransfer.files[0]; if(f) mdLoadOrders(f);" style="border:1px solid #e2e8f0; background:#f8fafc; border-radius:10px; padding:14px 16px; display:flex; align-items:center; justify-content:space-between; gap:10px;">
           <div style="min-width:0;">
             <div style="font-size:13px; font-weight:700; color:#0f172a;">① 매체 주문 다운로드</div>
             <div id="md-file-info" style="font-size:12px; color:#94a3b8; margin-top:3px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">cs 딤 주문내역 파일을 올려주세요</div>
           </div>
           <input type="file" id="md-file" accept=".xlsx,.xls" style="display:none" onchange="mdLoadOrders(this.files[0]); this.value=''">
-          <button onclick="document.getElementById('md-file').click()" style="padding:7px 14px; background:white; color:#334155; border:1px solid #e2e8f0; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:12px; font-weight:700; cursor:pointer; white-space:nowrap;">📂 업로드</button>
+          <button onclick="document.getElementById('md-file').click()" style="padding:7px 14px; background:white; color:#334155; border:1px solid #e2e8f0; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:12px; font-weight:600; cursor:pointer; white-space:nowrap;">업로드</button>
         </div>
-        <div ondragover="event.preventDefault();" ondrop="event.preventDefault(); const f=event.dataTransfer.files[0]; if(f) mdImportRates(f);" style="border:1px dashed #cbd5e1; border-radius:10px; padding:14px 16px; display:flex; align-items:center; justify-content:space-between; gap:10px;">
+        <div ondragover="event.preventDefault();" ondrop="event.preventDefault(); const f=event.dataTransfer.files[0]; if(f) mdImportRates(f);" style="border:1px solid #e2e8f0; background:#f8fafc; border-radius:10px; padding:14px 16px; display:flex; align-items:center; justify-content:space-between; gap:10px;">
           <div style="min-width:0;">
             <div style="font-size:13px; font-weight:700; color:#0f172a;">② 브랜드 할인율 (거래상세내역 Sheet2)</div>
             <div style="display:flex; align-items:center; gap:8px; margin-top:4px;">
@@ -971,7 +948,7 @@
             </div>
           </div>
           <input type="file" id="md-rate-file" accept=".xlsx,.xls" style="display:none" onchange="mdImportRates(this.files[0]); this.value=''">
-          <button onclick="document.getElementById('md-rate-file').click()" style="padding:7px 14px; background:white; color:#334155; border:1px solid #e2e8f0; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:12px; font-weight:700; cursor:pointer; white-space:nowrap;">📂 업로드</button>
+          <button onclick="document.getElementById('md-rate-file').click()" style="padding:7px 14px; background:white; color:#334155; border:1px solid #e2e8f0; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:12px; font-weight:600; cursor:pointer; white-space:nowrap;">업로드</button>
         </div>
       </div>
     </div>
@@ -981,16 +958,16 @@
         <span style="font-size:13px; font-weight:600; color:#334155;">정산월</span>
         <select id="md-month" onchange="mdRender()" style="padding:7px 12px; border:1px solid #e2e8f0; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:13px;"></select>
         <div style="flex:1;"></div>
-        <button onclick="mdMsg('jandi')" style="padding:8px 14px; background:white; color:#334155; border:1px solid #e2e8f0; border-radius:9px; font-family:'Noto Sans KR',sans-serif; font-size:12px; font-weight:600; cursor:pointer;">💬 잔디 공유 문구</button>
-        <button onclick="mdMsg('mail')" style="padding:8px 14px; background:white; color:#334155; border:1px solid #e2e8f0; border-radius:9px; font-family:'Noto Sans KR',sans-serif; font-size:12px; font-weight:600; cursor:pointer;">✉️ 메일 문구</button>
-        <button onclick="mdExport()" style="padding:8px 14px; background:white; color:#334155; border:1px solid #e2e8f0; border-radius:9px; font-family:'Noto Sans KR',sans-serif; font-size:12px; font-weight:600; cursor:pointer;">📥 검수용 엑셀</button>
-        <button onclick="mdExportDeliver()" style="padding:8px 18px; background:#0f172a; color:white; border:none; border-radius:9px; font-family:'Noto Sans KR',sans-serif; font-size:12px; font-weight:600; cursor:pointer;">📥 전달용 엑셀</button>
+        <button onclick="mdMsg('jandi')" style="padding:8px 14px; background:white; color:#334155; border:1px solid #e2e8f0; border-radius:9px; font-family:'Noto Sans KR',sans-serif; font-size:12px; font-weight:600; cursor:pointer;">잔디 공유 문구</button>
+        <button onclick="mdMsg('mail')" style="padding:8px 14px; background:white; color:#334155; border:1px solid #e2e8f0; border-radius:9px; font-family:'Noto Sans KR',sans-serif; font-size:12px; font-weight:600; cursor:pointer;">메일 문구</button>
+        <button onclick="mdExport()" style="padding:8px 14px; background:white; color:#334155; border:1px solid #e2e8f0; border-radius:9px; font-family:'Noto Sans KR',sans-serif; font-size:12px; font-weight:600; cursor:pointer;">검수용 엑셀</button>
+        <button onclick="mdExportDeliver()" style="padding:8px 18px; background:#0f172a; color:white; border:none; border-radius:9px; font-family:'Noto Sans KR',sans-serif; font-size:12px; font-weight:600; cursor:pointer;">전달용 엑셀</button>
       </div>
       <div id="md-msg" class="card" style="display:none; padding:16px 20px; margin-bottom:16px;">
         <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
           <span id="md-msg-title" style="font-size:13px; font-weight:700; color:#0f172a;"></span>
           <div style="flex:1;"></div>
-          <button onclick="navigator.clipboard.writeText(document.getElementById('md-msg-text').value).then(() => _regToast('복사했어요'))" style="padding:6px 14px; background:#0f172a; color:white; border:none; border-radius:8px; font-size:12px; font-weight:600; cursor:pointer;">📋 복사</button>
+          <button onclick="navigator.clipboard.writeText(document.getElementById('md-msg-text').value).then(() => _regToast('복사했어요'))" style="padding:6px 14px; background:#0f172a; color:white; border:none; border-radius:8px; font-size:12px; font-weight:600; cursor:pointer;">복사</button>
           <button onclick="document.getElementById('md-msg').style.display='none'" style="padding:6px 10px; background:white; color:#64748b; border:1px solid #e2e8f0; border-radius:8px; font-size:12px; cursor:pointer;">닫기</button>
         </div>
         <div id="md-mail-cfg" style="display:none; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:8px; font-size:12px; color:#64748b;">
@@ -1026,26 +1003,33 @@
   <!-- ── 공급사 정산 ── -->
   <div id="st-panel-sup">
   <!-- 공급사 정산: 발송내역(pinList) 중 쿠폰상태 '사용' 건 · 사용일 월 기준 · 공급가 = 소비자가 × (1 + 공급수수료%) -->
-  <div class="card" style="padding:20px 24px; margin-bottom:20px;">
-    <div style="font-size:15px; font-weight:700; color:#0f172a; margin-bottom:4px;">🏭 공급사 정산</div>
-    <div style="font-size:12px; color:#94a3b8; margin-bottom:16px;">사용된 쿠폰만 · 사용한 날짜로 월 구분 · 재발송(같은 쿠폰번호)은 1건으로</div>
+  <div class="card" style="padding:24px 28px; margin-bottom:20px;">
+    <div style="font-size:14px; font-weight:700; color:#0f172a; margin-bottom:16px; display:flex; align-items:center; gap:8px;">파일 업로드 <span style="font-size:12px; font-weight:400; color:#94a3b8;">사용된 쿠폰만 · 사용한 날짜로 월 구분 · 재발송(같은 쿠폰번호)은 1건으로</span></div>
     <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:12px;">
-      <div ondragover="event.preventDefault();" ondrop="event.preventDefault(); const f=event.dataTransfer.files[0]; if(f) stLoadPins(f);" style="border:1px dashed #cbd5e1; border-radius:10px; padding:14px 16px; display:flex; align-items:center; justify-content:space-between; gap:10px;">
+      <div ondragover="event.preventDefault();" ondrop="event.preventDefault(); const f=event.dataTransfer.files[0]; if(f) stLoadPins(f);" style="border:1px solid #e2e8f0; background:#f8fafc; border-radius:10px; padding:14px 16px; display:flex; align-items:center; justify-content:space-between; gap:10px;">
         <div style="min-width:0;">
           <div style="font-size:13px; font-weight:700; color:#0f172a;">① 발송내역 (pinList)</div>
           <div id="st-pin-info" style="font-size:12px; color:#94a3b8; margin-top:3px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">파일을 올려주세요</div>
         </div>
         <input type="file" id="st-pin-file" accept=".xlsx,.xls" style="display:none" onchange="stLoadPins(this.files[0]); this.value=''">
-        <button onclick="document.getElementById('st-pin-file').click()" style="padding:7px 14px; background:white; color:#334155; border:1px solid #e2e8f0; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:12px; font-weight:700; cursor:pointer; white-space:nowrap;">📂 업로드</button>
+        <button onclick="document.getElementById('st-pin-file').click()" style="padding:7px 14px; background:white; color:#334155; border:1px solid #e2e8f0; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:12px; font-weight:600; cursor:pointer; white-space:nowrap;">업로드</button>
       </div>
-      <div ondragover="event.preventDefault();" ondrop="event.preventDefault(); const f=event.dataTransfer.files[0]; if(f) stLoadProds(f);" style="border:1px dashed #cbd5e1; border-radius:10px; padding:14px 16px; display:flex; align-items:center; justify-content:space-between; gap:10px;">
+      <div ondragover="event.preventDefault();" ondrop="event.preventDefault(); const f=event.dataTransfer.files[0]; if(f) stLoadProds(f);" style="border:1px solid #e2e8f0; background:#f8fafc; border-radius:10px; padding:14px 16px; display:flex; align-items:center; justify-content:space-between; gap:10px;">
         <div style="min-width:0;">
           <div style="font-size:13px; font-weight:700; color:#0f172a;">② 상품목록 (공급수수료)</div>
           <div id="st-prod-info" style="font-size:12px; color:#94a3b8; margin-top:3px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">파일을 올려주세요</div>
         </div>
         <input type="file" id="st-prod-file" accept=".csv,.xlsx,.xls" style="display:none" onchange="stLoadProds(this.files[0]); this.value=''">
-        <button onclick="document.getElementById('st-prod-file').click()" style="padding:7px 14px; background:white; color:#334155; border:1px solid #e2e8f0; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:12px; font-weight:700; cursor:pointer; white-space:nowrap;">📂 업로드</button>
+        <button onclick="document.getElementById('st-prod-file').click()" style="padding:7px 14px; background:white; color:#334155; border:1px solid #e2e8f0; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:12px; font-weight:600; cursor:pointer; white-space:nowrap;">업로드</button>
       </div>
+      <div ondragover="event.preventDefault();" ondrop="event.preventDefault(); const f=event.dataTransfer.files[0]; if(f) stLoadSupStatement(f);" style="border:1px solid #e2e8f0; background:#f8fafc; border-radius:10px; padding:14px 16px; display:flex; align-items:center; justify-content:space-between; gap:10px;">
+        <div style="min-width:0;">
+          <div style="font-size:13px; font-weight:700; color:#0f172a;">③ 공급사 정산서 (대사용, 선택)</div>
+          <div id="st-sup-info" style="font-size:12px; color:#94a3b8; margin-top:3px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">공급사가 보낸 건별 정산 CSV를 올려주세요</div>
+        </div>
+        <input type="file" id="st-sup-file" accept=".csv,.xlsx,.xls" style="display:none" onchange="stLoadSupStatement(this.files[0]); this.value=''">
+        <button onclick="document.getElementById('st-sup-file').click()" style="padding:7px 14px; background:white; color:#334155; border:1px solid #e2e8f0; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:12px; font-weight:600; cursor:pointer; white-space:nowrap;">업로드</button>
+</div>
     </div>
   </div>
 
@@ -1054,9 +1038,10 @@
       <span style="font-size:13px; font-weight:600; color:#334155;">정산월</span>
       <select id="st-month" onchange="stRender()" style="padding:7px 12px; border:1px solid #e2e8f0; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:13px;"></select>
       <div style="flex:1;"></div>
-      <button onclick="stExport()" style="padding:8px 18px; background:#0f172a; color:white; border:none; border-radius:9px; font-family:'Noto Sans KR',sans-serif; font-size:12px; font-weight:600; cursor:pointer;">📥 정산서 엑셀 (전체)</button>
+      <button onclick="stExport()" style="padding:8px 18px; background:#0f172a; color:white; border:none; border-radius:9px; font-family:'Noto Sans KR',sans-serif; font-size:12px; font-weight:600; cursor:pointer;">정산서 엑셀 (전체)</button>
     </div>
     <div id="st-kpi" style="display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:12px; margin-bottom:16px;"></div>
+    <div id="st-recon" class="card" style="display:none; padding:16px 20px; margin-bottom:16px;"></div>
     <div id="st-unmatched" style="display:none; background:#f8fafc; border:1px solid #e2e8f0; color:#475569; border-radius:10px; padding:10px 14px; font-size:12px; margin-bottom:16px;"></div>
     <div class="card" style="padding:16px 20px;">
       <div style="overflow-x:auto;">
@@ -1456,10 +1441,10 @@
 //  CONSTANTS
 // ════════════════════════════════════════════════════
 const MEDIA_MAP = {
-  'md_bnyj':       '보내야주_기온',
+  'md_bnyj':       '보내야주_자체답례',
   'kookminbugo':   '국민부고',
   'iris':          '아이리스',
-  'md_iris':       '아이리스_기온',
+  'md_iris':       '아이리스_자체답례',
   'samga':         '삼가',
   'cheotjang':     '첫장',
   'cnwalk':        '걷쥬',
@@ -1470,16 +1455,19 @@ const MEDIA_MAP = {
   'md_enccompany': '이엔씨컴퍼니_자체답례',
   'md_fdnara':     '의전나라_자체답례',
   'md_samga':      '삼가_자체답례',
-  'md_wooribugo':  '우리부고_기온',
+  'md_wooribugo':  '우리부고_자체답례',
   'md_wooribugoPoint': '우리부고_포인트몰',
-  'md_devnium':    '데브늄_기온',
+  'md_devnium':    '데브늄_자체답례',
   'dasom':         '다솜',
   'flowergil':     '꽃길',
   'raon_hana':     '하나부고',
   'telent':        '달란트비즈',
   'talent':        '달란트숍',
-  'md_sahaguminfh':'사하구민',
-  'md_grion':      '그리온'
+  'md_sahaguminfh':'사하구민_자체답례',
+  'md_grion':      '그리온_자체답례',
+  'md_kookminbugo':'국민부고_자체답례',
+  'md_cheotjang':  '첫장_자체답례',
+  'md_iumbugo':    '이음부고_자체답례'
 };
 
 const CHART_COLORS = [
@@ -1487,11 +1475,12 @@ const CHART_COLORS = [
   '#10b981','#3b82f6','#ef4444','#14b8a6','#f97316','#84cc16'
 ];
 
+// 순위 배지 — 색을 줄이려고 1~3위만 진한 회색, 나머지는 연한 회색
 const RANK_STYLE = [
-  'background:#fef9c3; color:#854d0e;', // 1st - gold
-  'background:#f1f5f9; color:#475569;', // 2nd - silver
-  'background:#fff7ed; color:#c2410c;', // 3rd - bronze
-  'background:#f8fafc; color:#94a3b8;'  // rest
+  'background:#e2e8f0; color:#334155;',
+  'background:#e2e8f0; color:#334155;',
+  'background:#e2e8f0; color:#334155;',
+  'background:#f8fafc; color:#94a3b8;'
 ];
 
 // ════════════════════════════════════════════════════
@@ -1634,7 +1623,12 @@ function parseExcel(file) {
 // ════════════════════════════════════════════════════
 //  SALES FILE
 // ════════════════════════════════════════════════════
-async function handleSalesFile(ev) {
+// 파일 읽는 동안 '불러오는 중' 표시
+function handleSalesFile(ev) {
+  if (!(ev.target.files[0])) return;
+  return _withLoading('주문내역 불러오는 중…', () => _handleSalesFile(ev));
+}
+async function _handleSalesFile(ev) {
   const file = ev.target.files[0]; if (!file) return;
   try {
     salesData = await parseExcel(file);
@@ -1648,7 +1642,7 @@ async function handleSalesFile(ev) {
     document.getElementById('date-from').value = minD ? fmtDate(minD) : '';
     document.getElementById('date-to').value   = maxD ? fmtDate(maxD) : '';
     document.getElementById('sales-upload-wrap').style.display = 'none';
-    document.getElementById('sales-controls').style.display = 'flex';
+    document.getElementById('sales-controls').style.display = 'block';
     document.getElementById('sales-kpis').style.display = 'grid';
     autoSaveIfLocked('sales');
     renderSalesDashboard();
@@ -1662,6 +1656,14 @@ async function resetSales() {
   updateLockBtn('sales', false);
   document.getElementById('sales-upload-wrap').style.display = '';
   document.getElementById('sales-controls').style.display = 'none';
+  document.getElementById('sales-media-filter').style.display = 'none'; // 초기화하면 매체 선택도 숨김
+  document.getElementById('media-chips').innerHTML = '';
+  document.getElementById('media-search').value = '';
+  document.getElementById('media-dropdown').style.display = 'none';
+  _mediaKeys = []; _mediaChipsExpanded = false;
+  selectedMedias.clear();
+  document.getElementById('sales-heatmap').style.display = 'none';
+  document.getElementById('sales-heatmap').innerHTML = '';
   document.getElementById('sales-kpis').style.display = 'none';
   document.getElementById('sales-grid').innerHTML = '';
   document.getElementById('sales-kpis').innerHTML = '';
@@ -1700,28 +1702,70 @@ function toggleMediaAll() {
   updateMediaChips();
   renderSalesDashboard();
 }
+// 매체 선택 — 검색 드롭다운에서 고르고, 고른 매체는 칩(×로 해제)으로 보여줌
+let _mediaKeys = [];           // 판매량 순 전체 매체 코드
+let _mediaChipsExpanded = false;
+const MEDIA_CHIP_SHOW = 3;     // 칩은 앞 3개만, 나머지는 '더보기'
+const _mediaLabel = mk => (MEDIA_MAP && MEDIA_MAP[mk.trim()]) || mk;
+const _escAttr = s => String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+const _CHIP = 'display:inline-flex;align-items:center;gap:6px;height:26px;padding:0 10px 0 12px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;font-family:\'Noto Sans KR\',sans-serif;';
+const _X = '<span style="font-size:13px;line-height:1;opacity:0.75;">×</span>';
+
 function updateMediaChips() {
-  const allBtn = document.getElementById('media-chip-all');
-  if (!allBtn) return;
-  const isAll = selectedMedias.size === 0;
-  allBtn.style.background = isAll ? '#4f46e5' : '#f1f5f9';
-  allBtn.style.color      = isAll ? 'white'   : '#64748b';
-  document.querySelectorAll('.media-chip').forEach(btn => {
-    const active = selectedMedias.has(btn.dataset.key);
-    btn.style.background = active ? '#6366f1' : '#f1f5f9';
-    btn.style.color      = active ? 'white'   : '#64748b';
-  });
+  const box = document.getElementById('media-chips');
+  if (!box) return;
+  const sel = _mediaKeys.filter(mk => selectedMedias.has(mk));
+  let html = sel.length === 0
+    ? '<span style="' + _CHIP + 'cursor:default;padding:0 12px;background:#4f46e5;color:white;border:1px solid #4f46e5;">전체</span>'
+    : '<button onclick="toggleMediaAll()" style="' + _CHIP + 'background:white;color:#64748b;border:1px solid #e2e8f0;">전체 보기</button>';
+  const shown = _mediaChipsExpanded ? sel : sel.slice(0, MEDIA_CHIP_SHOW);
+  html += shown.map(mk =>
+    '<button class="media-chip" data-key="' + _escAttr(mk) + '" onclick="toggleMediaChip(this.dataset.key)" title="선택 해제" style="' + _CHIP + 'background:#eef2ff;color:#4338ca;border:1px solid #c7d2fe;">' + _escAttr(_mediaLabel(mk)) + _X + '</button>'
+  ).join('');
+  const rest = sel.length - MEDIA_CHIP_SHOW;
+  if (rest > 0) {
+    html += '<button onclick="_mediaChipsExpanded=!_mediaChipsExpanded; updateMediaChips();" style="' + _CHIP + 'padding:0 12px;background:white;color:#64748b;border:1px dashed #cbd5e1;">'
+      + (_mediaChipsExpanded ? '접기' : '+ 더보기 ' + rest + '개') + '</button>';
+  }
+  box.innerHTML = html;
+  document.getElementById('media-count').textContent = sel.length === 0
+    ? '전체 ' + _mediaKeys.length + '개'
+    : sel.length + ' / ' + _mediaKeys.length + '개 선택';
+  renderMediaDropdown();
 }
 function buildMediaChips(mediaKeys) {
-  const container = document.getElementById('media-chips');
-  if (!container) return;
-  container.innerHTML = mediaKeys.map(mk => {
-    const label = (MEDIA_MAP && MEDIA_MAP[mk.trim()]) || mk;
-    const active = selectedMedias.has(mk);
-    const bg = active ? 'background:#6366f1;color:white;' : 'background:#f1f5f9;color:#64748b;';
-    return '<button class="media-chip" data-key="' + mk + '" onclick="toggleMediaChip(this.dataset.key)" style="padding:4px 12px;border-radius:20px;font-size:11px;font-weight:500;border:none;cursor:pointer;' + bg + '">' + label + '</button>';
-  }).join('');
+  _mediaKeys = mediaKeys.slice();
+  [...selectedMedias].forEach(mk => { if (!_mediaKeys.includes(mk)) selectedMedias.delete(mk); });
 }
+function renderMediaDropdown() {
+  const dd = document.getElementById('media-dropdown');
+  if (!dd || dd.style.display === 'none') return;
+  const q = (document.getElementById('media-search').value || '').trim().toLowerCase();
+  const list = _mediaKeys.filter(mk => !q || _mediaLabel(mk).toLowerCase().includes(q) || mk.toLowerCase().includes(q));
+  dd.innerHTML = list.length === 0
+    ? '<div style="padding:10px 12px; font-size:12px; color:#94a3b8;">검색 결과가 없어요</div>'
+    : list.map(mk => {
+        const on = selectedMedias.has(mk);
+        return '<div data-key="' + _escAttr(mk) + '" onmousedown="event.preventDefault(); toggleMediaChip(this.dataset.key)"'
+          + ' onmouseover="this.style.background=\'#f8fafc\'" onmouseout="this.style.background=\'\'"'
+          + ' style="display:flex; align-items:center; gap:8px; padding:7px 10px; border-radius:6px; cursor:pointer; font-size:13px; color:#334155;">'
+          + '<span style="width:14px; height:14px; flex-shrink:0; border-radius:4px; border:1.5px solid ' + (on ? '#4f46e5' : '#cbd5e1') + '; background:' + (on ? '#4f46e5' : 'white') + '; color:white; font-size:10px; line-height:11px; text-align:center;">' + (on ? '✓' : '') + '</span>'
+          + _escAttr(_mediaLabel(mk)) + '</div>';
+      }).join('');
+}
+function openMediaDropdown() {
+  document.getElementById('media-dropdown').style.display = '';
+  renderMediaDropdown();
+}
+function toggleMediaDropdown() {
+  const dd = document.getElementById('media-dropdown');
+  if (dd.style.display === 'none') { document.getElementById('media-search').focus(); openMediaDropdown(); }
+  else dd.style.display = 'none';
+}
+document.addEventListener('mousedown', e => {
+  const w = document.getElementById('media-search-wrap');
+  if (w && !w.contains(e.target)) document.getElementById('media-dropdown').style.display = 'none';
+});
 function setGroupBy(type) {
   groupBy = type;
   selectedMedias.clear();
@@ -1752,14 +1796,15 @@ const _SK = {
   products: { lock:'np_lock_prods' },
   media:    { lock:'np_lock_media' },
   ium:      { lock:'np_lock_ium' },
+  settle:   { lock:'np_lock_settle' },
 };
 
 function openDB() {
   return new Promise((resolve, reject) => {
-    const req = indexedDB.open('nyumpick', 2);
+    const req = indexedDB.open('nyumpick', 3); // v3: 정산(settle) 저장소 추가
     req.onupgradeneeded = e => {
       const db = e.target.result;
-      ['sales','products','media','ium'].forEach(s => {
+      ['sales','products','media','ium','settle'].forEach(s => {
         if (!db.objectStoreNames.contains(s)) db.createObjectStore(s);
       });
     };
@@ -1797,7 +1842,7 @@ async function clearDB(tab) {
 
 function isLocked(tab) { return localStorage.getItem(_SK[tab].lock) === '1'; }
 
-const _TAB_LABELS = { sales:'매출', products:'상품', media:'매체', ium:'이음기프트' };
+const _TAB_LABELS = { sales:'매출', products:'상품', media:'매체', ium:'이음기프트', settle:'정산' };
 window.addEventListener('beforeunload', e => {
   const locked = Object.keys(_SK).filter(isLocked);
   if (locked.length === 0) return;
@@ -1832,6 +1877,12 @@ async function saveToStorage(tab) {
     } else if (tab === 'ium') {
       if (!_iumData || !_iumData.length) { alert('저장할 데이터가 없습니다.'); return false; }
       await saveDB('ium', _iumData);
+    } else if (tab === 'settle') {
+      // 정산: 올린 파일들(발송내역·상품목록·공급사 정산서·매체 주문)과 화면 문구를 같이 저장
+      if (!_stPins && !_stProds && !_stSupRows && !_mdRows) { alert('저장할 데이터가 없습니다.'); return false; }
+      const info = id => document.getElementById(id).innerHTML;
+      await saveDB('settle', { pins: _stPins, dup: _stDup, prods: _stProds, sup: _stSupRows, supName: _stSupName, md: _mdRows, mdName: _mdFileName,
+        info: { pin: info('st-pin-info'), prod: info('st-prod-info'), sup: info('st-sup-info'), md: info('md-file-info') } });
     }
     return true;
   } catch(e) {
@@ -1844,16 +1895,15 @@ async function autoSaveIfLocked(tab) {
   if (isLocked(tab)) await saveToStorage(tab);
 }
 
-const _TAB_ICONS = { sales:'📊', products:'📦', media:'📺', ium:'🏢' };
-const _TAB_NAMES = { sales:'판매 분석', products:'상품 현황', media:'매체 상품현황', ium:'이음기프트 기업분석' };
+const _TAB_ICONS = { sales:'📊', products:'📦', media:'📺', ium:'🏢', settle:'💰' };
+const _TAB_NAMES = { sales:'판매 분석', products:'상품 현황', media:'매체 상품현황', ium:'이음기프트 기업분석', settle:'정산' };
 
 function updateLockBtn(tab, locked) {
   const btn = document.getElementById('lock-btn-' + tab);
   if (btn) {
-    btn.innerHTML        = locked ? '🔒 잠김' : '🔓 편집';
-    btn.style.background = locked ? '#4f46e5' : 'transparent';
-    btn.style.color      = locked ? 'white'   : '#94a3b8';
-    btn.style.border     = locked ? 'none'    : '1px solid #e2e8f0';
+    btn.textContent = locked ? '🔒 잠김' : '🔓 편집'; // 모양은 .lock-btn / .lock-btn.locked
+    btn.classList.add('lock-btn');
+    btn.classList.toggle('locked', locked);
   }
   const tabBtn = document.getElementById('tab-' + tab);
   if (tabBtn) {
@@ -1879,7 +1929,7 @@ async function loadFromStorage() {
         document.getElementById('date-from').value = minD ? fmtDate(minD) : '';
         document.getElementById('date-to').value   = maxD ? fmtDate(maxD) : '';
         document.getElementById('sales-upload-wrap').style.display = 'none';
-        document.getElementById('sales-controls').style.display = 'flex';
+        document.getElementById('sales-controls').style.display = 'block';
         document.getElementById('sales-kpis').style.display = 'grid';
         updateLockBtn('sales', true);
         renderSalesDashboard();
@@ -1938,6 +1988,23 @@ async function loadFromStorage() {
         updateLockBtn('ium', true);
       }
     } catch(e) { localStorage.removeItem(_SK.ium.lock); }
+  }
+
+  // 정산
+  if (isLocked('settle')) {
+    try {
+      const d = await loadDB('settle');
+      if (d) {
+        _stPins = d.pins || null; _stDup = d.dup || 0; _stProds = d.prods || null;
+        _stSupRows = d.sup || null; _stSupName = d.supName || '';
+        _mdRows = d.md || null; _mdFileName = d.mdName || '';
+        const set = (id, html) => { if (html) document.getElementById(id).innerHTML = html; };
+        set('st-pin-info', d.info.pin); set('st-prod-info', d.info.prod); set('st-sup-info', d.info.sup); set('md-file-info', d.info.md);
+        if (_mdRows) { const hit = Object.keys(_mdCfgAll()).find(n => _mdFileName.includes(n)); if (hit) mdFillMedia(hit); mdRender(true); }
+        if (_stPins) stRender(true);
+        updateLockBtn('settle', true);
+      }
+    } catch(e) { localStorage.removeItem(_SK.settle.lock); }
   }
 }
 function renderComposition(rows) {
@@ -2133,8 +2200,6 @@ function renderSalesDashboard() {
     </div>
   `).join('');
 
-  document.getElementById('sales-summary').textContent =
-    `${rows.length.toLocaleString()}건 · ${fmtAmt(totalAmt)}`;
 
   // Destroy old charts
   Object.values(charts).forEach(c => c.destroy());
@@ -2291,12 +2356,11 @@ function renderSalesDashboard() {
     card.innerHTML = `
       <div style="padding:16px 20px 14px; border-bottom:1px solid #f1f5f9; display:flex; align-items:center; gap:12px;">
         ${isAllCard
-          ? `<div style="width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:700; flex-shrink:0; background:#4f46e5; color:white;">전</div>`
+          ? `<div style="width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:700; flex-shrink:0; background:#e2e8f0; color:#334155;">전</div>`
           : `<div style="width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; flex-shrink:0; ${rankS}">${rank+1}</div>`
         }
         <div style="flex:1; min-width:0;">
           <div style="font-size:14px; font-weight:600; color:#0f172a; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${isAllCard ? '전체 합계' : mName}</div>
-          <div style="font-size:11px; font-weight:400; color:#94a3b8; margin-top:1px;">${isAllCard ? '전체 매체 합산' : groupBy === 'media' ? mediaCode : groupBy === 'brand' ? '브랜드' : '공급사'}</div>
         </div>
         <div style="text-align:right; flex-shrink:0;">
           <div class="num" style="font-size:14px; font-weight:700; color:${sortBy==='amt'?'#94a3b8':'#4f46e5'};">${mData.total.qty.toLocaleString()}개</div>
@@ -2371,9 +2435,8 @@ function renderSalesDashboard() {
         labels,
         datasets: [{
           data: vals,
-          backgroundColor: CHART_COLORS.slice(0, sorted.length).map(c => c + 'aa'),
-          borderColor:      CHART_COLORS.slice(0, sorted.length),
-          borderWidth: 1.5,
+          backgroundColor: '#a5b4fc',
+          borderWidth: 0,
           borderRadius: 5,
           borderSkipped: false,
         }]
@@ -2405,7 +2468,12 @@ function renderSalesDashboard() {
 // ════════════════════════════════════════════════════
 //  PRODUCTS FILE
 // ════════════════════════════════════════════════════
-async function handleProductsFile(ev) {
+// 파일 읽는 동안 '불러오는 중' 표시
+function handleProductsFile(ev) {
+  if (!(ev.target.files[0])) return;
+  return _withLoading('상품 목록 불러오는 중…', () => _handleProductsFile(ev));
+}
+async function _handleProductsFile(ev) {
   const file = ev.target.files[0]; if (!file) return;
   try {
     productsData = await parseExcel(file);
@@ -2902,7 +2970,12 @@ function normalizeDisc(val) {
 // ════════════════════════════════════════════════════
 //  MEDIA FILE
 // ════════════════════════════════════════════════════
-async function handleMediaFile(ev) {
+// 파일 읽는 동안 '불러오는 중' 표시
+function handleMediaFile(ev) {
+  if (!(ev.target.files[0])) return;
+  return _withLoading('매체 상품 불러오는 중…', () => _handleMediaFile(ev));
+}
+async function _handleMediaFile(ev) {
   const file = ev.target.files[0]; if (!file) return;
   try {
     mediaData = await parseExcel(file);
@@ -2937,7 +3010,12 @@ async function resetMedia() {
   document.getElementById('media-file').value = '';
 }
 
-async function handleMediaChanFile(ev) {
+// 파일 읽는 동안 '불러오는 중' 표시
+function handleMediaChanFile(ev) {
+  if (!(ev.target.files[0])) return;
+  return _withLoading('매체 판매 파일 불러오는 중…', () => _handleMediaChanFile(ev));
+}
+async function _handleMediaChanFile(ev) {
   const file = ev.target.files[0]; if (!file) return;
   try {
     mediaChanData = await parseExcel(file);
@@ -4765,8 +4843,7 @@ function renderIumAnalysis() {
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
         <div style="font-size:13px;font-weight:600;color:#1e293b;">이음기프트 기업 분석</div>
         <div style="display:flex;align-items:center;gap:6px;">
-          <button id="lock-btn-ium" onclick="toggleLock('ium')"
-            style="padding:4px 10px;font-size:10px;border-radius:6px;cursor:pointer;border:1px solid #e2e8f0;background:transparent;color:#94a3b8;font-family:'Noto Sans KR',sans-serif;">🔓 편집</button>
+          <button id="lock-btn-ium" class="lock-btn" onclick="toggleLock('ium')">🔓 편집</button>
           <label style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;cursor:pointer;font-size:10px;color:#94a3b8;">
             파일 재업로드<input type="file" accept=".xlsx,.xls,.csv" onchange="parseIumFile(this.files[0])" style="display:none;">
           </label>
@@ -4900,8 +4977,9 @@ function switchRegTab(t) {
   document.getElementById('reg-panel-moche').style.display = t === 'moche' ? 'block' : 'none';
   document.getElementById('reg-panel-media').style.display = t === 'media' ? 'block' : 'none';
   document.getElementById('reg-panel-stop').style.display  = t === 'stop'  ? 'block' : 'none';
-  const on  = 'padding:8px 20px; border-radius:8px; font-size:13px; font-weight:600; border:none; cursor:pointer; background:#6366f1; color:white; font-family:\'Noto Sans KR\',sans-serif;';
-  const off = 'padding:8px 20px; border-radius:8px; font-size:13px; font-weight:600; border:1px solid #e2e8f0; cursor:pointer; background:transparent; color:#64748b; font-family:\'Noto Sans KR\',sans-serif;';
+  // 처음 버튼과 크기(패딩·테두리)를 똑같이 — 다르면 누를 때마다 줄이 들썩임
+  const on  = 'padding:10px 24px; border-radius:9px; font-size:13px; font-weight:600; border:none; cursor:pointer; background:#4f46e5; color:white; font-family:\'Noto Sans KR\',sans-serif; transition:all .15s;';
+  const off = 'padding:10px 24px; border-radius:9px; font-size:13px; font-weight:600; border:none; cursor:pointer; background:transparent; color:#64748b; font-family:\'Noto Sans KR\',sans-serif; transition:all .15s;';
   document.getElementById('reg-tab-moche').style.cssText = t === 'moche' ? on : off;
   document.getElementById('reg-tab-media').style.cssText = t === 'media' ? on : off;
   document.getElementById('reg-tab-stop').style.cssText  = t === 'stop'  ? on : off;
@@ -5615,8 +5693,9 @@ function rpSetSource(s) {
   document.getElementById('rp-paste-wrap').style.display       = s === 'paste'  ? 'block' : 'none';
   document.getElementById('rp-generate-wrap').style.display    = s === 'paste'  ? 'none'  : 'flex';
   rpRefreshBrandDiscUI();
-  const on  = 'padding:8px 20px; border-radius:8px; font-size:12px; font-weight:600; border:none; cursor:pointer; background:#6366f1; color:white; font-family:\'Noto Sans KR\',sans-serif;';
-  const off = 'padding:8px 20px; border-radius:8px; font-size:12px; font-weight:600; border:1px solid #e2e8f0; cursor:pointer; background:transparent; color:#64748b; font-family:\'Noto Sans KR\',sans-serif;';
+  // 크기 같은 토글 — 고른 것만 흰 바탕
+  const on  = 'padding:7px 18px; border-radius:7px; font-size:12px; font-weight:600; border:none; cursor:pointer; background:white; color:#1e293b; box-shadow:0 1px 3px rgba(0,0,0,0.1); font-family:\'Noto Sans KR\',sans-serif;';
+  const off = 'padding:7px 18px; border-radius:7px; font-size:12px; font-weight:600; border:none; cursor:pointer; background:transparent; color:#64748b; font-family:\'Noto Sans KR\',sans-serif;';
   document.getElementById('rp-src-moche').style.cssText = s === 'moche' ? on : off;
   document.getElementById('rp-src-excel').style.cssText = s === 'excel' ? on : off;
   document.getElementById('rp-src-paste').style.cssText = s === 'paste' ? on : off;
@@ -6034,7 +6113,7 @@ function _regToast(msg, err) {
 function switchSettleTab(t) {
   document.getElementById('st-panel-sup').style.display   = t === 'sup'   ? 'block' : 'none';
   document.getElementById('st-panel-media').style.display = t === 'media' ? 'block' : 'none';
-  const on  = "padding:10px 24px; border-radius:9px; font-size:13px; font-weight:600; border:none; cursor:pointer; background:#6366f1; color:white; font-family:'Noto Sans KR',sans-serif; transition:all .15s;";
+  const on  = "padding:10px 24px; border-radius:9px; font-size:13px; font-weight:600; border:none; cursor:pointer; background:#4f46e5; color:white; font-family:'Noto Sans KR',sans-serif; transition:all .15s;";
   const off = "padding:10px 24px; border-radius:9px; font-size:13px; font-weight:600; border:none; cursor:pointer; background:transparent; color:#64748b; font-family:'Noto Sans KR',sans-serif; transition:all .15s;";
   document.getElementById('st-tab-sup').style.cssText   = t === 'sup'   ? on : off;
   document.getElementById('st-tab-media').style.cssText = t === 'media' ? on : off;
@@ -6071,6 +6150,7 @@ async function _stLoadPins(file) {
     document.getElementById('st-pin-info').innerHTML = `<strong style="color:#0f172a;">${_csEscAttr(file.name)}</strong> · ${_stPins.length.toLocaleString()}건 (사용 ${used.toLocaleString()}건)`
       + (_stDup ? ` · <span style="color:#475569;">재발송 중복 ${_stDup.toLocaleString()}건 제외</span>` : '');
     stRender(true);
+    await autoSaveIfLocked('settle');
   } catch (err) { _regToast('발송내역 읽기 오류: ' + err.message, 1); }
 }
 
@@ -6102,6 +6182,7 @@ async function _stLoadProds(file) {
         수수료: Math.round(_parsePrice(col(r, '공급수수료')) * 1e4) / 1e4, // -2.4가 -2.40000009로 저장돼 있어 반올림
         소비자가: _parsePrice(col(r, '소비자가')),
         공급가: _parsePrice(col(r, '공급가')),
+        공급사코드: String(col(r, '공급사상품코드') || '').trim().replace(/^'/, ''), // 공급사 정산서 대사용
       };
       put(String(col(r, '상품코드') || '').trim(), v);
       const sc = String(col(r, '공급사상품코드') || '').trim().replace(/^'/, '');
@@ -6112,6 +6193,7 @@ async function _stLoadProds(file) {
     _stProds = map;
     document.getElementById('st-prod-info').innerHTML = `<strong style="color:#0f172a;">${_csEscAttr(file.name)}</strong> · ${rows.length.toLocaleString()}행`;
     stRender();
+    await autoSaveIfLocked('settle');
   } catch (err) { _regToast('상품목록 읽기 오류: ' + err.message, 1); }
 }
 
@@ -6157,11 +6239,12 @@ function _stCompute(month) {
     }
     const supName = p.공급사 || '(공급사 없음)';
     let s = sups.get(supName);
-    if (!s) sups.set(supName, s = { name: supName, cnt: 0, list: 0, amt: 0, camt: 0, prods: new Map(), rows: [] });
+    if (!s) sups.set(supName, s = { name: supName, cnt: 0, list: 0, amt: 0, camt: 0, prods: new Map(), rows: [], raw: [] });
     s.cnt++; s.list += list; s.amt += unit; s.camt += calc;
     const key = code + '|' + list;
     const pr = s.prods.get(key) || { code, name, list, fee: p.수수료, unit, calc, bad, cnt: 0, amt: 0, camt: 0 };
     pr.cnt++; pr.amt += unit; pr.camt += calc; s.prods.set(key, pr);
+    s.raw.push(r); // 원본 발송내역 행 (재발송 제외된 것)
     s.rows.push([supName, String(col(r, '거래번호') || ''), String(col(r, '주문번호') || ''), code, name,
       String(col(r, '쿠폰번호') || ''), _stDateText(col(r, '사용일')), list, p.수수료, calc, unit, bad ? '공급가 확인' : '']);
   });
@@ -6256,7 +6339,7 @@ function stRender(resetMonth) {
       <td style="padding:9px 12px; text-align:right;">${s.list.toLocaleString()}</td>
       <td style="padding:9px 12px; text-align:right; font-weight:700;">${s.camt.toLocaleString()}</td>
       <td style="padding:9px 12px; text-align:right; font-weight:700; color:#4f46e5;">${s.amt.toLocaleString()}</td>
-      <td style="padding:9px 12px; text-align:center;"><button onclick="stExport(${i})" style="${btn} background:white; color:#475569; border:1px solid #e2e8f0;">📥</button></td>
+      <td style="padding:9px 12px; text-align:center;"><button onclick="stExport(${i})" style="${btn} background:white; color:#475569; border:1px solid #e2e8f0;">엑셀</button></td>
     </tr>${prods}`;
   }).join('') + `<tr style="border-top:2px solid #e2e8f0; font-weight:700;">
       <td style="padding:10px 12px;">합계</td>
@@ -6268,6 +6351,270 @@ function stRender(resetMonth) {
       <td></td>
     </tr>`;
   stRender._sups = sups;
+  _stReconRender();
+}
+
+// ════════════════════════════════════════════════════
+//  공급사 정산서 대사 — 공급사가 보내준 정산서(건별 CSV)와 우리 발송내역을 건별로 맞춰봄
+//  공급사 기준: 공급사 시스템 교환일자 월 · 발송 당시 할인율 · 정산대상금액
+//  매칭: 쿠폰번호 형식이 달라서 (수신번호 앞5·뒤3 + 공급사 상품코드) 같은 것 중 시각이 가장 가까운 것
+//  차이 = 공급사 금액 − 늄픽 금액(상품 기준)을 원인별로 나눔 → 다 더하면 정확히 총 차이
+// ════════════════════════════════════════════════════
+let _stSupRows = null, _stSupName = '';
+
+function _stDigits(v) { return String(v == null ? '' : v).replace(/\D/g, ''); }
+function _stYm(v) { const d = _stDigits(v); return d.length >= 6 ? d.slice(0, 4) + '-' + d.slice(4, 6) : ''; }
+function _stTime(v) {
+  if (v instanceof Date) return v.getTime();
+  const d = _stDigits(v);
+  if (d.length < 12) return null;
+  const p = (a, b) => +d.slice(a, b);
+  return Date.UTC(p(0, 4), p(4, 6) - 1, p(6, 8), p(8, 10), p(10, 12), d.length >= 14 ? p(12, 14) : 0);
+}
+function _stMaskPhone(v) { const d = _stDigits(v); return d.length >= 10 ? d.slice(0, 5) + '***' + d.slice(-3) : d; }
+
+async function stLoadSupStatement(file) {
+  if (!file) return;
+  return _withLoading('공급사 정산서 불러오는 중…', async () => {
+    try {
+      let rows;
+      if (/\.csv$/i.test(file.name)) {
+        const buf = await file.arrayBuffer();
+        let text;
+        try { text = new TextDecoder('utf-8', { fatal: true }).decode(buf); } catch { text = new TextDecoder('euc-kr').decode(buf); }
+        const wb = XLSX.read(text.replace(/^﻿/, ''), { type: 'string', raw: true });
+        rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { defval: '', raw: false });
+      } else {
+        rows = await _csReadRows(file);
+        if (!rows) return;
+      }
+      const keys = rows.length ? Object.keys(rows[0]).map(k => k.trim()) : [];
+      if (!['교환일자', '정산대상금액', '수신자번호', '상품코드'].every(k => keys.includes(k)))
+        return _regToast('교환일자·정산대상금액·수신자번호·상품코드 열이 없어요. 공급사 건별 정산서(거래요약 핀그룹 CSV)인지 확인해 주세요', 1);
+      _stSupRows = rows;
+      _stSupName = file.name;
+      const months = [...new Set(rows.map(r => _stYm(col(r, '교환일자'))).filter(Boolean))].sort();
+      document.getElementById('st-sup-info').innerHTML = `<strong style="color:#0f172a;">${_csEscAttr(file.name)}</strong> · ${rows.length.toLocaleString()}건 · ${months.join(', ')}`;
+      const sel = document.getElementById('st-month'); // 정산서 달로 정산월 맞춤
+      if (months.length === 1 && [...sel.options].some(o => o.value === months[0])) sel.value = months[0];
+      stRender();
+      await autoSaveIfLocked('settle');
+    } catch (err) { _regToast('공급사 정산서 읽기 오류: ' + err.message, 1); }
+  });
+}
+
+function _stRecon(month) {
+  if (!_stSupRows || !_stPins || !_stProds) return null;
+  // 우리 사용 건 (재발송 제외된 _stPins) → (수신번호 마스킹 | 공급사 상품코드)로 묶음
+  const ours = [], idx = new Map();
+  _stPins.forEach(r => {
+    if (!_stIsUsed(r)) return;
+    const code = String(col(r, '상품코드') || '').trim();
+    const p = _stProds.get(code) || _stProds.get(code.replace(/^0+/, ''));
+    if (!p || !p.공급사코드) return;
+    const list = p.소비자가 || _parsePrice(col(r, '정상가'));
+    const unit = p.공급가 || Math.floor(list * (1 + p.수수료 / 100) + 1e-6);
+    const o = { r, sup: p.공급사, unit, t: _stTime(col(r, '사용일')), m: _stMonth(col(r, '사용일')) };
+    ours.push(o);
+    const k = _stMaskPhone(col(r, '수신번호')) + '|' + p.공급사코드;
+    if (!idx.has(k)) idx.set(k, []);
+    idx.get(k).push(o);
+  });
+  const sup = _stSupRows.map(r => ({
+    r, amt: _parsePrice(col(r, '정산대상금액')),
+    t: _stTime(col(r, '교환일자')), m: _stYm(col(r, '교환일자')), send: _stYm(col(r, '발송일자')),
+    ret: /반품/.test(String(col(r, '핀상태') || '')),
+    phone: String(col(r, '수신자번호') || '').trim(),
+    code: String(col(r, '상품코드') || '').replace(/^'/, '').trim(),
+  })).filter(s => s.m === month);
+  // 시각이 가장 가까운 짝부터 1:1
+  const cand = [];
+  sup.forEach((s, si) => {
+    if (s.ret || s.t == null) return;
+    // 같은 달에 쓴 우리 건을 먼저 짝지음 (다른 달 건은 같은 달 후보가 없을 때만)
+    (idx.get(s.phone + '|' + s.code) || []).forEach(o => { if (o.t != null) cand.push([Math.abs(o.t - s.t) + (o.m === month ? 0 : 1e11), si, o]); });
+  });
+  cand.sort((a, b) => a[0] - b[0]);
+  const used = new Set();
+  cand.forEach(([, si, o]) => { if (sup[si].o || used.has(o)) return; sup[si].o = o; used.add(o); });
+  const cnt = new Map();
+  sup.forEach(s => s.o && cnt.set(s.o.sup, (cnt.get(s.o.sup) || 0) + 1));
+  const supName = [...cnt].sort((a, b) => b[1] - a[1])[0]?.[0] || '';
+  // 원인별 — label: 짧은 이름, desc: 쉬운 설명, ok: 기준이 달라 생기는 차이(문제 없음)인지
+  const C = (label, desc, ok) => ({ label, desc, ok, cnt: 0, amt: 0, rows: [] });
+  const cats = {
+    same:    C('일치', '', true),
+    rate:    C('지난달에 보낸 쿠폰', '지난달 보내고 이번 달 쓴 쿠폰 — 공급사는 보낸 달 할인율로, 늄픽은 지금 상품목록 할인율로 계산해요', true),
+    ret:     C('반품', '공급사가 반품 처리한 쿠폰 — 원래 사용 건과 반품 건이 같이 빠져요', true),
+    month:   C('사용한 달이 다름', '공급사는 이번 달 사용, 늄픽은 다른 달 사용으로 잡힌 쿠폰 (사용 시각 차이)', false),
+    ourOnly: C('늄픽에만 있음', '늄픽은 이번 달 사용인데 공급사 정산서에서 못 찾은 쿠폰', false),
+    supOnly: C('공급사에만 있음', '공급사 정산서엔 있는데 늄픽 사용 내역에서 못 찾은 쿠폰', false),
+    zero:    C('공급사가 0원 처리', '공급사 정산서에 0원으로 찍힌 쿠폰 — 공급사에 문의', false),
+    price:   C('1건 금액이 다름', '이번 달 보낸 쿠폰인데 금액이 달라요 — 상품 공급가 등록 확인', false),
+  };
+
+  const add = (k, amt, row) => { cats[k].cnt++; cats[k].amt += amt; cats[k].rows.push(row); };
+  let supTot = 0, ourTot = 0;
+  // 반품 건(같은 수신번호·상품코드·금액)의 원래 사용 건 — 늄픽에서 못 찾은 건이면 반품과 짝지어 같이 '반품'으로
+  const retKey = s => s.phone + '|' + s.code + '|' + Math.abs(s.amt);
+  const retLeft = new Map();
+  sup.forEach(s => { if (s.ret && s.amt) retLeft.set(retKey(s), (retLeft.get(retKey(s)) || 0) + 1); });
+  sup.forEach(s => {
+    supTot += s.amt;
+    const o = s.o, row = { s, o };
+    if (s.ret) return add('ret', s.amt, row);
+    if (!o && retLeft.get(retKey(s)) > 0) { retLeft.set(retKey(s), retLeft.get(retKey(s)) - 1); return add('ret', s.amt, row); }
+    if (!o) return add('supOnly', s.amt, row);
+    if (o.m !== month) return add('month', s.amt, row);
+    ourTot += o.unit;
+    const d = s.amt - o.unit;
+    if (!d) return add('same', 0, row);
+    if (!s.amt) return add('zero', d, row);
+    if (s.send && s.send < month) return add('rate', d, row);
+    add('price', d, row);
+  });
+  ours.forEach(o => {
+    if (o.m !== month || used.has(o) || (supName && o.sup !== supName)) return;
+    ourTot += o.unit; add('ourOnly', -o.unit, { o });
+  });
+  return { supName, supTot, ourTot, cats };
+}
+
+function _stReconRender() {
+  const box = document.getElementById('st-recon');
+  const rc = _stRecon(document.getElementById('st-month').value);
+  if (!rc) { box.style.display = 'none'; return; }
+  box.style.display = 'block';
+  const N = v => Math.abs(Math.round(v)).toLocaleString();
+  const diff = rc.supTot - rc.ourTot;
+  const tile = (label, val, hl) => `<div style="flex:1; min-width:170px; padding:12px 16px; border-radius:10px; ${hl ? 'border:2px solid #6366f1;' : 'border:1px solid #e2e8f0;'}"><div style="font-size:12px; color:#64748b; margin-bottom:4px;">${label}</div><div style="font-size:18px; font-weight:700; color:${hl ? '#4f46e5' : '#0f172a'};">${val}</div></div>`;
+  const all = Object.entries(rc.cats).filter(([k, c]) => c.cnt && k !== 'same').map(([, c]) => c);
+  const ok = all.filter(c => c.ok), chk = all.filter(c => !c.ok);
+  const cnt = l => l.reduce((a, c) => a + c.cnt, 0);
+  box.innerHTML = `<div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
+      <div style="font-size:14px; font-weight:700; color:#0f172a;">공급사 정산서와 비교${rc.supName ? ' · ' + _csEscAttr(rc.supName) : ''}</div>
+      <div style="flex:1;"></div>
+      <button onclick="stReconExport()" style="padding:6px 14px; background:white; color:#334155; border:1px solid #e2e8f0; border-radius:8px; font-size:12px; font-weight:600; cursor:pointer;">대사 엑셀</button>
+    </div>
+    <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:14px;">
+      ${tile('공급사가 청구한 금액', N(rc.supTot) + '원')}${tile('늄픽이 계산한 금액', N(rc.ourTot) + '원')}${tile(!Math.round(diff) ? '차이' : diff > 0 ? '차이 · 공급사가 더 많음' : '차이 · 늄픽이 더 많음', N(diff) + '원', true)}
+    </div>
+    <div style="background:#f8fafc; border-radius:10px; padding:12px 16px; font-size:13px; color:#334155; line-height:1.7;">
+      <strong>${rc.cats.same.cnt.toLocaleString()}건</strong>은 금액이 똑같아요.
+      나머지 중 <strong>${cnt(ok).toLocaleString()}건</strong>은 공급사와 계산 기준이 달라서 생긴 차이라 문제 없고,
+      ${chk.length ? `<strong>${cnt(chk).toLocaleString()}건</strong>은 확인이 필요해요. 원인별·건별 내용은 대사 엑셀에서 볼 수 있어요.` : '확인할 건 없어요.'}
+    </div>
+`;
+}
+
+// 대사 엑셀 — 요약 시트(금액 비교 + 원인별 합계) + 원인별 시트(건별)
+// 건별 시트는 금액이 더 많은 쪽(공급사 / 늄픽) 칸을 노란색으로 칠함
+async function stReconExport() {
+  const month = document.getElementById('st-month').value;
+  const rc = _stRecon(month);
+  if (!rc) return;
+  try { await _loadExcelJs(); } catch (e) { return _regToast(e.message + ' — 인터넷 연결을 확인해 주세요', 1); }
+  const N = v => Math.round(v || 0);
+  const WON = '#,##0';
+  const fill = argb => ({ type: 'pattern', pattern: 'solid', fgColor: { argb } });
+  const HL = fill('FFFFF59D'), GRAY = fill('FFF1F5F9'), SUP = fill('FFE2E8F0'), OUR = fill('FFE0E7FF'), SUB = fill('FFF8FAFC');
+  const LINE = { style: 'thin', color: { argb: 'FFE2E8F0' } };
+  const box = cell => { cell.border = { top: LINE, left: LINE, bottom: LINE, right: LINE }; };
+  const side = v => !N(v) ? '-' : v > 0 ? '공급사' : '늄픽';
+  const dt = v => { // 20261010123456 / Date → 2026-10-10 12:34
+    if (v instanceof Date) return _stDateText(v).slice(0, 16);
+    const d = _stDigits(v);
+    return d.length >= 12 ? `${d.slice(0, 4)}-${d.slice(4, 6)}-${d.slice(6, 8)} ${d.slice(8, 10)}:${d.slice(10, 12)}`
+      : d.length >= 8 ? `${d.slice(0, 4)}-${d.slice(4, 6)}-${d.slice(6, 8)}` : String(v || '');
+  };
+  const [y, m] = month.split('-');
+  const wb = new ExcelJS.Workbook();
+  const cats = Object.entries(rc.cats).filter(([k, c]) => k !== 'same' && c.cnt);
+  const chk = cats.filter(([, c]) => !c.ok), okAmt = cats.filter(([, c]) => c.ok).reduce((a, [, c]) => a + c.amt, 0);
+  const groups = chk.length ? [['확인 필요', chk]] : []; // 시트는 확인 필요 원인만
+  const sheetName = c => c.label.replace(/[\/?*[\]:]/g, ' ').slice(0, 31);
+  const SGN = '+#,##0;-#,##0;0'; // + = 공급사가 더, - = 늄픽이 더
+
+  // ── 요약: 계산식 + 차이 구성(확인 필요 원인별)
+  const ws0 = wb.addWorksheet('요약', { views: [{ showGridLines: false }] });
+  ws0.columns = [{ width: 2 }, { width: 4 }, { width: 30 }, { width: 10 }, { width: 16 }, { width: 64 }];
+  ws0.getCell('B1').value = `공급사 정산서 대사 — ${rc.supName || '공급사'} · ${y}년 ${+m}월`;
+  ws0.getCell('B1').font = { bold: true, size: 14 };
+  ws0.addRow([]);
+  const d = rc.supTot - rc.ourTot;
+  const calc = (o, l, v, fmt, hl) => {
+    const r = ws0.addRow(['', o, l, '', N(v)]);
+    r.getCell(2).alignment = { horizontal: 'center' }; r.getCell(2).font = { bold: true, color: { argb: 'FF94A3B8' } };
+    r.getCell(5).numFmt = fmt; [2, 3, 4, 5].forEach(c => box(r.getCell(c)));
+    r.getCell(3).fill = GRAY;
+    if (hl) { r.font = { bold: true }; r.getCell(5).fill = HL; }
+  };
+  calc('', '공급사가 청구한 금액', rc.supTot, WON);
+  calc('−', '늄픽이 계산한 금액', rc.ourTot, WON);
+  calc('=', '차이 (+ 공급사가 더 / − 늄픽이 더)', d, SGN, true);
+  ws0.addRow([]);
+  const t = ws0.addRow(['', '', '차이 구성', '건수', '금액', '설명 (건별 내용은 같은 이름의 시트)']);
+  t.eachCell((c, i) => { if (i > 2) { c.font = { bold: true }; c.fill = GRAY; box(c); } });
+  chk.forEach(([, c]) => {
+    const r = ws0.addRow(['', '', c.label, c.cnt, N(c.amt), c.desc]);
+    r.getCell(2).alignment = { horizontal: 'center' }; r.getCell(2).font = { color: { argb: 'FF94A3B8' } };
+    r.getCell(3).value = { text: c.label, hyperlink: `#'${sheetName(c)}'!A1` };
+    r.getCell(3).font = { color: { argb: 'FF4338CA' }, underline: true };
+    r.getCell(4).numFmt = WON; r.getCell(5).numFmt = SGN; r.getCell(6).alignment = { wrapText: true, vertical: 'middle' };
+    for (let k = 3; k <= 6; k++) box(r.getCell(k));
+  });
+  if (okAmt || cats.some(([, c]) => c.ok)) {
+    const r = ws0.addRow(['', '', '계산 기준 차이', '', N(okAmt), '지난달 보낸 쿠폰 할인율·반품 — 확인 안 해도 됨']);
+    r.getCell(2).alignment = { horizontal: 'center' }; r.getCell(2).font = { color: { argb: 'FF94A3B8' } };
+    r.font = { color: { argb: 'FF64748B' } }; r.getCell(5).numFmt = SGN;
+    for (let k = 3; k <= 6; k++) box(r.getCell(k));
+  }
+  const tt = ws0.addRow(['', '=', '합계 (= 위 차이)', '', N(d), '']);
+  tt.font = { bold: true }; tt.getCell(2).alignment = { horizontal: 'center' }; tt.getCell(5).numFmt = SGN;
+  for (let k = 3; k <= 6; k++) { tt.getCell(k).fill = GRAY; box(tt.getCell(k)); }
+
+  // ── 원인별 시트 (확인 필요 먼저)
+  const COLS = [['더 많은 쪽', 10], ['차이 (+공급사/−늄픽)', 16],
+    ['주문번호', 22], ['상품코드', 16], ['상품명', 40], ['수신자번호', 14], ['발송일시', 17], ['사용일시', 17], ['금액', 12],
+    ['거래번호', 28], ['상품코드', 18], ['사용일시', 17], ['금액', 12]];
+  const S0 = 3, S1 = 9, O0 = 10, O1 = 13; // 공급사 칸 C~I, 늄픽 칸 J~M
+  groups.forEach(([, list]) => list.forEach(([k, c]) => {
+    const ws = wb.addWorksheet(sheetName(c), { views: [{ state: 'frozen', ySplit: 3, showGridLines: false }] });
+    ws.columns = COLS.map(([, width]) => ({ width }));
+    ws.getCell('A1').value = `${c.label} — ${c.desc}`;
+    ws.getCell('A1').font = { bold: true, size: 12 };
+    const g = ws.getRow(2);
+    g.getCell(S0).value = '공급사 정산서'; g.getCell(O0).value = '늄픽';
+    ws.mergeCells(2, S0, 2, S1); ws.mergeCells(2, O0, 2, O1);
+    [[S0, SUP], [O0, OUR]].forEach(([i, f]) => { const cl = g.getCell(i); cl.fill = f; cl.font = { bold: true }; cl.alignment = { horizontal: 'center' }; box(cl); });
+    const h = ws.getRow(3);
+    COLS.forEach(([t], i) => { const cl = h.getCell(i + 1); cl.value = t; cl.font = { bold: true }; cl.fill = i + 1 >= S0 && i + 1 <= S1 ? SUP : i + 1 >= O0 ? OUR : GRAY; box(cl); });
+    let tot = 0;
+    c.rows.forEach(({ s, o }) => {
+      const sr = s ? s.r : null, or = o ? o.r : null;
+      const so = s ? s.amt : 0, ou = o && k !== 'month' ? o.unit : 0, df = N(so - ou);
+      tot += df;
+      const r = ws.addRow([side(df), df,
+        sr ? String(col(sr, '주문번호') || '').replace(/^'/, '') : '', s ? s.code : '', String((sr && col(sr, '상품명')) || (or && col(or, '상품명')) || ''),
+        s ? s.phone : _stMaskPhone(col(or, '수신번호')), sr ? dt(col(sr, '발송일자')) : '', sr ? dt(col(sr, '교환일자')) : '', s ? N(so) : null,
+        or ? String(col(or, '거래번호') || '') : '', or ? String(col(or, '상품코드') || '') : '', or ? dt(col(or, '사용일')) : '', o && k !== 'month' ? N(ou) : null]); // 사용한 달이 다름: 늄픽은 다른 달 정산이라 이 달 금액 칸은 비움
+      [S1, O1].forEach(i => r.getCell(i).numFmt = WON); r.getCell(2).numFmt = SGN;
+      if (df > 0) for (let i = S0; i <= S1; i++) r.getCell(i).fill = HL;
+      if (df < 0) for (let i = O0; i <= O1; i++) r.getCell(i).fill = HL;
+      r.eachCell({ includeEmpty: true }, cl => { cl.border = { bottom: LINE }; });
+    });
+    const sr = ws.addRow([side(tot), tot, '합계']);
+    sr.font = { bold: true }; sr.getCell(2).numFmt = SGN;
+    for (let i = 1; i <= COLS.length; i++) sr.getCell(i).fill = GRAY;
+    ws.autoFilter = { from: { row: 3, column: 1 }, to: { row: 3, column: COLS.length } };
+  }));
+
+  const buf = await wb.xlsx.writeBuffer();
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }));
+  a.download = `공급사대사_${month}${rc.supName ? '_' + rc.supName : ''}.xlsx`;
+  a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  _regToast(`${a.download} 다운로드 완료`);
 }
 
 function stToggle(i) {
@@ -6277,7 +6624,7 @@ function stToggle(i) {
   stRender();
 }
 
-// 정산서 엑셀: 요약 / 상품별 / 건별 시트 (i가 있으면 그 공급사만)
+// 정산서 엑셀: Sheet1(원본 발송내역, 재발송 제외) / 요약 / 상품별 / 건별 시트 (i가 있으면 그 공급사만)
 function stExport(i) {
   if (!_stPins || !_stProds) return _regToast('발송내역과 상품목록을 모두 올려주세요', 1);
   const month = document.getElementById('st-month').value;
@@ -6288,6 +6635,12 @@ function stExport(i) {
   const wb = XLSX.utils.book_new();
   const add = (name, aoa, widths) => { const ws = XLSX.utils.aoa_to_sheet(aoa); ws['!cols'] = widths.map(w => ({ wch: w })); XLSX.utils.book_append_sheet(wb, ws, name); };
   const tot = sups.reduce((a, s) => [a[0] + s.cnt, a[1] + s.list, a[2] + s.camt, a[3] + s.amt], [0, 0, 0, 0]);
+  // Sheet1: 올린 발송내역 그대로의 열로, 이 공급사·정산월 사용 건만 (같은 쿠폰번호 재발송은 1건)
+  const raw = sups.flatMap(s => s.raw);
+  const head = Object.keys(_stPins[0] || {});
+  const ws0 = XLSX.utils.json_to_sheet(raw.map(r => Object.fromEntries(head.map(k => [k, r[k] instanceof Date ? _stDateText(r[k]) : r[k]]))), { header: head });
+  ws0['!cols'] = head.map(k => ({ wch: /상품명/.test(k) ? 40 : /번호|일|시간/.test(k) ? 20 : 12 }));
+  XLSX.utils.book_append_sheet(wb, ws0, 'Sheet1');
   add('요약', [['정산월', '공급사', '사용 건수', '소비자가 합계', '정산금액(수수료 기준)', '정산금액(상품 기준)'],
     ...sups.map(s => [month, s.name, s.cnt, s.list, s.camt, s.amt]),
     ...(sups.length > 1 ? [['', '합계', ...tot]] : [])], [10, 16, 10, 14, 14, 18]);
@@ -6441,6 +6794,7 @@ async function _mdLoadOrders(file) {
     if (hit) mdFillMedia(hit);
     document.getElementById('md-file-info').innerHTML = `<strong style="color:#0f172a;">${_csEscAttr(file.name)}</strong> · ${rows.length.toLocaleString()}건`;
     mdRender(true);
+    await autoSaveIfLocked('settle');
   } catch (err) { _regToast('주문 파일 읽기 오류: ' + err.message, 1); }
 }
 
@@ -6656,7 +7010,7 @@ function mdMsg(kind) {
   let title, text;
   const mail = document.getElementById('md-mail-cfg');
   if (kind === 'jandi') {
-    title = '💬 잔디 공유 문구';
+    title = '잔디 공유 문구';
     mail.style.display = 'none';
     text = [`${shop ? shop + '몰_' : ''}${media} 정산`, '',
       `[${String(m).padStart(2, '0')}월 정산 내역]`,
@@ -6669,7 +7023,7 @@ function mdMsg(kind) {
       `- 부가세액: ${N(vat)} 원`,
       `- 합계금액: ${N(fee + vat)} 원`].join('\n');
   } else {
-    title = '✉️ 메일 문구';
+    title = '메일 문구';
     const mc = _mdMailCfg(media);
     mail.style.display = 'flex';
     document.getElementById('md-mail-to').value = mc.to || '';
@@ -6709,7 +7063,12 @@ let _csRowsByDate = {};
 let _csTableRows = [];
 const _csCharts = {};
 
-async function handleCsFile(file) {
+// 파일 읽는 동안 '불러오는 중' 표시
+function handleCsFile(file) {
+  if (!(file)) return;
+  return _withLoading('상담 이력 불러오는 중…', () => _handleCsFile(file));
+}
+async function _handleCsFile(file) {
   if (!file) return;
   try {
     const rows = await _csReadRows(file);

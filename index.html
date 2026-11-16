@@ -7081,11 +7081,16 @@ function _mdVat(fee) { return Math.floor(Math.round(fee) * 0.1); }
 
 // 메일 받는 분·보내는 분·세금계산서 메일은 개인정보라 저장소에 안 넣고 이 브라우저에만 매체별로 기억
 const MD_MAIL_KEY = 'numpick_media_mail';
-function _mdMailCfg(media) { try { return (JSON.parse(localStorage.getItem(MD_MAIL_KEY)) || {})[media] || {}; } catch { return {}; } }
+// 보내는 분은 매체와 상관없이 같은 사람이라, 한 번 적으면 모든 매체에 같이 씀 (_from)
+function _mdMailCfg(media) {
+  try { const all = JSON.parse(localStorage.getItem(MD_MAIL_KEY)) || {}, c = all[media] || {}; return { ...c, from: c.from || all._from || '' }; } catch { return {}; }
+}
 function mdSaveMail() {
   const media = document.getElementById('md-media').value;
   let all = {}; try { all = JSON.parse(localStorage.getItem(MD_MAIL_KEY)) || {}; } catch {}
-  all[media] = { to: document.getElementById('md-mail-to').value.trim(), from: document.getElementById('md-mail-from').value.trim(), tax: document.getElementById('md-mail-tax').value.trim() };
+  const from = document.getElementById('md-mail-from').value.trim();
+  all[media] = { to: document.getElementById('md-mail-to').value.trim(), from, tax: document.getElementById('md-mail-tax').value.trim() };
+  if (from) all._from = from;
   try { localStorage.setItem(MD_MAIL_KEY, JSON.stringify(all)); } catch {}
   mdMsg('mail');
 }
@@ -7142,7 +7147,7 @@ function mdMsg(kind) {
       `- 부가세액: ${N(vat)} 원`,
       `- 합계금액: ${N(fee + vat)} 원`, '',
       ...(mc.tax ? ['세금계산서 발행 메일이 변경 되었습니다.', '아래 메일 주소로 전달 부탁드립니다.', `-${mc.tax}`, ''] : []),
-      '확인 부탁드립니다.', '', '감사합니다.', '', `-${mc.from || '○○○'} 드림`].join('\n');
+      '확인 부탁드립니다.', '', '감사합니다.', `${mc.from || '○○○'} 드림`].join('\n');
   }
   document.getElementById('md-msg-title').textContent = title;
   document.getElementById('md-msg-text').value = text;

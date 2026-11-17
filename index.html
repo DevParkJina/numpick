@@ -863,6 +863,7 @@
       </div>
       <div style="margin-left:auto; display:flex; align-items:center; gap:14px;">
         <span id="cs-summary" style="font-size:12px; font-weight:600; color:#4f46e5; background:#eef2ff; padding:5px 12px; border-radius:20px;"></span>
+        <button id="lock-btn-cs" class="lock-btn" onclick="toggleLock('cs')">🔓 편집</button>
         <button onclick="resetCs()" style="font-size:12px; color:#94a3b8; background:none; border:none; cursor:pointer; font-weight:500;">초기화</button>
       </div>
     </div>
@@ -1818,14 +1819,15 @@ const _SK = {
   media:    { lock:'np_lock_media' },
   ium:      { lock:'np_lock_ium' },
   settle:   { lock:'np_lock_settle' },
+  cs:       { lock:'np_lock_cs' },
 };
 
 function openDB() {
   return new Promise((resolve, reject) => {
-    const req = indexedDB.open('nyumpick', 3); // v3: 정산(settle) 저장소 추가
+    const req = indexedDB.open('nyumpick', 4); // v3: 정산(settle), v4: CS관리(cs) 저장소 추가
     req.onupgradeneeded = e => {
       const db = e.target.result;
-      ['sales','products','media','ium','settle'].forEach(s => {
+      ['sales','products','media','ium','settle','cs'].forEach(s => {
         if (!db.objectStoreNames.contains(s)) db.createObjectStore(s);
       });
     };
@@ -1863,7 +1865,7 @@ async function clearDB(tab) {
 
 function isLocked(tab) { return localStorage.getItem(_SK[tab].lock) === '1'; }
 
-const _TAB_LABELS = { sales:'매출', products:'상품', media:'매체', ium:'이음기프트', settle:'정산' };
+const _TAB_LABELS = { sales:'매출', products:'상품', media:'매체', ium:'이음기프트', settle:'정산', cs:'CS' };
 window.addEventListener('beforeunload', e => {
   const locked = Object.keys(_SK).filter(isLocked);
   if (locked.length === 0) return;
@@ -1898,6 +1900,9 @@ async function saveToStorage(tab) {
     } else if (tab === 'ium') {
       if (!_iumData || !_iumData.length) { alert('저장할 데이터가 없습니다.'); return false; }
       await saveDB('ium', _iumData);
+    } else if (tab === 'cs') {
+      if (!_csData || !_csData.length) { alert('저장할 데이터가 없습니다.'); return false; }
+      await saveDB('cs', _csData);
     } else if (tab === 'settle') {
       // 정산: 올린 파일들(발송내역·상품목록·공급사 정산서·매체 주문)과 화면 문구를 같이 저장
       if (!_stPins && !_stProds && !_stSupRows && !_mdRows) { alert('저장할 데이터가 없습니다.'); return false; }
@@ -1916,8 +1921,8 @@ async function autoSaveIfLocked(tab) {
   if (isLocked(tab)) await saveToStorage(tab);
 }
 
-const _TAB_ICONS = { sales:'📊', products:'📦', media:'📺', ium:'🏢', settle:'💰' };
-const _TAB_NAMES = { sales:'판매 분석', products:'상품 현황', media:'매체 상품현황', ium:'이음기프트 기업분석', settle:'정산' };
+const _TAB_ICONS = { sales:'📊', products:'📦', media:'📺', ium:'🏢', settle:'💰', cs:'☎️' };
+const _TAB_NAMES = { sales:'판매 분석', products:'상품 현황', media:'매체 상품현황', ium:'이음기프트 기업분석', settle:'정산', cs:'CS관리' };
 
 function updateLockBtn(tab, locked) {
   const btn = document.getElementById('lock-btn-' + tab);
@@ -2009,6 +2014,14 @@ async function loadFromStorage() {
         updateLockBtn('ium', true);
       }
     } catch(e) { localStorage.removeItem(_SK.ium.lock); }
+  }
+
+  // CS관리
+  if (isLocked('cs')) {
+    try {
+      const data = await loadDB('cs');
+      if (data && data.length) { _csData = data; _csShow(); updateLockBtn('cs', true); }
+    } catch(e) { localStorage.removeItem(_SK.cs.lock); }
   }
 
   // 정산
@@ -7181,6 +7194,16 @@ async function _handleCsFile(file) {
     if (!rows) return; // 비밀번호 입력 취소/불일치
     if (!rows.length) { alert('데이터가 없습니다.'); return; }
     _csData = rows.map(_csNormalizeRow);
+    _csShow();
+    await autoSaveIfLocked('cs');
+  } catch(e) {
+    if (/password|encrypt|암호화/i.test(e.message)) alert('비밀번호가 걸린 파일이에요. 엑셀에서 암호를 해제하고 저장한 뒤 다시 올려주세요.');
+    else alert('파일 오류: ' + e.message);
+  }
+}
+
+// 올린(또는 잠금으로 저장해 둔) 상담 이력으로 화면 표시
+function _csShow() {
     document.getElementById('cs-upload-wrap').style.display = 'none';
     document.getElementById('cs-controls').style.display = 'block';
 
@@ -7200,10 +7223,6 @@ async function _handleCsFile(file) {
     document.getElementById('cs-keyword-title').textContent = isNewFmt ? '상담분류(그룹) TOP 15' : '핵심키워드 TOP 15';
 
     renderCsDashboard();
-  } catch(e) {
-    if (/password|encrypt|암호화/i.test(e.message)) alert('비밀번호가 걸린 파일이에요. 엑셀에서 암호를 해제하고 저장한 뒤 다시 올려주세요.');
-    else alert('파일 오류: ' + e.message);
-  }
 }
 
 // ── 상담 이력 파일은 비밀번호(Office 암호화)가 걸려서 내려온다 → 브라우저에서 바로 풀어서 읽는다 ──
@@ -7320,6 +7339,7 @@ function _csNormalizeRow(r) {
 
 function resetCs() {
   _csData = null;
+  if (isLocked('cs')) { localStorage.removeItem(_SK.cs.lock); clearDB('cs'); updateLockBtn('cs', false); }
   _csKeywordFilter = '';
   _csRowsByDate = {};
   _csTableRows = [];

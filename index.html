@@ -53,6 +53,19 @@
     .dp-day.mid { background:#f5f7ff; }
     .dp-day:disabled { color:#cbd5e1; cursor:default; background:transparent; }
     .dp-day.sel { background:#4f46e5; border-color:#4f46e5; color:white; font-weight:600; }
+    /* 조회기간 줄 — [전체] [월별] [📅 시작일 ~ 종료일 적용] */
+    .pf { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+    .pf-btn { height:34px; padding:0 16px; border:1px solid #e2e8f0; border-radius:999px; background:white; font-size:13px; color:#475569; cursor:pointer; font-family:'Noto Sans KR',sans-serif; }
+    .pf-btn.on { border-color:#a5b4fc; background:#eef2ff; color:#4f46e5; font-weight:600; }
+    .pf-range { display:flex; align-items:center; gap:4px; height:34px; box-sizing:border-box; padding:0 4px 0 12px; border:1px solid #e2e8f0; border-radius:999px; background:white; }
+    .pf-range input[type="date"] { border:none; outline:none; background:none; padding:0 !important; width:110px; font-size:13px; color:#374151; font-family:'Noto Sans KR',sans-serif; text-align:center; }
+    .pf-apply { height:26px; padding:0 12px; border:none; border-radius:999px; background:#f1f5f9; color:#475569; font-size:12px; font-weight:600; cursor:pointer; font-family:'Noto Sans KR',sans-serif; }
+    .pf-apply:hover { background:#e2e8f0; }
+    .mp-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; }
+    .mp-cell { height:38px; border:1px solid transparent; border-radius:10px; background:transparent; font-size:14px; color:#334155; cursor:pointer; font-family:inherit; }
+    .mp-cell:hover { background:#f1f5f9; }
+    .mp-cell.sel { border-color:#a5b4fc; color:#4f46e5; font-weight:600; }
+    .mp-cell:disabled { color:#cbd5e1; cursor:default; background:transparent; }
     .dp-foot { border-top:1px solid #f1f5f9; margin-top:10px; padding-top:8px; }
     .dp-foot button { border:none; background:transparent; color:#4f46e5; font-size:12px; font-weight:600; cursor:pointer; padding:4px 2px; font-family:inherit; }
 
@@ -180,10 +193,15 @@
     <div class="card" style="padding:16px 20px; display:flex; flex-direction:column; gap:12px;">
       <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
         <span style="width:56px; flex-shrink:0; font-size:12px; font-weight:500; color:#64748b;">조회기간</span>
-        <input type="date" id="date-from" style="height:32px; box-sizing:border-box; border:1px solid #e2e8f0; border-radius:8px; padding:0 10px; font-size:13px; color:#374151; outline:none;">
-        <span style="color:#cbd5e1; font-size:12px;">~</span>
-        <input type="date" id="date-to" style="height:32px; box-sizing:border-box; border:1px solid #e2e8f0; border-radius:8px; padding:0 10px; font-size:13px; color:#374151; outline:none;">
-        <button onclick="renderSalesDashboard()" style="height:32px; box-sizing:border-box; padding:0 14px; border-radius:8px; font-size:12px; font-weight:500; cursor:pointer; font-family:'Noto Sans KR',sans-serif; background:#4f46e5; color:white; border:none;">조회</button>
+        <div class="pf" data-from="date-from" data-to="date-to" data-apply="renderSalesDashboard">
+          <button type="button" class="pf-btn on" onclick="pfAll(this)">전체</button>
+          <button type="button" class="pf-btn" onclick="event.stopPropagation(); pfMonth(this)">월별 ▾</button>
+          <div class="pf-range">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
+            <input type="date" id="date-from"><span style="color:#cbd5e1; font-size:12px;">~</span><input type="date" id="date-to">
+            <button type="button" class="pf-apply" onclick="pfApply(this)">적용</button>
+          </div>
+        </div>
       </div>
       <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
         <span style="width:56px; flex-shrink:0; font-size:12px; font-weight:500; color:#64748b;">그룹기준</span>
@@ -198,6 +216,7 @@
           <button id="sort-amt" onclick="setSortBy('amt')" class="tog-btn off" style="height:26px; padding:0 14px; border-radius:6px; font-size:12px; font-weight:500; border:none; background:transparent;">금액순</button>
           <button id="sort-brand" onclick="setSortBy('brand')" class="tog-btn off" style="height:26px; padding:0 14px; border-radius:6px; font-size:12px; font-weight:500; border:none; background:transparent;">브랜드별</button>
           <button id="sort-product" onclick="setSortBy('product')" class="tog-btn off" style="height:26px; padding:0 14px; border-radius:6px; font-size:12px; font-weight:500; border:none; background:transparent;">공급사별</button>
+          <button id="sort-limit" onclick="setSortBy('limit')" class="tog-btn off" style="display:none; height:26px; padding:0 14px; border-radius:6px; font-size:12px; font-weight:500; border:none; background:transparent;">한도</button>
         </div>
         <div style="flex:1;"></div>
         <button onclick="exportSalesExcel()" style="background:#475569; color:white; border:none; border-radius:8px; padding:6px 14px; font-size:12px; font-weight:500; cursor:pointer;">엑셀저장</button>
@@ -229,6 +248,8 @@
 
   <!-- KPI -->
   <div id="sales-kpis" style="display:none; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:20px;"></div>
+  <!-- 공급사 한도 (그룹기준 공급사별일 때) -->
+  <div id="sales-limit" style="display:none; margin-bottom:20px;"></div>
   <div id="sales-heatmap" style="display:none; margin-bottom:20px;"></div>
 
   <!-- 매체별 공급사·브랜드 구성 -->
@@ -842,15 +863,15 @@
     <div class="card" style="padding:16px 22px; display:flex; flex-wrap:wrap; align-items:center; gap:20px;">
       <div style="display:flex; align-items:center; gap:10px;">
         <span style="font-size:12px; font-weight:600; color:#64748b;">📆 조회기간</span>
-        <input type="date" id="cs-date-from" onchange="renderCsDashboard()"
-          style="border:1px solid #e2e8f0; border-radius:9px; padding:7px 11px; font-size:13px; color:#374151; outline:none; background:#fafbfc;">
-        <span style="color:#cbd5e1; font-size:12px;">~</span>
-        <input type="date" id="cs-date-to" onchange="renderCsDashboard()"
-          style="border:1px solid #e2e8f0; border-radius:9px; padding:7px 11px; font-size:13px; color:#374151; outline:none; background:#fafbfc;">
-        <button onclick="renderCsDashboard()"
-          style="background:#4f46e5; color:white; border:none; border-radius:9px; padding:7px 18px; font-size:13px; font-weight:600; cursor:pointer; font-family:'Noto Sans KR',sans-serif;">
-          🔍 조회
-        </button>
+        <div class="pf" data-from="cs-date-from" data-to="cs-date-to" data-apply="renderCsDashboard">
+          <button type="button" class="pf-btn on" onclick="pfAll(this)">전체</button>
+          <button type="button" class="pf-btn" onclick="event.stopPropagation(); pfMonth(this)">월별 ▾</button>
+          <div class="pf-range">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
+            <input type="date" id="cs-date-from" onchange="renderCsDashboard()"><span style="color:#cbd5e1; font-size:12px;">~</span><input type="date" id="cs-date-to" onchange="renderCsDashboard()">
+            <button type="button" class="pf-apply" onclick="pfApply(this)">적용</button>
+          </div>
+        </div>
       </div>
       <div id="cs-keyword-filter-wrap" style="display:none; align-items:center; gap:6px;">
         <span style="font-size:12px; font-weight:600; color:#64748b;">🔑 키워드 필터</span>
@@ -1660,8 +1681,7 @@ async function _handleSalesFile(ev) {
       if (!minD || d < minD) minD = d;
       if (!maxD || d > maxD) maxD = d;
     });
-    document.getElementById('date-from').value = minD ? fmtDate(minD) : '';
-    document.getElementById('date-to').value   = maxD ? fmtDate(maxD) : '';
+    _pfSetAll('date-from', 'date-to', minD ? fmtDate(minD) : '', maxD ? fmtDate(maxD) : '');
     document.getElementById('sales-upload-wrap').style.display = 'none';
     document.getElementById('sales-controls').style.display = 'block';
     document.getElementById('sales-kpis').style.display = 'grid';
@@ -1685,6 +1705,7 @@ async function resetSales() {
   selectedMedias.clear();
   document.getElementById('sales-heatmap').style.display = 'none';
   document.getElementById('sales-heatmap').innerHTML = '';
+  document.getElementById('sales-limit').style.display = 'none';
   document.getElementById('sales-kpis').style.display = 'none';
   document.getElementById('sales-grid').innerHTML = '';
   document.getElementById('sales-kpis').innerHTML = '';
@@ -1698,7 +1719,7 @@ async function resetSales() {
 function setSortBy(type) {
   sortBy = type;
   if (type !== 'brand') _brandSortBy = 'qty';
-  document.querySelectorAll('#sort-qty, #sort-amt, #sort-brand, #sort-product').forEach(b => {
+  document.querySelectorAll('#sort-qty, #sort-amt, #sort-brand, #sort-product, #sort-limit').forEach(b => {
     b.className = 'tog-btn off';
     b.style.background = 'transparent';
   });
@@ -1806,6 +1827,8 @@ function setGroupBy(type) {
   if (sortProductBtn) sortProductBtn.style.display = type === 'media' ? '' : 'none';
   if (type === 'brand' && sortBy === 'brand') setSortBy('qty');
   if (type !== 'media' && sortBy === 'product') setSortBy('qty');
+  document.getElementById('sort-limit').style.display = type === 'supplier' ? '' : 'none';
+  if (type !== 'supplier' && sortBy === 'limit') setSortBy('qty');
   renderSalesDashboard();
 }
 
@@ -1951,8 +1974,7 @@ async function loadFromStorage() {
           if (!minD || d < minD) minD = d;
           if (!maxD || d > maxD) maxD = d;
         });
-        document.getElementById('date-from').value = minD ? fmtDate(minD) : '';
-        document.getElementById('date-to').value   = maxD ? fmtDate(maxD) : '';
+        _pfSetAll('date-from', 'date-to', minD ? fmtDate(minD) : '', maxD ? fmtDate(maxD) : '');
         document.getElementById('sales-upload-wrap').style.display = 'none';
         document.getElementById('sales-controls').style.display = 'block';
         document.getElementById('sales-kpis').style.display = 'grid';
@@ -2149,6 +2171,92 @@ function renderComposition(rows) {
   el.style.display = 'block';
 }
 
+// 판매 금액 = 정상가 × 수량 (정상가 없으면 거래금액)
+const _salesAmt = r => { const np = safeNum(col(r, '정상가')); return np > 0 ? np * safeNum(col(r, '수량')) : safeNum(col(r, '거래금액', '매출액')); };
+
+// ── 공급사 월 한도: 주문일 기준 일별 사용액(정상가 × 수량, 취소 주문은 빼서 한도 돌려줌)
+//    한도 금액은 공개 코드에 넣지 않고 브라우저(localStorage)에만 저장
+const SUP_LIMIT_KEY = 'numpick_sup_limits';
+let _limSups = [];
+const LIM_COLORS = ['#4f46e5', '#0ea5e9', '#f59e0b', '#10b981', '#ec4899', '#8b5cf6', '#64748b'];
+const _limGet = () => { try { return JSON.parse(localStorage.getItem(SUP_LIMIT_KEY)) || {}; } catch { return {}; } };
+function supLimitSet(i, v) {
+  const all = _limGet(), n = Math.round(safeNum(String(v).replace(/[^\d]/g, '')));
+  if (n) all[_limSups[i]] = n; else delete all[_limSups[i]];
+  localStorage.setItem(SUP_LIMIT_KEY, JSON.stringify(all));
+  renderSupLimit();
+}
+function _supLimitDays(y, m) { // { 공급사: [0, 1일 금액, 2일 금액, ...] }
+  const days = new Date(y, m, 0).getDate(), out = {};
+  salesData.forEach(r => {
+    if (String(col(r, '주문상태') || '').includes('취소') || !String(col(r, '상품명') || '').trim()) return;
+    const d = toDate(col(r, '주문일시'));
+    if (!d || d.getFullYear() !== y || d.getMonth() + 1 !== m) return;
+    const sup = String(col(r, '공급사') || '').trim() || '(공급사없음)';
+    (out[sup] ||= Array(days + 1).fill(0))[d.getDate()] += _salesAmt(r);
+  });
+  return out;
+}
+function renderSupLimit() {
+  const el = document.getElementById('sales-limit');
+  const ym = (document.getElementById('date-to').value || _dpYmd(new Date())).slice(0, 7); // 조회기간 끝 날짜의 달
+  const [y, m] = ym.split('-').map(Number), days = new Date(y, m, 0).getDate();
+  const byDay = _supLimitDays(y, m), lim = _limGet();
+  const now = new Date(), thisMonth = now.getFullYear() === y && now.getMonth() + 1 === m;
+  const sum = a => a.reduce((s, v) => s + v, 0);
+  _limSups = [...new Set([...Object.keys(byDay), ...Object.keys(lim)])].sort((a, b) => sum(byDay[b] || []) - sum(byDay[a] || []));
+
+  const cards = _limSups.map((s, i) => {
+    const used = sum(byDay[s] || []), L = lim[s] || 0, pct = L ? used / L * 100 : 0;
+    const color = pct >= 90 ? '#ef4444' : pct >= 70 ? '#f59e0b' : '#4f46e5';
+    let note = L ? `남은 한도 ${fmtAmt(Math.max(0, L - used))}` : '한도를 입력하면 남은 금액이 보여요';
+    if (L && used > L) note = `<b style="color:#ef4444;">${fmtAmt(used - L)} 초과</b>`;
+    else if (L && thisMonth && used) { // 지금 속도(오늘까지 하루 평균)로 쓰면 언제 다 쓰는지
+      const day = Math.ceil((L - used) / (used / now.getDate())) + now.getDate();
+      note += day <= days ? ` · <b style="color:${color};">이 속도면 ${day}일쯤 소진</b>` : ' · 이 속도면 이번 달 여유';
+    }
+    return `<div class="card" style="padding:16px 18px; border-top:4px solid ${LIM_COLORS[i % LIM_COLORS.length]};">
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:10px;">
+        <span style="font-size:14px; font-weight:700; color:#0f172a;"><span style="display:inline-block; width:10px; height:10px; border-radius:3px; background:${LIM_COLORS[i % LIM_COLORS.length]}; margin-right:6px;"></span>${s}</span>
+        <span style="font-size:12px; color:#64748b;">한도
+          <input value="${L ? L.toLocaleString() : ''}" placeholder="입력" inputmode="numeric" oninput="const n = this.value.replace(/[^0-9]/g, ''); this.value = n ? (+n).toLocaleString() : ''" onchange="supLimitSet(${i}, this.value)"
+            style="width:110px; height:26px; box-sizing:border-box; border:1px solid #e2e8f0; border-radius:6px; padding:0 8px; text-align:right; font-size:12px; font-family:'Noto Sans KR',sans-serif;">원</span>
+      </div>
+      <div class="num" style="font-size:20px; font-weight:700; color:#0f172a;">${fmtAmt(used)}${L ? `<span style="font-size:13px; font-weight:500; color:#94a3b8;"> / ${fmtAmt(L)} (${pct.toFixed(0)}%)</span>` : ''}</div>
+      <div style="height:8px; background:#f1f5f9; border-radius:99px; margin:10px 0 8px; overflow:hidden;"><div style="height:100%; width:${Math.min(100, pct)}%; background:${color};"></div></div>
+      <div style="font-size:12px; color:#64748b;">${note}</div>
+    </div>`;
+  }).join('');
+
+  // 공급사 전체를 한 달력에: 칸마다 공급사 색 + 그날 사용액, 누적이 한도를 넘은 날은 빨간 글씨
+  const first = new Date(y, m - 1, 1).getDay(), acc = {};
+  let cells = '';
+  for (let i = 0; i < first; i++) cells += '<div></div>';
+  for (let d = 1; d <= days; d++) {
+    const dow = (first + d - 1) % 7;
+    const lines = _limSups.map((s, i) => {
+      const v = (byDay[s] || [])[d] || 0, L = lim[s] || 0;
+      acc[s] = (acc[s] || 0) + v;
+      if (!v) return '';
+      const over = L && acc[s] > L;
+      return `<div title="${s} · 누적 ${fmtAmt(acc[s])}${L ? ` / 한도 ${fmtAmt(L)}` : ''}" style="display:flex; align-items:center; gap:4px; font-size:11px; color:${over ? '#ef4444' : '#334155'}; font-weight:${over ? 700 : 500}; white-space:nowrap;">
+        <span style="width:6px; height:6px; border-radius:2px; background:${LIM_COLORS[i % LIM_COLORS.length]}; flex-shrink:0;"></span><span class="num">${fmtAmt(v).replace('원', '')}</span></div>`;
+    }).join('');
+    cells += `<div style="min-height:78px; padding:6px 8px; border-radius:10px; border:1px solid #f1f5f9; display:flex; flex-direction:column; gap:2px;">
+      <div style="font-size:11px; margin-bottom:2px; color:${dow === 0 ? '#e11d48' : dow === 6 ? '#0284c7' : '#64748b'};">${d}</div>${lines}
+    </div>`;
+  }
+  el.innerHTML = `
+    <div style="font-size:14px; font-weight:700; color:#0f172a; margin-bottom:12px;">${y}년 ${m}월 공급사 한도</div>
+    <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:16px; margin-bottom:16px;">${cards || '<div style="color:#94a3b8; font-size:13px;">이 달 주문이 없어요</div>'}</div>
+    ${_limSups.length ? `<div class="card" style="padding:18px 20px;">
+      <div style="font-size:13px; font-weight:700; color:#0f172a; margin-bottom:12px;">일별 사용액</div>
+      <div style="display:grid; grid-template-columns:repeat(7,1fr); gap:4px; font-size:11px; color:#94a3b8; text-align:center; margin-bottom:6px;"><span style="color:#e11d48;">일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span style="color:#0284c7;">토</span></div>
+      <div style="display:grid; grid-template-columns:repeat(7,1fr); gap:4px;">${cells}</div>
+    </div>` : ''}`;
+  el.style.display = 'block';
+}
+
 function renderSalesDashboard() {
   const from = document.getElementById('date-from').value;
   const to   = document.getElementById('date-to').value;
@@ -2179,7 +2287,7 @@ function renderSalesDashboard() {
 
     const qty         = safeNum(col(r, '수량'));
     const normalPrice = safeNum(col(r, '정상가'));
-    const amt         = normalPrice > 0 ? normalPrice * qty : safeNum(col(r, '거래금액', '매출액'));
+    const amt         = _salesAmt(r);
     const supplier    = String(col(r, '공급사')  || '').trim();
     const code        = String(col(r, '상품코드', '공급사상품코드', '공급사발급코드') || '').trim();
     const salePrice   = safeNum(col(r, '판매단가', '단가', '판매가'));
@@ -2232,6 +2340,9 @@ function renderSalesDashboard() {
       <div class="num" style="font-size:22px; font-weight:700; color:#0f172a;">${k.value}</div>
     </div>
   `).join('');
+  const limitView = groupBy === 'supplier' && sortBy === 'limit';
+  kpis.style.display = limitView ? 'none' : 'grid'; // 한도 화면엔 KPI 안 보임
+  if (limitView) renderSupLimit(); else document.getElementById('sales-limit').style.display = 'none';
 
 
   // Destroy old charts
@@ -2240,6 +2351,11 @@ function renderSalesDashboard() {
 
   const grid = document.getElementById('sales-grid');
   grid.innerHTML = '';
+  if (limitView) { // 한도 화면만 보여줌
+    document.getElementById('sales-heatmap').style.display = 'none';
+    document.getElementById('sales-composition').style.display = 'none';
+    return;
+  }
 
   if (!Object.keys(byMedia).length) {
     grid.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:60px; color:#94a3b8; font-size:14px;">해당 기간에 데이터가 없습니다.</div>';
@@ -7214,8 +7330,7 @@ function _csShow() {
       if (!minD || d < minD) minD = d;
       if (!maxD || d > maxD) maxD = d;
     });
-    document.getElementById('cs-date-from').value = minD ? fmtDate(minD) : '';
-    document.getElementById('cs-date-to').value   = maxD ? fmtDate(maxD) : '';
+    _pfSetAll('cs-date-from', 'cs-date-to', minD ? fmtDate(minD) : '', maxD ? fmtDate(maxD) : '');
 
     // 신규 양식엔 핵심키워드가 없어 '그룹'(상담분류)을 대신 쓰므로 차트 제목도 맞춰준다
     const isNewFmt = _csData.some(r => r._csNewFmt);
@@ -7774,20 +7889,23 @@ function _dpStartOf(input) { // 종료일 칸이면 짝인 시작일 칸
   return [...document.querySelectorAll('input[type="date"]')].find(el => el !== input && _dpPair(el) === input) || null;
 }
 function _dpOpen(input) {
+  _dp.input = input;
+  const st = _dpStartOf(input); // 종료일이 비어 있으면 시작일 달부터 보여줌
+  const base = input.value || (st && st.value) || '';
+  const v = base ? new Date(base + 'T00:00:00') : new Date();
+  _dp.y = v.getFullYear(); _dp.m = v.getMonth();
+  _dpShow(input, _dpRender);
+}
+function _dpShow(anchor, render) { // anchor 아래(자리가 없으면 위)에 달력을 띄움
   if (!_dp.el) {
     _dp.el = document.createElement('div');
     _dp.el.className = 'dp-pop';
     _dp.el.addEventListener('mousedown', e => e.preventDefault()); // 달력 누를 때 입력칸 포커스 유지
     document.body.appendChild(_dp.el);
   }
-  _dp.input = input;
-  const st = _dpStartOf(input); // 종료일이 비어 있으면 시작일 달부터 보여줌
-  const base = input.value || (st && st.value) || '';
-  const v = base ? new Date(base + 'T00:00:00') : new Date();
-  _dp.y = v.getFullYear(); _dp.m = v.getMonth();
-  _dpRender();
+  render();
   _dp.el.style.display = 'block';
-  const r = input.getBoundingClientRect(), w = _dp.el.offsetWidth, h = _dp.el.offsetHeight;
+  const r = anchor.getBoundingClientRect(), w = _dp.el.offsetWidth, h = _dp.el.offsetHeight;
   let left = Math.min(r.left, window.innerWidth - w - 8), top = r.bottom + 6;
   if (top + h > window.innerHeight - 8) top = Math.max(8, r.top - h - 6); // 아래 자리가 없으면 위로
   _dp.el.style.left = Math.max(8, left) + 'px';
@@ -7827,6 +7945,45 @@ function _dpRender() {
     <div class="dp-grid dp-week"><span class="sun">일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span class="sat">토</span></div>
     <div class="dp-grid">${cells}</div>
     <div class="dp-foot"><button type="button" onclick="_dpPick('${today}')">오늘</button></div>`;
+}
+// ── 조회기간 줄(.pf): 전체 / 월별 / 직접 고르고 적용
+const _pf = btn => { const w = btn.closest('.pf'); return { w, from: document.getElementById(w.dataset.from), to: document.getElementById(w.dataset.to), apply: window[w.dataset.apply] }; };
+const _pfMark = (w, btn) => w.querySelectorAll('.pf-btn').forEach(b => b.classList.toggle('on', b === btn));
+function _pfSetAll(fromId, toId, a, b) { // 데이터 전체 기간 — '전체'가 이 값으로 돌아감
+  const f = document.getElementById(fromId), t = document.getElementById(toId);
+  f.value = f.dataset.all = a; t.value = t.dataset.all = b;
+  _pfMark(f.closest('.pf'), f.closest('.pf').querySelector('.pf-btn'));
+}
+function pfAll(btn) { const p = _pf(btn); p.from.value = p.from.dataset.all || ''; p.to.value = p.to.dataset.all || ''; _pfMark(p.w, btn); p.apply(); }
+function pfApply(btn) { const p = _pf(btn); _pfMark(p.w, null); p.apply(); }
+function pfMonth(btn) {
+  if (_dp.input === btn) return _dpClose();
+  const v = _pf(btn).from.value;
+  _dp.input = btn; _dp.y = v ? +v.slice(0, 4) : new Date().getFullYear();
+  _dpShow(btn, _mpRender);
+}
+function _mpMove(n) { _dp.y += n; _mpRender(); }
+function _mpRender() {
+  const p = _pf(_dp.input), y = _dp.y, now = new Date();
+  const sel = p.from.value.endsWith('-01') && p.from.value.slice(0, 7) === p.to.value.slice(0, 7) ? p.from.value.slice(0, 7) : '';
+  let cells = '';
+  for (let m = 1; m <= 12; m++) {
+    const ym = `${y}-${String(m).padStart(2, '0')}`, future = y > now.getFullYear() || (y === now.getFullYear() && m > now.getMonth() + 1);
+    cells += `<button type="button" class="mp-cell ${ym === sel ? 'sel' : ''}" ${future ? 'disabled' : `onclick="_mpPick('${ym}')"`}>${m}월</button>`;
+  }
+  _dp.el.innerHTML = `
+    <div class="dp-head">
+      <button type="button" class="dp-nav" onclick="_mpMove(-1)">‹</button>
+      <span>${y}년</span>
+      <button type="button" class="dp-nav" onclick="_mpMove(1)" ${y >= now.getFullYear() ? 'disabled style="opacity:.3; cursor:default;"' : ''}>›</button>
+    </div>
+    <div class="mp-grid">${cells}</div>`;
+}
+function _mpPick(ym) { // 고른 달 1일 ~ 말일로 바로 조회
+  const btn = _dp.input, p = _pf(btn), [y, m] = ym.split('-').map(Number);
+  _dpClose();
+  p.from.value = `${ym}-01`; p.to.value = `${ym}-${String(new Date(y, m, 0).getDate()).padStart(2, '0')}`;
+  _pfMark(p.w, btn); p.apply();
 }
 // 날짜 칸을 누르면 기본 달력 대신 이 달력 (나중에 생기는 칸도 포함)
 document.addEventListener('click', e => {

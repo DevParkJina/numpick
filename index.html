@@ -59,8 +59,8 @@
     .pf-btn.on { border-color:#a5b4fc; background:#eef2ff; color:#4f46e5; font-weight:600; }
     .pf-range { display:flex; align-items:center; gap:4px; height:34px; box-sizing:border-box; padding:0 4px 0 12px; border:1px solid #e2e8f0; border-radius:999px; background:white; }
     .pf-range input[type="date"] { border:none; outline:none; background:none; padding:0 !important; width:110px; font-size:13px; color:#374151; font-family:'Noto Sans KR',sans-serif; text-align:center; }
-    .pf-apply { height:26px; padding:0 12px; border:none; border-radius:999px; background:#f1f5f9; color:#475569; font-size:12px; font-weight:600; cursor:pointer; font-family:'Noto Sans KR',sans-serif; }
-    .pf-apply:hover { background:#e2e8f0; }
+    .pf-apply { height:26px; padding:0 14px; border:none; border-radius:999px; background:#4f46e5; color:white; font-size:12px; font-weight:600; cursor:pointer; font-family:'Noto Sans KR',sans-serif; }
+    .pf-apply:hover { background:#4338ca; }
     .mp-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:6px; }
     .mp-cell { height:38px; border:1px solid transparent; border-radius:10px; background:transparent; font-size:14px; color:#334155; cursor:pointer; font-family:inherit; }
     .mp-cell:hover { background:#f1f5f9; }
@@ -199,18 +199,34 @@
           <div class="pf-range">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
             <input type="date" id="date-from"><span style="color:#cbd5e1; font-size:12px;">~</span><input type="date" id="date-to">
-            <button type="button" class="pf-apply" onclick="pfApply(this)">적용</button>
+            <button type="button" class="pf-apply" onclick="pfApply(this)">조회</button>
           </div>
         </div>
+        <div style="flex:1;"></div>
+        <button onclick="toggleSalesReport()" style="background:white; color:#334155; border:1px solid #e2e8f0; border-radius:8px; padding:6px 14px; font-size:12px; font-weight:600; cursor:pointer; font-family:'Noto Sans KR',sans-serif;">보고용 복사</button>
+        <button onclick="exportSalesExcel()" style="background:#475569; color:white; border:none; border-radius:8px; padding:6px 14px; font-size:12px; font-weight:500; cursor:pointer;">엑셀저장</button>
+        <button id="lock-btn-sales" class="lock-btn" onclick="toggleLock('sales')">🔓 편집</button>
+        <button onclick="resetSales()" style="font-size:12px; color:#94a3b8; background:none; border:none; cursor:pointer; font-weight:400;">초기화</button>
       </div>
       <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-        <span style="width:56px; flex-shrink:0; font-size:12px; font-weight:500; color:#64748b;">그룹기준</span>
+        <!-- 매체 대분류 — 모든 그룹기준에 적용 -->
+        <div id="media-cat-row" style="display:flex; align-items:center; gap:8px;">
+          <span style="width:56px; flex-shrink:0; font-size:12px; font-weight:500; color:#64748b;">대분류</span>
+          <div id="media-cat" style="display:flex; background:#f1f5f9; border-radius:8px; padding:3px; gap:2px;">
+            <button data-cat="" onclick="setMediaCat(this)" class="tog-btn on" style="height:26px; padding:0 14px; border-radius:6px; font-size:12px; font-weight:500; border:none;">전체</button>
+            <button data-cat="부고답례몰" onclick="setMediaCat(this)" class="tog-btn off" style="height:26px; padding:0 14px; border-radius:6px; font-size:12px; font-weight:500; border:none; background:transparent;">부고답례몰</button>
+            <button data-cat="웨딩답례몰" onclick="setMediaCat(this)" class="tog-btn off" style="height:26px; padding:0 14px; border-radius:6px; font-size:12px; font-weight:500; border:none; background:transparent;">웨딩답례몰</button>
+            <button data-cat="자체몰" onclick="setMediaCat(this)" class="tog-btn off" style="height:26px; padding:0 14px; border-radius:6px; font-size:12px; font-weight:500; border:none; background:transparent;">자체몰</button>
+            <button data-cat="API" onclick="setMediaCat(this)" class="tog-btn off" style="height:26px; padding:0 14px; border-radius:6px; font-size:12px; font-weight:500; border:none; background:transparent;">API</button>
+          </div>
+        </div>
+        <span style="flex-shrink:0; font-size:12px; font-weight:500; color:#64748b; margin-left:16px;">그룹기준</span>
         <div style="display:flex; background:#f1f5f9; border-radius:8px; padding:3px; gap:2px;">
           <button id="group-media" onclick="setGroupBy('media')" class="tog-btn on" style="height:26px; padding:0 14px; border-radius:6px; font-size:12px; font-weight:500; border:none;">매체별</button>
           <button id="group-brand" onclick="setGroupBy('brand')" class="tog-btn off" style="height:26px; padding:0 14px; border-radius:6px; font-size:12px; font-weight:500; border:none; background:transparent;">브랜드별</button>
           <button id="group-supplier" onclick="setGroupBy('supplier')" class="tog-btn off" style="height:26px; padding:0 14px; border-radius:6px; font-size:12px; font-weight:500; border:none; background:transparent;">공급사별</button>
         </div>
-        <span style="width:56px; flex-shrink:0; font-size:12px; font-weight:500; color:#64748b; margin-left:16px;">정렬기준</span>
+        <span style="flex-shrink:0; font-size:12px; font-weight:500; color:#64748b; margin-left:16px;">정렬기준</span>
         <div style="display:flex; background:#f1f5f9; border-radius:8px; padding:3px; gap:2px;">
           <button id="sort-qty" onclick="setSortBy('qty')" class="tog-btn on" style="height:26px; padding:0 14px; border-radius:6px; font-size:12px; font-weight:500; border:none;">수량순</button>
           <button id="sort-amt" onclick="setSortBy('amt')" class="tog-btn off" style="height:26px; padding:0 14px; border-radius:6px; font-size:12px; font-weight:500; border:none; background:transparent;">금액순</button>
@@ -218,13 +234,12 @@
           <button id="sort-product" onclick="setSortBy('product')" class="tog-btn off" style="height:26px; padding:0 14px; border-radius:6px; font-size:12px; font-weight:500; border:none; background:transparent;">공급사별</button>
           <button id="sort-limit" onclick="setSortBy('limit')" class="tog-btn off" style="display:none; height:26px; padding:0 14px; border-radius:6px; font-size:12px; font-weight:500; border:none; background:transparent;">한도</button>
         </div>
-        <div style="flex:1;"></div>
-        <button onclick="exportSalesExcel()" style="background:#475569; color:white; border:none; border-radius:8px; padding:6px 14px; font-size:12px; font-weight:500; cursor:pointer;">엑셀저장</button>
-        <button id="lock-btn-sales" class="lock-btn" onclick="toggleLock('sales')">🔓 편집</button>
-        <button onclick="resetSales()" style="font-size:12px; color:#94a3b8; background:none; border:none; cursor:pointer; font-weight:400;">초기화</button>
       </div>
     </div>
   </div>
+
+  <!-- 보고용 복사 — 서비스별 거래금액 · 주문 수 (보고 시트 순서) -->
+  <div id="sales-report" style="display:none; margin-bottom:16px;"></div>
 
   <!-- Media filter chips — 라벨 옆 칸 안에서 줄바꿈되게 -->
   <div id="sales-media-filter" style="display:none; margin-bottom:16px;">
@@ -869,7 +884,7 @@
           <div class="pf-range">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
             <input type="date" id="cs-date-from" onchange="renderCsDashboard()"><span style="color:#cbd5e1; font-size:12px;">~</span><input type="date" id="cs-date-to" onchange="renderCsDashboard()">
-            <button type="button" class="pf-apply" onclick="pfApply(this)">적용</button>
+            <button type="button" class="pf-apply" onclick="pfApply(this)">조회</button>
           </div>
         </div>
       </div>
@@ -1512,6 +1527,23 @@ const MEDIA_MAP = {
   'md_iumbugo':    '이음부고_자체답례'
 };
 
+// 매체 대분류 (관리자 중분류 기준) — 여기 없는 매체는 API
+const MEDIA_CAT = {
+  '부고답례몰': ['raon', 'raon_hana', 'dasom', 'flowergil', 'samga', 'cheotjang', 'iris', 'kookminbugo',
+    'md_samga', 'md_fdnara', 'md_enccompany', 'md_wooribugo', 'md_wooribugoPoint', 'md_sahaguminfh', 'md_iumbugo',
+    'md_grion', 'md_iris', 'md_kookminbugo', 'md_cheotjang'],
+  '웨딩답례몰': ['md_bnyj'],
+  '자체몰': ['devnium', 'md_devnium', 'ium', 'tium', 'telent', 'talent'],
+};
+const _mediaCatOf = code => Object.keys(MEDIA_CAT).find(c => MEDIA_CAT[c].includes(code)) || 'API';
+let _mediaCat = '';
+function setMediaCat(btn) {
+  _mediaCat = btn.dataset.cat;
+  btn.parentElement.querySelectorAll('button').forEach(b => { b.className = 'tog-btn ' + (b === btn ? 'on' : 'off'); b.style.background = b === btn ? '' : 'transparent'; });
+  selectedMedias.clear(); // 다른 대분류에서 고른 매체가 남지 않게
+  renderSalesDashboard();
+}
+
 const CHART_COLORS = [
   '#6366f1','#8b5cf6','#ec4899','#f59e0b',
   '#10b981','#3b82f6','#ef4444','#14b8a6','#f97316','#84cc16'
@@ -1706,6 +1738,7 @@ async function resetSales() {
   document.getElementById('sales-heatmap').style.display = 'none';
   document.getElementById('sales-heatmap').innerHTML = '';
   document.getElementById('sales-limit').style.display = 'none';
+  document.getElementById('sales-report').style.display = 'none';
   document.getElementById('sales-kpis').style.display = 'none';
   document.getElementById('sales-grid').innerHTML = '';
   document.getElementById('sales-kpis').innerHTML = '';
@@ -1716,7 +1749,7 @@ async function resetSales() {
   charts = {};
 }
 
-function setSortBy(type) {
+function setSortBy(type, noRender) { // noRender: setGroupBy가 곧 다시 그리므로 두 번 그리지 않게 (차트 캔버스 충돌)
   sortBy = type;
   if (type !== 'brand') _brandSortBy = 'qty';
   document.querySelectorAll('#sort-qty, #sort-amt, #sort-brand, #sort-product, #sort-limit').forEach(b => {
@@ -1725,7 +1758,7 @@ function setSortBy(type) {
   });
   const btn = document.getElementById('sort-' + type);
   if (btn) { btn.className = 'tog-btn on'; btn.style.background = ''; }
-  renderSalesDashboard();
+  if (!noRender) renderSalesDashboard();
 }
 
 function setBrandSortBy(type) {
@@ -1825,10 +1858,9 @@ function setGroupBy(type) {
   if (sortBrandBtn) sortBrandBtn.style.display = type === 'brand' ? 'none' : '';
   const sortProductBtn = document.getElementById('sort-product');
   if (sortProductBtn) sortProductBtn.style.display = type === 'media' ? '' : 'none';
-  if (type === 'brand' && sortBy === 'brand') setSortBy('qty');
-  if (type !== 'media' && sortBy === 'product') setSortBy('qty');
-  document.getElementById('sort-limit').style.display = type === 'supplier' ? '' : 'none';
-  if (type !== 'supplier' && sortBy === 'limit') setSortBy('qty');
+  if (type === 'brand' && sortBy === 'brand') setSortBy('qty', true);
+  if (type !== 'media' && sortBy === 'product') setSortBy('qty', true);
+  document.getElementById('sort-limit').style.display = type === 'supplier' ? '' : 'none';  if (type !== 'supplier' && sortBy === 'limit') setSortBy('qty', true);
   renderSalesDashboard();
 }
 
@@ -2062,9 +2094,17 @@ async function loadFromStorage() {
     } catch(e) { localStorage.removeItem(_SK.settle.lock); }
   }
 }
+// 매체별 공급사 구성 복사 — 맨 위에 조회기간
+let _compCopy = [];
+const _compPeriod = () => `${document.getElementById('date-from').value} ~ ${document.getElementById('date-to').value} 매체별 공급사 · 브랜드 구성`;
+const _copyText = t => navigator.clipboard.writeText(t).then(() => _regToast('복사했어요'));
+function _compCopy1(i) { _copyText(`${_compPeriod()}\n\n${_compCopy[i]}`); }
+function _compCopyAll() { _copyText(`${_compPeriod()}\n\n${_compCopy.join('\n\n')}`); }
+
 function renderComposition(rows) {
   const el = document.getElementById('sales-composition');
   if (!el) return;
+  _compCopy = [];
 
   const data = {};
   rows.forEach(r => {
@@ -2098,7 +2138,8 @@ function renderComposition(rows) {
     <div class="card" style="padding:0; overflow:hidden;">
       <div style="padding:14px 20px; border-bottom:1px solid #f1f5f9; display:flex; align-items:center; gap:10px;">
         <span style="font-size:14px; font-weight:700; color:#0f172a;">매체별 공급사 · 브랜드 구성</span>
-        <span style="font-size:11px; color:#94a3b8;">${mediaList.length}개 매체</span>
+        <span style="font-size:11px; color:#94a3b8; flex:1;">${mediaList.length}개 매체</span>
+        <button onclick="_compCopyAll()" style="height:26px; padding:0 12px; background:white; color:#334155; border:1px solid #e2e8f0; border-radius:6px; font-size:12px; font-weight:600; cursor:pointer; font-family:'Noto Sans KR',sans-serif;">전체 복사</button>
       </div>
       <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(480px,1fr)); gap:16px; padding:16px;">
   `;
@@ -2116,6 +2157,13 @@ function renderComposition(rows) {
       amt: Object.values(brands).reduce((s, v) => s + v.amt, 0),
       brands: Object.entries(brands).map(([br, v]) => ({ br, ...v })).sort((a, b) => b.qty - a.qty),
     })).sort((a, b) => b.qty - a.qty);
+
+    const mediaAmt = suppliersSorted.reduce((s, v) => s + v.amt, 0);
+    // 복사용 — 내부 공유
+    _compCopy[mi] = [`[${MEDIA_MAP[media] || media}] 총 ${mediaTotalQty.toLocaleString()}개 · ${Math.round(mediaAmt).toLocaleString()}원`,
+      ...suppliersSorted.flatMap(({ sup, qty, amt, brands }) => [
+        `· ${sup} ${qty.toLocaleString()}개 · ${Math.round(amt).toLocaleString()}원 (${mediaTotalQty ? (qty / mediaTotalQty * 100).toFixed(0) : 0}%)`,
+        ...brands.map(b => `   - ${b.br} ${b.qty.toLocaleString()}개 · ${Math.round(b.amt).toLocaleString()}원`)])].join('\n');
 
     let tableRows = '';
     suppliersSorted.forEach(({ sup, qty: supQty, amt: supAmt, brands }) => {
@@ -2142,11 +2190,12 @@ function renderComposition(rows) {
     });
 
     html += `
-      <div style="border:1px solid #e2e8f0; border-radius:12px; overflow:hidden;">
+      <div data-media="${media}" style="border:1px solid #e2e8f0; border-radius:12px; overflow:hidden; transition:box-shadow .3s;">
         <div style="padding:10px 14px; background:#f8fafc; border-bottom:1px solid #e2e8f0; display:flex; align-items:center; gap:8px;">
           <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:${color}; flex-shrink:0;"></span>
           <span style="font-size:13px; font-weight:800; color:#0f172a; flex:1;">${MEDIA_MAP[media] || media}</span>
           <span style="font-size:11px; color:#64748b; font-weight:600;">총 ${mediaTotalQty.toLocaleString()}개</span>
+          <button onclick="_compCopy1(${mi})" style="height:22px; padding:0 8px; background:white; color:#334155; border:1px solid #e2e8f0; border-radius:6px; font-size:11px; font-weight:600; cursor:pointer; font-family:'Noto Sans KR',sans-serif;">복사</button>
         </div>
         <div style="overflow-x:auto;">
           <table style="width:100%; border-collapse:collapse;">
@@ -2171,13 +2220,36 @@ function renderComposition(rows) {
   el.style.display = 'block';
 }
 
+// 일 평균용 일수 — 조회 시작일 ~ 조회 끝(오늘 이후면 오늘까지), 기간이 비어 있으면 주문 첫날~마지막날
+function _salesDays(rows) {
+  const ds = rows.map(r => toDate(col(r, '주문일시'))).filter(Boolean);
+  if (!ds.length) return 1;
+  const f = document.getElementById('date-from').value, t = document.getElementById('date-to').value;
+  const a = f ? new Date(f + 'T00:00:00') : new Date(Math.min(...ds));
+  const b = new Date(Math.min(t ? new Date(t + 'T00:00:00') : Math.max(...ds), Date.now()));
+  return Math.max(1, Math.floor((b - a) / 86400000) + 1);
+}
+
 // 판매 금액 = 정상가 × 수량 (정상가 없으면 거래금액)
 const _salesAmt = r => { const np = safeNum(col(r, '정상가')); return np > 0 ? np * safeNum(col(r, '수량')) : safeNum(col(r, '거래금액', '매출액')); };
 
 // ── 공급사 월 한도: 주문일 기준 일별 사용액(정상가 × 수량, 취소 주문은 빼서 한도 돌려줌)
 //    한도 금액은 공개 코드에 넣지 않고 브라우저(localStorage)에만 저장
 const SUP_LIMIT_KEY = 'numpick_sup_limits';
-let _limSups = [];
+let _limSups = [], _limCopy = [], _limMedias = [], _limYm = '';
+// 한도 카드의 매체를 누르면 → 같은 달, 그룹기준 매체별 · 정렬기준 공급사별로 이동해서 그 매체를 보여줌
+function supLimitGoMedia(k) {
+  const md = _limMedias[k], [y, m] = _limYm.split('-').map(Number);
+  const f = document.getElementById('date-from'), t = document.getElementById('date-to'), pf = f.closest('.pf');
+  f.value = `${_limYm}-01`; t.value = `${_limYm}-${String(new Date(y, m, 0).getDate()).padStart(2, '0')}`;
+  _pfMark(pf, pf.querySelectorAll('.pf-btn')[1]); // '월별' 표시
+  setSortBy('product', true); setGroupBy('media');
+  const box = [...document.querySelectorAll('#sales-composition [data-media]')].find(b => b.dataset.media === md);
+  if (!box) return;
+  box.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  box.style.boxShadow = '0 0 0 3px #a5b4fc';
+  setTimeout(() => { box.style.boxShadow = ''; }, 2000);
+}
 const LIM_COLORS = ['#4f46e5', '#0ea5e9', '#f59e0b', '#10b981', '#ec4899', '#8b5cf6', '#64748b'];
 const _limGet = () => { try { return JSON.parse(localStorage.getItem(SUP_LIMIT_KEY)) || {}; } catch { return {}; } };
 function supLimitSet(i, v) {
@@ -2186,14 +2258,16 @@ function supLimitSet(i, v) {
   localStorage.setItem(SUP_LIMIT_KEY, JSON.stringify(all));
   renderSupLimit();
 }
-function _supLimitDays(y, m) { // { 공급사: [0, 1일 금액, 2일 금액, ...] }
+function _supLimitDays(y, m, byMedia = {}) { // { 공급사: [0, 1일 금액, 2일 금액, ...] }, byMedia엔 { 공급사: { 매체: 금액 } }
   const days = new Date(y, m, 0).getDate(), out = {};
   salesData.forEach(r => {
     if (String(col(r, '주문상태') || '').includes('취소') || !String(col(r, '상품명') || '').trim()) return;
     const d = toDate(col(r, '주문일시'));
     if (!d || d.getFullYear() !== y || d.getMonth() + 1 !== m) return;
     const sup = String(col(r, '공급사') || '').trim() || '(공급사없음)';
-    (out[sup] ||= Array(days + 1).fill(0))[d.getDate()] += _salesAmt(r);
+    const amt = _salesAmt(r), md = String(col(r, '매체명') || '').trim() || '(매체없음)';
+    (out[sup] ||= Array(days + 1).fill(0))[d.getDate()] += amt;
+    (byMedia[sup] ||= {})[md] = (byMedia[sup][md] || 0) + amt;
   });
   return out;
 }
@@ -2201,30 +2275,43 @@ function renderSupLimit() {
   const el = document.getElementById('sales-limit');
   const ym = (document.getElementById('date-to').value || _dpYmd(new Date())).slice(0, 7); // 조회기간 끝 날짜의 달
   const [y, m] = ym.split('-').map(Number), days = new Date(y, m, 0).getDate();
-  const byDay = _supLimitDays(y, m), lim = _limGet();
+  const byMedia = {}, byDay = _supLimitDays(y, m, byMedia), lim = _limGet();
   const now = new Date(), thisMonth = now.getFullYear() === y && now.getMonth() + 1 === m;
   const sum = a => a.reduce((s, v) => s + v, 0);
   _limSups = [...new Set([...Object.keys(byDay), ...Object.keys(lim)])].sort((a, b) => sum(byDay[b] || []) - sum(byDay[a] || []));
 
+  const won = v => Math.round(v).toLocaleString() + '원';
+  _limCopy = []; _limMedias = []; _limYm = ym;
   const cards = _limSups.map((s, i) => {
     const used = sum(byDay[s] || []), L = lim[s] || 0, pct = L ? used / L * 100 : 0;
     const color = pct >= 90 ? '#ef4444' : pct >= 70 ? '#f59e0b' : '#4f46e5';
     let note = L ? `남은 한도 ${fmtAmt(Math.max(0, L - used))}` : '한도를 입력하면 남은 금액이 보여요';
-    if (L && used > L) note = `<b style="color:#ef4444;">${fmtAmt(used - L)} 초과</b>`;
+    let noteText = L ? `남은 한도 ${won(Math.max(0, L - used))}` : '';
+    if (L && used > L) noteText = note = `${fmtAmt(used - L)} 초과`;
     else if (L && thisMonth && used) { // 지금 속도(오늘까지 하루 평균)로 쓰면 언제 다 쓰는지
       const day = Math.ceil((L - used) / (used / now.getDate())) + now.getDate();
-      note += day <= days ? ` · <b style="color:${color};">이 속도면 ${day}일쯤 소진</b>` : ' · 이 속도면 이번 달 여유';
+      const pace = day <= days ? `이 속도면 ${day}일쯤 소진` : '이 속도면 이번 달 여유';
+      note += ` · ${pace}`; noteText += ` · ${pace}`;
     }
-    return `<div class="card" style="padding:16px 18px; border-top:4px solid ${LIM_COLORS[i % LIM_COLORS.length]};">
-      <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:10px;">
+    const medias = Object.entries(byMedia[s] || {}).sort((a, b) => b[1] - a[1]);
+    // 복사용 — 잔디 등에 바로 붙여넣기
+    const lines = [`[${s}] ${y}년 ${m}월 한도 현황`, `사용 ${won(used)}${L ? ` / 한도 ${won(L)} (${pct.toFixed(0)}%)` : ''}`];
+    if (noteText) lines.push(noteText);
+    if (medias.length) lines.push('', '매체별', ...medias.map(([md, v]) => `· ${MEDIA_MAP[md] || md} ${won(v)}`));
+    _limCopy[i] = lines.join('\n');
+    return `<div class="card" style="width:250px; box-sizing:border-box; padding:16px; border-top:4px solid ${LIM_COLORS[i % LIM_COLORS.length]};">
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:8px;">
         <span style="font-size:14px; font-weight:700; color:#0f172a;"><span style="display:inline-block; width:10px; height:10px; border-radius:3px; background:${LIM_COLORS[i % LIM_COLORS.length]}; margin-right:6px;"></span>${s}</span>
-        <span style="font-size:12px; color:#64748b;">한도
-          <input value="${L ? L.toLocaleString() : ''}" placeholder="입력" inputmode="numeric" oninput="const n = this.value.replace(/[^0-9]/g, ''); this.value = n ? (+n).toLocaleString() : ''" onchange="supLimitSet(${i}, this.value)"
-            style="width:110px; height:26px; box-sizing:border-box; border:1px solid #e2e8f0; border-radius:6px; padding:0 8px; text-align:right; font-size:12px; font-family:'Noto Sans KR',sans-serif;">원</span>
+        <button onclick="_copyText(_limCopy[${i}])" style="height:24px; padding:0 10px; background:white; color:#334155; border:1px solid #e2e8f0; border-radius:6px; font-size:11px; font-weight:600; cursor:pointer; font-family:'Noto Sans KR',sans-serif;">복사</button>
       </div>
-      <div class="num" style="font-size:20px; font-weight:700; color:#0f172a;">${fmtAmt(used)}${L ? `<span style="font-size:13px; font-weight:500; color:#94a3b8;"> / ${fmtAmt(L)} (${pct.toFixed(0)}%)</span>` : ''}</div>
-      <div style="height:8px; background:#f1f5f9; border-radius:99px; margin:10px 0 8px; overflow:hidden;"><div style="height:100%; width:${Math.min(100, pct)}%; background:${color};"></div></div>
-      <div style="font-size:12px; color:#64748b;">${note}</div>
+      <div class="num" style="font-size:18px; font-weight:700; color:#0f172a;">${fmtAmt(used)}${L ? `<span style="font-size:12px; font-weight:500; color:#94a3b8;"> / ${fmtAmt(L)} (${pct.toFixed(0)}%)</span>` : ''}</div>
+      <div style="height:6px; background:#f1f5f9; border-radius:99px; margin:8px 0 6px; overflow:hidden;"><div style="height:100%; width:${Math.min(100, pct)}%; background:${color};"></div></div>
+      <div style="font-size:11px; color:${L && used > L ? '#ef4444' : '#64748b'};">${note}</div>
+      <div style="display:flex; align-items:center; gap:6px; margin-top:10px; font-size:12px; color:#64748b;">한도
+        <input value="${L ? L.toLocaleString() : ''}" placeholder="입력" inputmode="numeric" oninput="const n = this.value.replace(/[^0-9]/g, ''); this.value = n ? (+n).toLocaleString() : ''" onchange="supLimitSet(${i}, this.value)"
+          style="flex:1; min-width:0; height:26px; box-sizing:border-box; border:1px solid #e2e8f0; border-radius:6px; padding:0 8px; text-align:right; font-size:12px; font-family:'Noto Sans KR',sans-serif;">원</div>
+      ${medias.length ? `<div style="border-top:1px solid #f1f5f9; margin-top:10px; padding-top:6px;">${medias.map(([md, v]) => `
+        <div onclick="supLimitGoMedia(${_limMedias.push(md) - 1})" title="이 매체의 공급사별 구성 보기" onmouseover="this.style.color='#4f46e5'" onmouseout="this.style.color='#64748b'" style="display:flex; justify-content:space-between; gap:8px; font-size:11px; color:#64748b; padding:2px 0; cursor:pointer;"><span>${MEDIA_MAP[md] || md} ›</span><span class="num">${fmtAmt(v)}</span></div>`).join('')}</div>` : ''}
     </div>`;
   }).join('');
 
@@ -2248,36 +2335,91 @@ function renderSupLimit() {
   }
   el.innerHTML = `
     <div style="font-size:14px; font-weight:700; color:#0f172a; margin-bottom:12px;">${y}년 ${m}월 공급사 한도</div>
-    <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:16px; margin-bottom:16px;">${cards || '<div style="color:#94a3b8; font-size:13px;">이 달 주문이 없어요</div>'}</div>
-    ${_limSups.length ? `<div class="card" style="padding:18px 20px;">
+    ${!_limSups.length ? '<div style="color:#94a3b8; font-size:13px;">이 달 주문이 없어요</div>' : `
+    <div style="display:flex; gap:16px; align-items:flex-start; flex-wrap:wrap;">${cards}
+    <div class="card" style="flex:1; min-width:560px; padding:18px 20px;">
       <div style="font-size:13px; font-weight:700; color:#0f172a; margin-bottom:12px;">일별 사용액</div>
       <div style="display:grid; grid-template-columns:repeat(7,1fr); gap:4px; font-size:11px; color:#94a3b8; text-align:center; margin-bottom:6px;"><span style="color:#e11d48;">일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span style="color:#0284c7;">토</span></div>
       <div style="display:grid; grid-template-columns:repeat(7,1fr); gap:4px;">${cells}</div>
-    </div>` : ''}`;
+    </div></div>`}`;
   el.style.display = 'block';
 }
 
-function renderSalesDashboard() {
-  const from = document.getElementById('date-from').value;
-  const to   = document.getElementById('date-to').value;
-  if (!salesData.length) return;
-
+// 조회기간 안 · 취소 아닌 주문 (useCat이면 대분류도 적용)
+function _salesInRange(useCat) {
+  const from = document.getElementById('date-from').value, to = document.getElementById('date-to').value;
   const fromD = from ? new Date(from + 'T00:00:00') : null;
   const toD   = to   ? new Date(to   + 'T23:59:59') : null;
-
-  const rows = salesData.filter(r => {
+  return salesData.filter(r => {
     const d = toDate(col(r, '주문일시'));
     if (!d) return false;
     if (fromD && d < fromD) return false;
     if (toD   && d > toD  ) return false;
     if (String(col(r,'주문상태')||'').trim().includes('취소')) return false;
+    if (useCat && _mediaCat && _mediaCatOf(String(col(r, '매체명') || '').trim()) !== _mediaCat) return false;
     return true;
   });
+}
+
+// ── 보고용 복사: 보고 시트 순서대로 서비스별 거래금액 · 주문 수
+//    매체가 null인 줄은 시트의 구분 줄(빈 줄로 복사), []는 아직 매체 코드를 모르는 줄
+const REPORT_ROWS = [
+  ['우리부고_자체답례', ['md_wooribugo', 'md_wooribugoPoint']], ['삼가', ['samga', 'md_samga']], ['의전나라_자체답례', ['md_fdnara']],
+  ['아이리스', ['iris', 'md_iris']], ['첫장', ['cheotjang', 'md_cheotjang']], ['이엔씨컴퍼니_자체답례', ['md_enccompany']],
+  ['국민부고', ['kookminbugo', 'md_kookminbugo']], ['하나부고', ['raon_hana']], ['우리토탈', []], ['다솜', ['dasom']], ['꽃길', ['flowergil']],
+  ['사하구민', ['md_sahaguminfh']], ['그리온', ['md_grion']],
+  ['웨딩', null], ['보내야주', ['md_bnyj']],
+  ['API', null], ['걷쥬', ['cnwalk']], ['이음기프트', []], ['이음(일반)', []], ['이음(RM)', []],
+];
+let _reportCopy = '';
+function toggleSalesReport() {
+  const el = document.getElementById('sales-report');
+  if (el.style.display === 'block') { el.style.display = 'none'; return; }
+  renderSalesReport();
+}
+function renderSalesReport() {
+  const el = document.getElementById('sales-report');
+  const agg = {}; // 매체 → { amt, orders:Set }
+  _salesInRange(false).forEach(r => {
+    const md = String(col(r, '매체명') || '').trim() || '(매체없음)';
+    const a = agg[md] ||= { amt: 0, orders: new Set() };
+    a.amt += _salesAmt(r);
+    a.orders.add(String(col(r, '주문번호') || '') || Math.random()); // 주문번호 없으면 줄마다 1건
+  });
+  const used = new Set(REPORT_ROWS.flatMap(([, c]) => c || []));
+  const lines = REPORT_ROWS.map(([name, codes]) => {
+    if (!codes) return { name, head: true };
+    const amt = codes.reduce((s, c) => s + (agg[c] ? agg[c].amt : 0), 0), cnt = codes.reduce((s, c) => s + (agg[c] ? agg[c].orders.size : 0), 0);
+    return { name, amt: Math.round(amt), cnt, unknown: !codes.length };
+  });
+  _reportCopy = lines.map(l => l.head || l.unknown ? '' : `${l.amt}\t${l.cnt}`).join('\n');
+  const extra = Object.entries(agg).filter(([c]) => !used.has(c));
+  const td = 'padding:6px 12px; font-size:12px; border-bottom:1px solid #f1f5f9;';
+  el.innerHTML = `<div class="card" style="padding:18px 20px;">
+    <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
+      <span style="font-size:14px; font-weight:700; color:#0f172a;">서비스별 거래금액 · 주문 수</span>
+      <span style="font-size:12px; color:#94a3b8; flex:1;">${document.getElementById('date-from').value} ~ ${document.getElementById('date-to').value}</span>
+      <button onclick="_copyText(_reportCopy)" style="height:30px; padding:0 14px; background:#4f46e5; color:white; border:none; border-radius:8px; font-size:12px; font-weight:600; cursor:pointer; font-family:'Noto Sans KR',sans-serif;">숫자만 복사</button>
+    </div>
+    <table style="width:100%; max-width:560px; border-collapse:collapse;">
+      <tr style="background:#f8fafc;"><th style="${td} text-align:left; color:#64748b;">서비스</th><th style="${td} text-align:right; color:#64748b;">거래금액</th><th style="${td} text-align:right; color:#64748b;">주문 수</th></tr>
+      ${lines.map(l => l.head
+        ? `<tr><td colspan="3" style="${td} font-weight:700; color:#0f172a; background:#f8fafc;">${l.name}</td></tr>`
+        : `<tr><td style="${td} color:#334155;">${l.name}${l.unknown ? ' <span style="color:#f59e0b; font-size:11px;">매체 연결 필요</span>' : ''}</td><td class="num" style="${td} text-align:right;">${l.unknown ? '' : l.amt.toLocaleString()}</td><td class="num" style="${td} text-align:right;">${l.unknown ? '' : l.cnt.toLocaleString()}</td></tr>`).join('')}
+    </table>
+    ${extra.length ? `<div style="margin-top:12px; font-size:12px; color:#64748b;">보고 목록에 없는 매체: ${extra.map(([c, a]) => `${MEDIA_MAP[c] || c} ${Math.round(a.amt).toLocaleString()}원 · ${a.orders.size}건`).join(' / ')}</div>` : ''}
+  </div>`;
+  el.style.display = 'block';
+}
+
+function renderSalesDashboard() {
+  if (!salesData.length) return;
+  const rows = _salesInRange(true);
+  if (document.getElementById('sales-report').style.display === 'block') renderSalesReport(); // 기간 바뀌면 같이 갱신
 
   // Aggregate by groupBy: media | brand | supplier
   const byGroup = {};
   let totalQty = 0, totalAmt = 0;
-  const mediaSet = new Set();
 
   rows.forEach(r => {
     const media    = String(col(r, '매체명')  || '').trim();
@@ -2293,7 +2435,6 @@ function renderSalesDashboard() {
     const salePrice   = safeNum(col(r, '판매단가', '단가', '판매가'));
 
     totalQty += qty; totalAmt += amt;
-    if (media) mediaSet.add(media);
 
     const groupKey = groupBy === 'media' ? (media || '(매체없음)')
                    : groupBy === 'brand'  ? (brand || '(브랜드없음)')
@@ -2332,8 +2473,8 @@ function renderSalesDashboard() {
   kpis.innerHTML = [
     { label:'총 주문건수', value: rows.length.toLocaleString() + '건',   color:'#6366f1' },
     { label:'총 판매수량', value: totalQty.toLocaleString() + '개',        color:'#8b5cf6' },
-    { label:'총 거래금액',  value: fmtAmt(totalAmt),                        color:'#ec4899' },
-    { label:'활성 매체수', value: mediaSet.size + '개',                    color:'#f59e0b' },
+    { label:'총 거래금액',  value: Math.round(totalAmt).toLocaleString() + '원', color:'#ec4899' },
+    { label:'일 평균 발송 수', value: Math.round(totalQty / _salesDays(rows)).toLocaleString() + '개', color:'#f59e0b' },
   ].map(k => `
     <div class="card" style="padding:18px 22px;">
       <div style="font-size:11px; font-weight:500; color:#94a3b8; margin-bottom:8px;">${k.label}</div>

@@ -4415,7 +4415,6 @@ const SHEET_GROUPS = [
   { name:'API', rows:[['걷쥬',['cnwalk']]] },
   { name:'이음기프트', codes:['ium'], rows:[['이음(일반)',null], ['이음(RM)',null]] }, // shortcut: 일반/RM 상품 기준 정해지면 codes 대신 행 필터로
 ];
-let _sheetMode = 'amt';
 function _sheetAgg(rows, codes) {
   const set = new Set(codes), orders = new Set(); let amt = 0, qty = 0;
   rows.forEach(r => {
@@ -4425,59 +4424,65 @@ function _sheetAgg(rows, codes) {
   });
   return { amt: Math.round(amt), qty, orders: orders.size };
 }
-function _sheetLines(rows, days) {
+function _sheetLines(rows, days, mode) {
   const out = []; let total = 0;
   SHEET_GROUPS.forEach(g => {
     const codes = g.codes || g.rows.flatMap(([, c]) => c || []);
     const ga = _sheetAgg(rows, codes);
-    const gv = _sheetMode === 'amt' ? ga.amt : ga.orders;
+    const gv = mode === 'amt' ? ga.amt : ga.orders;
     total += gv;
     out.push({ name:g.name, v:gv, kind:'group' });
-    if (_sheetMode === 'cnt') {
+    if (mode === 'cnt') {
       out.push({ name:'일 평균 주문 수', v:Math.round(ga.orders / days), kind:'avg' });
       out.push({ name:'일 평균 발송 수', v:Math.round(ga.qty / days), kind:'avg' });
     }
     g.rows.forEach(([name, c]) => {
       if (!c) return out.push({ name, v:null, kind:'row' });
       const a = _sheetAgg(rows, c);
-      out.push({ name, v:_sheetMode === 'amt' ? a.amt : a.orders, kind:'row' });
+      out.push({ name, v:mode === 'amt' ? a.amt : a.orders, kind:'row' });
     });
   });
   out.push({ name:'합계', v:total, kind:'total' });
   return out;
 }
-function setSheetMode(m) { _sheetMode = m; renderTrendSheet(); }
 function renderTrendSheet() {
   const el = document.getElementById('trend-sheet'); if (!el) return;
   const dayCnt = (a, b) => Math.max(1, Math.round((b - a) / 864e5));
-  const cur = _sheetLines(_trendRows, dayCnt(_trendFromD, _trendToD));
   const hasPrev = _trendPrevRows.length > 0;
-  const prev = hasPrev ? _sheetLines(_trendPrevRows, dayCnt(_trendPrevFromD, _trendPrevToD)) : [];
   const chg = (c, p) => c === null ? '' : !p ? '-%' : (v => (v >= 0 ? '▲' : '▼') + Math.abs(v) + '%')(Math.round((c - p) / p * 100));
-  const lines = cur.map((l, i) => ({ ...l, c: hasPrev ? chg(l.v, prev[i].v) : '' }));
-  _grpCols['trend-sheet'] = { v: lines.map(l => l.v === null ? '' : l.v), chg: lines.map(l => l.c) };
   const cmpLbl = { '7':'전주 대비', '14':'2주 전 대비', month:'전월 대비' }[_trendPeriodMode] || '비교기간 대비';
-  const tab = (m, t) => `<button onclick="setSheetMode('${m}')" style="padding:4px 12px; border-radius:6px; font-size:12px; font-weight:600; border:none; cursor:pointer; font-family:inherit; ${_sheetMode === m ? 'background:#4f46e5; color:white;' : 'background:#f1f5f9; color:#64748b;'}">${t}</button>`;
   const thSt = 'text-align:right; padding:6px 12px; font-size:11px; font-weight:600; color:#4f46e5; cursor:pointer; text-decoration:underline dotted; white-space:nowrap;';
   const rowSt = { group:'background:#f1f5f9; font-weight:700;', total:'background:#fef9c3; font-weight:700;', avg:'color:#64748b;', row:'' };
+  // 거래금액 · 주문 수 두 표를 나란히
+  const table = (mode, title, label) => {
+    const cur = _sheetLines(_trendRows, dayCnt(_trendFromD, _trendToD), mode);
+    const prev = hasPrev ? _sheetLines(_trendPrevRows, dayCnt(_trendPrevFromD, _trendPrevToD), mode) : [];
+    const lines = cur.map((l, i) => ({ ...l, c: hasPrev ? chg(l.v, prev[i].v) : '' }));
+    const id = 'trend-sheet-' + mode;
+    _grpCols[id] = { v: lines.map(l => l.v === null ? '' : l.v), chg: lines.map(l => l.c) };
+    return `<div style="min-width:0;">
+      <div style="font-size:13px; font-weight:700; color:#334155; margin-bottom:8px;">${title}</div>
+      <table style="width:100%; border-collapse:collapse; font-size:12px;">
+        <thead><tr style="border-bottom:2px solid #f1f5f9;">
+          <th style="text-align:left; padding:6px 12px; font-size:11px; font-weight:600; color:#64748b;">구분</th>
+          <th onclick="_grpCopyCol('${id}','v')" title="눌러서 복사" style="${thSt}">${label}</th>
+          ${hasPrev ? `<th onclick="_grpCopyCol('${id}','chg')" title="눌러서 복사" style="${thSt}">증감 <span style="font-size:9px; color:#94a3b8; font-weight:400;">(${cmpLbl})</span></th>` : ''}
+        </tr></thead>
+        <tbody>${lines.map(l => `<tr style="border-bottom:1px solid #f1f5f9; ${rowSt[l.kind]}">
+          <td style="padding:6px 12px; white-space:nowrap; ${l.kind === 'avg' || l.kind === 'row' ? 'padding-left:24px;' : ''}">${l.name}${l.v === null ? ' <span style="color:#f59e0b; font-size:10px;">기준 미정</span>' : ''}</td>
+          <td class="num" style="padding:6px 12px; text-align:right;">${l.v === null ? '' : l.v.toLocaleString()}</td>
+          ${hasPrev ? `<td style="padding:6px 12px; text-align:right; font-weight:700; color:${l.c.startsWith('▼') ? '#3b82f6' : l.c.startsWith('▲') ? '#ef4444' : '#94a3b8'};">${l.c}</td>` : ''}
+        </tr>`).join('')}</tbody>
+      </table></div>`;
+  };
   el.innerHTML = `
-    <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
+    <div style="display:flex; align-items:center; gap:10px; margin-bottom:14px;">
       <div style="font-size:14px; font-weight:700; color:#0f172a;">보고 시트</div>
-      <div style="display:flex; gap:4px;">${tab('amt','서비스별 거래금액')}${tab('cnt','서비스별 주문 수')}</div>
       <div style="font-size:11px; color:#94a3b8; margin-left:auto;">칸 이름을 누르면 세로줄이 시트 순서대로 복사돼요</div>
     </div>
-    <table style="width:100%; max-width:520px; border-collapse:collapse; font-size:12px;">
-      <thead><tr style="border-bottom:2px solid #f1f5f9;">
-        <th style="text-align:left; padding:6px 12px; font-size:11px; font-weight:600; color:#64748b;">구분</th>
-        <th onclick="_grpCopyCol('trend-sheet','v')" title="눌러서 복사" style="${thSt}">${_sheetMode === 'amt' ? '거래금액' : '주문 수'}</th>
-        ${hasPrev ? `<th onclick="_grpCopyCol('trend-sheet','chg')" title="눌러서 복사" style="${thSt}">증감 <span style="font-size:9px; color:#94a3b8; font-weight:400;">(${cmpLbl})</span></th>` : ''}
-      </tr></thead>
-      <tbody>${lines.map(l => `<tr style="border-bottom:1px solid #f1f5f9; ${rowSt[l.kind]}">
-        <td style="padding:6px 12px; ${l.kind === 'avg' || l.kind === 'row' ? 'padding-left:24px;' : ''}">${l.name}${l.v === null ? ' <span style="color:#f59e0b; font-size:10px;">기준 미정</span>' : ''}</td>
-        <td class="num" style="padding:6px 12px; text-align:right;">${l.v === null ? '' : l.v.toLocaleString()}</td>
-        ${hasPrev ? `<td style="padding:6px 12px; text-align:right; font-weight:700; color:${l.c.startsWith('▼') ? '#3b82f6' : l.c.startsWith('▲') ? '#ef4444' : '#94a3b8'};">${l.c}</td>` : ''}
-      </tr>`).join('')}</tbody>
-    </table>`;
+    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:28px; align-items:start;">
+      ${table('amt', '서비스별 거래금액', '거래금액')}${table('cnt', '서비스별 주문 수', '주문 수')}
+    </div>`;
 }
 
 // 칸 이름 눌러 복사 (보고 시트 줄만, 위에서부터 한 줄씩)

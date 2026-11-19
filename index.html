@@ -4412,11 +4412,13 @@ function renderGroupTable(currRows, prevRows, keyFn, elId, nameFn, noShare) {
       const p = prev[it.key];
       return { ...it, orders:it.orders.size, pAmt:p?p.amt:0, pQty:p?p.qty:0, pOrders:p?p.orders.size:0, hasPrev:!!p };
     });
-  const hasPrev = prevRows.length > 0;
+  // 매체 표는 비교기간만 정해져 있으면 증감 칸을 항상 보여줌 (데이터 없으면 아래 안내)
+  const hasPrev = prevRows.length > 0 || (noShare && !!_trendPrevFromD);
   const el = document.getElementById(elId); if (!el) return;
   const cmpLbl = { '7':'전주 대비', '14':'2주 전 대비', month:'전월 대비' }[_trendPeriodMode] || '비교기간 대비';
   // ▲6% 처럼 정수 %만 (비교기간에 없던 매체는 신규)
   const pctTxt = (c, p) => {
+    if (!prevRows.length) return '';
     if (!p) return c ? '<span style="font-weight:700;color:#ef4444;">신규</span>' : '';
     const v = Math.round((c - p) / p * 100);
     return `<span style="font-weight:700;color:${v >= 0 ? '#ef4444' : '#3b82f6'};">${v >= 0 ? '▲' : '▼'}${Math.abs(v)}%</span>`;
@@ -4447,7 +4449,7 @@ function renderGroupTable(currRows, prevRows, keyFn, elId, nameFn, noShare) {
           ${hasPrev && noShare ? `<td style="padding:8px 10px;text-align:right;font-size:12px;white-space:nowrap;">${pctTxt(it.orders, it.pOrders)||'<span style="color:#cbd5e1">-</span>'}</td>` : ''}
         </tr>`).join('')}
       </tbody>
-    </table>`;
+    </table>${noShare && !prevRows.length ? `<div style="font-size:11px;color:#f59e0b;margin-top:8px;">${_trendPrevFromD ? `비교기간(${fmtDate(_trendPrevFromD)} ~ ${fmtDate(_trendPrevToD)}) 주문이 없어서 증감을 못 구해요. 그 기간 데이터도 올려 주세요.` : '비교 기간이 없어서 증감이 안 나와요. 7일·14일·월 또는 비교기간을 골라 주세요.'}</div>` : ''}`;
 }
 
 function renderProductChanges(currRows, prevRows) {

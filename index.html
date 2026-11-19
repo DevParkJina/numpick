@@ -4450,8 +4450,8 @@ function renderGroupTable(currRows, prevRows, keyFn, elId, nameFn, noShare, fixe
   const clk = k => fixedKeys ? ` onclick="_grpCopyCol('${k}')" title="눌러서 복사" ` : '';
   const thSt = `text-align:right;padding:6px 10px;font-size:11px;font-weight:600;color:${fixedKeys ? '#4f46e5' : '#64748b'};white-space:nowrap;${fixedKeys ? 'cursor:pointer;text-decoration:underline dotted;' : ''}`;
   const th = (label, k) => hasPrev
-    ? `<th${clk(k)}style="${thSt}">${label}<div style="font-size:9px;color:#94a3b8;font-weight:400;margin-top:1px;">(비교기간)</div></th>`
-    : `<th${clk(k)}style="${thSt}">${label}</th>`;
+    ? `<th ${clk(k)} style="${thSt}">${label}<div style="font-size:9px;color:#94a3b8;font-weight:400;margin-top:1px;">(비교기간)</div></th>`
+    : `<th ${clk(k)} style="${thSt}">${label}</th>`;
   const stackCell = (cur, prev, fmt) => hasPrev
     ? `<div style="white-space:nowrap;">${fmt(cur)}</div><div style="font-size:10px;color:#94a3b8;margin-top:1px;white-space:nowrap;">${prev !== null ? fmt(prev) : '-'}</div>`
     : `<span style="white-space:nowrap;">${fmt(cur)}</span>`;
@@ -4461,7 +4461,7 @@ function renderGroupTable(currRows, prevRows, keyFn, elId, nameFn, noShare, fixe
         <th style="text-align:left;padding:6px 10px;font-size:11px;font-weight:600;color:#64748b;">이름</th>
         ${th('거래금액','amt')}${th('수량','qty')}${th('주문','orders')}
         ${noShare ? '' : '<th style="text-align:right;padding:6px 10px;font-size:11px;font-weight:600;color:#64748b;white-space:nowrap;">비중</th>'}
-        ${hasPrev ? `<th${clk('chg')}style="${thSt}">${noShare ? '증감<div style="font-size:9px;color:#94a3b8;font-weight:400;margin-top:1px;">(' + cmpLbl + ')</div>' : '증감'}</th>` : ''}
+        ${hasPrev ? `<th ${clk('chg')} style="${thSt}">${noShare ? '증감<div style="font-size:9px;color:#94a3b8;font-weight:400;margin-top:1px;">(' + cmpLbl + ')</div>' : '증감'}</th>` : ''}
       </tr></thead>
       <tbody>${items.map((it,i) => `
         <tr style="border-bottom:1px solid #f8fafc;${fixedKeys && i === fixedKeys.length ? 'border-top:2px solid #e2e8f0;' : ''}${fixedKeys && i >= fixedKeys.length ? 'opacity:0.55;' : ''}">

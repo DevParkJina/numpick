@@ -203,7 +203,6 @@
           </div>
         </div>
         <div style="flex:1;"></div>
-        <button onclick="toggleSalesReport()" style="background:white; color:#334155; border:1px solid #e2e8f0; border-radius:8px; padding:6px 14px; font-size:12px; font-weight:600; cursor:pointer; font-family:'Noto Sans KR',sans-serif;">보고용 복사</button>
         <button onclick="exportSalesExcel()" style="background:#475569; color:white; border:none; border-radius:8px; padding:6px 14px; font-size:12px; font-weight:500; cursor:pointer;">엑셀저장</button>
         <button id="lock-btn-sales" class="lock-btn" onclick="toggleLock('sales')">🔓 편집</button>
         <button onclick="resetSales()" style="font-size:12px; color:#94a3b8; background:none; border:none; cursor:pointer; font-weight:400;">초기화</button>
@@ -239,7 +238,6 @@
   </div>
 
   <!-- 보고용 복사 — 서비스별 거래금액 · 주문 수 (보고 시트 순서) -->
-  <div id="sales-report" style="display:none; margin-bottom:16px;"></div>
 
   <!-- Media filter chips — 라벨 옆 칸 안에서 줄바꿈되게 -->
   <div id="sales-media-filter" style="display:none; margin-bottom:16px;">
@@ -1738,7 +1736,6 @@ async function resetSales() {
   document.getElementById('sales-heatmap').style.display = 'none';
   document.getElementById('sales-heatmap').innerHTML = '';
   document.getElementById('sales-limit').style.display = 'none';
-  document.getElementById('sales-report').style.display = 'none';
   document.getElementById('sales-kpis').style.display = 'none';
   document.getElementById('sales-grid').innerHTML = '';
   document.getElementById('sales-kpis').innerHTML = '';
@@ -2230,6 +2227,9 @@ function _salesDays(rows) {
   return Math.max(1, Math.floor((b - a) / 86400000) + 1);
 }
 
+// 집계에 넣는 주문: 주문상태에 '완료'가 있고 '취소'는 없는 것만 (예: 발송완료 O, 취소완료 X, 빈칸 X)
+const _orderDone = r => { const s = String(col(r, '주문상태') || ''); return s.includes('완료') && !s.includes('취소'); };
+
 // 판매 금액 = 정상가 × 수량 (정상가 없으면 거래금액)
 const _salesAmt = r => { const np = safeNum(col(r, '정상가')); return np > 0 ? np * safeNum(col(r, '수량')) : safeNum(col(r, '거래금액', '매출액')); };
 
@@ -2261,7 +2261,7 @@ function supLimitSet(i, v) {
 function _supLimitDays(y, m, byMedia = {}) { // { 공급사: [0, 1일 금액, 2일 금액, ...] }, byMedia엔 { 공급사: { 매체: 금액 } }
   const days = new Date(y, m, 0).getDate(), out = {};
   salesData.forEach(r => {
-    if (String(col(r, '주문상태') || '').includes('취소') || !String(col(r, '상품명') || '').trim()) return;
+    if (!_orderDone(r) || !String(col(r, '상품명') || '').trim()) return;
     const d = toDate(col(r, '주문일시'));
     if (!d || d.getFullYear() !== y || d.getMonth() + 1 !== m) return;
     const sup = String(col(r, '공급사') || '').trim() || '(공급사없음)';
@@ -2355,67 +2355,15 @@ function _salesInRange(useCat) {
     if (!d) return false;
     if (fromD && d < fromD) return false;
     if (toD   && d > toD  ) return false;
-    if (String(col(r,'주문상태')||'').trim().includes('취소')) return false;
+    if (!_orderDone(r)) return false;
     if (useCat && _mediaCat && _mediaCatOf(String(col(r, '매체명') || '').trim()) !== _mediaCat) return false;
     return true;
   });
 }
 
-// ── 보고용 복사: 보고 시트 순서대로 서비스별 거래금액 · 주문 수
-//    매체가 null인 줄은 시트의 구분 줄(빈 줄로 복사), []는 아직 매체 코드를 모르는 줄
-const REPORT_ROWS = [
-  ['우리부고_자체답례', ['md_wooribugo', 'md_wooribugoPoint']], ['삼가', ['samga', 'md_samga']], ['의전나라_자체답례', ['md_fdnara']],
-  ['아이리스', ['iris', 'md_iris']], ['첫장', ['cheotjang', 'md_cheotjang']], ['이엔씨컴퍼니_자체답례', ['md_enccompany']],
-  ['국민부고', ['kookminbugo', 'md_kookminbugo']], ['하나부고', ['raon_hana']], ['우리토탈', []], ['다솜', ['dasom']], ['꽃길', ['flowergil']],
-  ['사하구민', ['md_sahaguminfh']], ['그리온', ['md_grion']],
-  ['웨딩', null], ['보내야주', ['md_bnyj']],
-  ['API', null], ['걷쥬', ['cnwalk']], ['이음기프트', []], ['이음(일반)', []], ['이음(RM)', []],
-];
-let _reportCopy = '';
-function toggleSalesReport() {
-  const el = document.getElementById('sales-report');
-  if (el.style.display === 'block') { el.style.display = 'none'; return; }
-  renderSalesReport();
-}
-function renderSalesReport() {
-  const el = document.getElementById('sales-report');
-  const agg = {}; // 매체 → { amt, orders:Set }
-  _salesInRange(false).forEach(r => {
-    const md = String(col(r, '매체명') || '').trim() || '(매체없음)';
-    const a = agg[md] ||= { amt: 0, orders: new Set() };
-    a.amt += _salesAmt(r);
-    a.orders.add(String(col(r, '주문번호') || '') || Math.random()); // 주문번호 없으면 줄마다 1건
-  });
-  const used = new Set(REPORT_ROWS.flatMap(([, c]) => c || []));
-  const lines = REPORT_ROWS.map(([name, codes]) => {
-    if (!codes) return { name, head: true };
-    const amt = codes.reduce((s, c) => s + (agg[c] ? agg[c].amt : 0), 0), cnt = codes.reduce((s, c) => s + (agg[c] ? agg[c].orders.size : 0), 0);
-    return { name, amt: Math.round(amt), cnt, unknown: !codes.length };
-  });
-  _reportCopy = lines.map(l => l.head || l.unknown ? '' : `${l.amt}\t${l.cnt}`).join('\n');
-  const extra = Object.entries(agg).filter(([c]) => !used.has(c));
-  const td = 'padding:6px 12px; font-size:12px; border-bottom:1px solid #f1f5f9;';
-  el.innerHTML = `<div class="card" style="padding:18px 20px;">
-    <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
-      <span style="font-size:14px; font-weight:700; color:#0f172a;">서비스별 거래금액 · 주문 수</span>
-      <span style="font-size:12px; color:#94a3b8; flex:1;">${document.getElementById('date-from').value} ~ ${document.getElementById('date-to').value}</span>
-      <button onclick="_copyText(_reportCopy)" style="height:30px; padding:0 14px; background:#4f46e5; color:white; border:none; border-radius:8px; font-size:12px; font-weight:600; cursor:pointer; font-family:'Noto Sans KR',sans-serif;">숫자만 복사</button>
-    </div>
-    <table style="width:100%; max-width:560px; border-collapse:collapse;">
-      <tr style="background:#f8fafc;"><th style="${td} text-align:left; color:#64748b;">서비스</th><th style="${td} text-align:right; color:#64748b;">거래금액</th><th style="${td} text-align:right; color:#64748b;">주문 수</th></tr>
-      ${lines.map(l => l.head
-        ? `<tr><td colspan="3" style="${td} font-weight:700; color:#0f172a; background:#f8fafc;">${l.name}</td></tr>`
-        : `<tr><td style="${td} color:#334155;">${l.name}${l.unknown ? ' <span style="color:#f59e0b; font-size:11px;">매체 연결 필요</span>' : ''}</td><td class="num" style="${td} text-align:right;">${l.unknown ? '' : l.amt.toLocaleString()}</td><td class="num" style="${td} text-align:right;">${l.unknown ? '' : l.cnt.toLocaleString()}</td></tr>`).join('')}
-    </table>
-    ${extra.length ? `<div style="margin-top:12px; font-size:12px; color:#64748b;">보고 목록에 없는 매체: ${extra.map(([c, a]) => `${MEDIA_MAP[c] || c} ${Math.round(a.amt).toLocaleString()}원 · ${a.orders.size}건`).join(' / ')}</div>` : ''}
-  </div>`;
-  el.style.display = 'block';
-}
-
 function renderSalesDashboard() {
   if (!salesData.length) return;
   const rows = _salesInRange(true);
-  if (document.getElementById('sales-report').style.display === 'block') renderSalesReport(); // 기간 바뀌면 같이 갱신
 
   // Aggregate by groupBy: media | brand | supplier
   const byGroup = {};
@@ -3871,7 +3819,7 @@ function getTrendFilteredRows() {
   const fMedia = document.getElementById('trend-filter-media').value;
 
   const baseFilter = r => {
-    if (String(col(r,'주문상태')||'').trim().includes('취소')) return false;
+    if (!_orderDone(r)) return false;
     if (fMedia && String(col(r,'매체명')||'').trim() !== fMedia) return false;
     return true;
   };
@@ -4881,7 +4829,7 @@ function renderTrendMediaDetail(mediaKey) {
 
   // 해당 매체 전체 누적 (기간 필터 없음)
   const allMediaRows = salesData.filter(r =>
-    !String(col(r,'주문상태')||'').trim().includes('취소') &&
+    _orderDone(r) &&
     String(col(r,'매체명')||'').trim() === mediaKey
   );
   const totalMediaAgg = aggRows(allMediaRows);

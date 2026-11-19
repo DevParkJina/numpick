@@ -1542,10 +1542,14 @@ const MEDIA_CAT = {
   '자체몰': ['devnium', 'md_devnium', 'ium', 'tium', 'telent', 'talent'],
 };
 const _mediaCatOf = code => Object.keys(MEDIA_CAT).find(c => MEDIA_CAT[c].includes(code)) || 'API';
-// 부고답례몰 보고 순서 (우리부고_자체답례 → 삼가 → 의전나라 → 아이리스 → 첫장 → 이엔씨 → 국민부고 → 하나부고 → 우리토탈(코드 미정) → 다솜 → 꽃길 → 사하구민 → 그리온), 목록에 없는 매체는 뒤에
-const BUGO_ORDER = ['md_wooribugo', 'samga', 'md_samga', 'md_fdnara', 'iris', 'md_iris', 'cheotjang', 'md_cheotjang', 'md_enccompany',
-  'kookminbugo', 'md_kookminbugo', 'raon_hana', 'dasom', 'flowergil', 'md_sahaguminfh', 'md_grion'];
-const _bugoRank = code => { const i = BUGO_ORDER.indexOf(code); return i < 0 ? 999 : i; };
+// 부고답례몰 보고 시트 줄 (순서·합칠 매체 코드). 여기 없는 매체는 표 맨 밑, 복사 제외
+const BUGO_ROWS = [
+  ['우리부고_자체답례', ['md_wooribugo']], ['삼가', ['samga', 'md_samga']], ['의전나라_자체답례', ['md_fdnara']],
+  ['아이리스', ['iris', 'md_iris']], ['첫장', ['cheotjang', 'md_cheotjang']], ['이엔씨컴퍼니_자체답례', ['md_enccompany']],
+  ['국민부고', ['kookminbugo', 'md_kookminbugo']], ['하나부고', ['raon_hana']], ['사하구민', ['md_sahaguminfh']], ['그리온', ['md_grion']],
+];
+const _bugoGroupOf = code => (BUGO_ROWS.find(([, cs]) => cs.includes(code)) || [])[0];
+const _bugoRank = code => { const i = BUGO_ROWS.findIndex(([, cs]) => cs.includes(code)); return i < 0 ? 999 : i; };
 // 대분류가 부고답례몰이면 보고 순서, 아니면 null (호출부 기본 정렬)
 const _trendBugoSort = () => (document.getElementById('trend-filter-cat') || {}).value === '부고답례몰' ? (a, b) => _bugoRank(a) - _bugoRank(b) : null;
 let _mediaCat = '';
@@ -4398,7 +4402,12 @@ function renderKpiCards(elId, cards) {
   `).join('');
 }
 
-function renderGroupTable(currRows, prevRows, keyFn, elId, nameFn, noShare) {
+// 칸 이름 눌러 복사 (보고 시트 줄만, 위에서부터 한 줄씩)
+let _grpCols = null;
+function _grpCopyCol(k) { if (_grpCols) _copyText(_grpCols[k].join('\n')); }
+
+// fixedKeys: 이 순서로 줄 고정(0이어도 남김), 나머지는 아래에 금액 순 + 칸 이름 누르면 고정 줄만 복사
+function renderGroupTable(currRows, prevRows, keyFn, elId, nameFn, noShare, fixedKeys) {
   const buildMap = rows => {
     const m = {};
     rows.forEach(r => {
@@ -4414,8 +4423,10 @@ function renderGroupTable(currRows, prevRows, keyFn, elId, nameFn, noShare) {
   const curr  = buildMap(currRows);
   const prev  = buildMap(prevRows);
   const total = Object.values(curr).reduce((s,v) => s+v.amt, 0) || 1;
-  const bs = elId === 'trend-all-media' && _trendBugoSort(); // 부고답례몰: 보고 순서로 전체 매체
-  const items = (bs ? Object.values(curr).sort((a,b) => b.amt-a.amt).sort((a,b) => bs(a.key, b.key)) : Object.values(curr).sort((a,b) => b.amt-a.amt).slice(0,10))
+  const sorted = Object.values(curr).sort((a,b) => b.amt-a.amt);
+  const items = (fixedKeys
+    ? [...fixedKeys.map(k => curr[k] || { key:k, amt:0, qty:0, orders:new Set() }), ...sorted.filter(it => !fixedKeys.includes(it.key))]
+    : sorted.slice(0,10))
     .map(it => {
       const p = prev[it.key];
       return { ...it, orders:it.orders.size, pAmt:p?p.amt:0, pQty:p?p.qty:0, pOrders:p?p.orders.size:0, hasPrev:!!p };
@@ -4431,9 +4442,16 @@ function renderGroupTable(currRows, prevRows, keyFn, elId, nameFn, noShare) {
     const v = Math.round((c - p) / p * 100);
     return `<span style="font-weight:700;color:${v >= 0 ? '#ef4444' : '#3b82f6'};">${v >= 0 ? '▲' : '▼'}${Math.abs(v)}%</span>`;
   };
-  const th = (label) => hasPrev
-    ? `<th style="text-align:right;padding:6px 10px;font-size:11px;font-weight:600;color:#64748b;white-space:nowrap;">${label}<div style="font-size:9px;color:#94a3b8;font-weight:400;margin-top:1px;">(비교기간)</div></th>`
-    : `<th style="text-align:right;padding:6px 10px;font-size:11px;font-weight:600;color:#64748b;white-space:nowrap;">${label}</th>`;
+  if (fixedKeys) {
+    const fx = items.slice(0, fixedKeys.length);
+    const chg = it => { if (!it.pAmt) return '-%'; const v = Math.round((it.amt - it.pAmt) / it.pAmt * 100); return (v >= 0 ? '▲' : '▼') + Math.abs(v) + '%'; };
+    _grpCols = { amt: fx.map(it => Math.round(it.amt)), qty: fx.map(it => it.qty), orders: fx.map(it => it.orders), chg: fx.map(chg) };
+  }
+  const clk = k => fixedKeys ? ` onclick="_grpCopyCol('${k}')" title="눌러서 복사" ` : '';
+  const thSt = `text-align:right;padding:6px 10px;font-size:11px;font-weight:600;color:${fixedKeys ? '#4f46e5' : '#64748b'};white-space:nowrap;${fixedKeys ? 'cursor:pointer;text-decoration:underline dotted;' : ''}`;
+  const th = (label, k) => hasPrev
+    ? `<th${clk(k)}style="${thSt}">${label}<div style="font-size:9px;color:#94a3b8;font-weight:400;margin-top:1px;">(비교기간)</div></th>`
+    : `<th${clk(k)}style="${thSt}">${label}</th>`;
   const stackCell = (cur, prev, fmt) => hasPrev
     ? `<div style="white-space:nowrap;">${fmt(cur)}</div><div style="font-size:10px;color:#94a3b8;margin-top:1px;white-space:nowrap;">${prev !== null ? fmt(prev) : '-'}</div>`
     : `<span style="white-space:nowrap;">${fmt(cur)}</span>`;
@@ -4441,12 +4459,12 @@ function renderGroupTable(currRows, prevRows, keyFn, elId, nameFn, noShare) {
     <table style="width:100%; border-collapse:collapse; font-size:12px; table-layout:auto;">
       <thead><tr style="border-bottom:2px solid #f1f5f9;">
         <th style="text-align:left;padding:6px 10px;font-size:11px;font-weight:600;color:#64748b;">이름</th>
-        ${th('거래금액')}${th('수량')}${th('주문')}
+        ${th('거래금액','amt')}${th('수량','qty')}${th('주문','orders')}
         ${noShare ? '' : '<th style="text-align:right;padding:6px 10px;font-size:11px;font-weight:600;color:#64748b;white-space:nowrap;">비중</th>'}
-        ${hasPrev ? `<th style="text-align:right;padding:6px 10px;font-size:11px;font-weight:600;color:#64748b;white-space:nowrap;">${noShare ? '증감<div style="font-size:9px;color:#94a3b8;font-weight:400;margin-top:1px;">(' + cmpLbl + ')</div>' : '증감'}</th>` : ''}
+        ${hasPrev ? `<th${clk('chg')}style="${thSt}">${noShare ? '증감<div style="font-size:9px;color:#94a3b8;font-weight:400;margin-top:1px;">(' + cmpLbl + ')</div>' : '증감'}</th>` : ''}
       </tr></thead>
       <tbody>${items.map((it,i) => `
-        <tr style="border-bottom:1px solid #f8fafc;">
+        <tr style="border-bottom:1px solid #f8fafc;${fixedKeys && i === fixedKeys.length ? 'border-top:2px solid #e2e8f0;' : ''}${fixedKeys && i >= fixedKeys.length ? 'opacity:0.55;' : ''}">
           <td style="padding:8px 10px;font-size:12px;color:#1e293b;font-weight:${i<3?'600':'400'};max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${(nameFn||String)(it.key)}">${(nameFn||String)(it.key)}</td>
           <td style="padding:8px 10px;text-align:right;font-size:12px;line-height:1.5;" class="num">${stackCell(it.amt, it.hasPrev?it.pAmt:null, v=>v.toLocaleString()+'원')}</td>
           <td style="padding:8px 10px;text-align:right;font-size:12px;line-height:1.5;" class="num">${stackCell(it.qty, it.hasPrev?it.pQty:null, v=>v.toLocaleString())}</td>
@@ -4775,7 +4793,11 @@ function renderTrendAll() {
     if (insEl) insEl.innerHTML = html;
   })();
 
-  renderGroupTable(_trendRows, _trendPrevRows, r=>String(col(r,'매체명')||'').trim(), 'trend-all-media',    v=>MEDIA_MAP[v]||v, true);
+  _grpCols = null;
+  if (_trendBugoSort()) // 부고답례몰: 시트 줄 단위로 매체 합침
+    renderGroupTable(_trendRows, _trendPrevRows, r=>{ const c = String(col(r,'매체명')||'').trim(); return _bugoGroupOf(c) || c; }, 'trend-all-media', v=>MEDIA_MAP[v]||v, true, BUGO_ROWS.map(x=>x[0]));
+  else
+    renderGroupTable(_trendRows, _trendPrevRows, r=>String(col(r,'매체명')||'').trim(), 'trend-all-media',    v=>MEDIA_MAP[v]||v, true);
   renderGroupTable(_trendRows, _trendPrevRows, r=>String(col(r,'공급사')||'').trim(), 'trend-all-supplier');
   renderGroupTable(_trendRows, _trendPrevRows, r=>String(col(r,'브랜드')||'').trim(),  'trend-all-brand', null, true);
   renderSupplierMediaMatrix(_trendRows, 'trend-all-matrix');

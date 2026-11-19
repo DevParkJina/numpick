@@ -1188,7 +1188,12 @@
         <div style="width:1px; height:32px; background:#f1f5f9; flex-shrink:0;"></div>
 
         <div style="display:flex; align-items:center; gap:8px;">
-          <span style="font-size:11px; font-weight:700; color:#94a3b8; letter-spacing:0.3px;">매체</span>
+          <span style="font-size:11px; font-weight:700; color:#94a3b8; letter-spacing:0.3px;">대분류</span>
+          <select id="trend-filter-cat" onchange="trendBuildMediaOpts()"
+            style="border:1px solid #e2e8f0; border-radius:10px; padding:7px 28px 7px 11px; font-size:12px; color:#374151; outline:none; min-width:110px; font-family:'Noto Sans KR',sans-serif; background:#fafafa; cursor:pointer; appearance:auto;">
+            <option value="">전체</option><option>부고답례몰</option><option>웨딩답례몰</option><option>자체몰</option><option>API</option>
+          </select>
+          <span style="font-size:11px; font-weight:700; color:#94a3b8; letter-spacing:0.3px; margin-left:6px;">매체</span>
           <select id="trend-filter-media" onchange="repSyncRecipient()"
             style="border:1px solid #e2e8f0; border-radius:10px; padding:7px 28px 7px 11px; font-size:12px; color:#374151; outline:none; min-width:130px; font-family:'Noto Sans KR',sans-serif; background:#fafafa; cursor:pointer; appearance:auto;">
             <option value="">전체</option>
@@ -1393,7 +1398,10 @@
           <div id="trend-all-brand" style="overflow-x:auto;"></div>
         </div>
         <div style="background:white; border-radius:16px; box-shadow:0 1px 4px rgba(0,0,0,0.06); padding:20px 24px;">
-          <div style="font-size:14px; font-weight:700; color:#0f172a; margin-bottom:14px; font-family:'Noto Sans KR',sans-serif;">매체별 성과</div>
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;">
+            <div style="font-size:14px; font-weight:700; color:#0f172a; font-family:'Noto Sans KR',sans-serif;">매체별 성과</div>
+            <button onclick="copyTrendMedia()" style="background:white; color:#374151; border:1px solid #e2e8f0; border-radius:8px; padding:4px 12px; font-size:12px; font-weight:500; cursor:pointer; font-family:'Noto Sans KR',sans-serif;">📋 복사</button>
+          </div>
           <div id="trend-all-media" style="overflow-x:auto;"></div>
         </div>
       </div>
@@ -3749,7 +3757,7 @@ function initTrendTab() {
     if (!sel) return;
     sel.innerHTML = '<option value="">전체</option>' + arr.map(v => `<option value="${v}">${(labelFn||String)(v)}</option>`).join('');
   };
-  buildOpts('trend-filter-media', medias, v => MEDIA_MAP[v.trim()] || v);
+  trendBuildMediaOpts();
 
   let maxD = null;
   salesData.forEach(r => {
@@ -3817,10 +3825,13 @@ function getTrendFilteredRows() {
   }
 
   const fMedia = document.getElementById('trend-filter-media').value;
+  const fCat = document.getElementById('trend-filter-cat').value;
 
   const baseFilter = r => {
     if (!_orderDone(r)) return false;
-    if (fMedia && String(col(r,'매체명')||'').trim() !== fMedia) return false;
+    const md = String(col(r,'매체명')||'').trim();
+    if (fMedia && md !== fMedia) return false;
+    if (fCat && _mediaCatOf(md) !== fCat) return false;
     return true;
   };
 
@@ -3899,7 +3910,35 @@ function renderTrend() {
   }
 }
 
+// 대분류에 맞는 매체만 매체 선택지에 넣음 (선택하던 매체가 빠지면 전체로)
+function trendBuildMediaOpts() {
+  const cat = document.getElementById('trend-filter-cat').value;
+  const sel = document.getElementById('trend-filter-media'), cur = sel.value;
+  const medias = [...new Set(salesData.map(r => String(col(r,'매체명')||'').trim()).filter(Boolean))]
+    .filter(m => !cat || _mediaCatOf(m) === cat).sort();
+  sel.innerHTML = '<option value="">전체</option>' + medias.map(v => `<option value="${v}">${MEDIA_MAP[v] || v}</option>`).join('');
+  sel.value = medias.includes(cur) ? cur : '';
+}
+
+// 매체별 성과 복사: 거래금액 순 전체 매체 (매체명 · 거래금액 · 주문 수), 시트에 바로 붙여넣기용
+function copyTrendMedia() {
+  const m = {};
+  _trendRows.forEach(r => {
+    const k = String(col(r,'매체명')||'').trim(); if (!k) return;
+    const a = m[k] ||= { amt:0, orders:new Set() };
+    a.amt += rowAmt(r);
+    const on = String(col(r,'주문번호')||'').trim();
+    if (on) a.orders.add(on);
+  });
+  const lines = Object.entries(m).sort((a,b) => b[1].amt - a[1].amt)
+    .map(([k,a]) => `${MEDIA_MAP[k] || k}\t${Math.round(a.amt)}\t${a.orders.size}`);
+  if (!lines.length) return _regToast('복사할 데이터가 없어요');
+  _copyText('매체\t거래금액\t주문 수\n' + lines.join('\n'));
+}
+
 function resetTrend() {
+  document.getElementById('trend-filter-cat').value = '';
+  trendBuildMediaOpts();
   document.getElementById('trend-filter-media').value = '';
   document.getElementById('trend-custom-end').value        = '';
   document.getElementById('trend-custom-cmp-start').value  = '';
@@ -4352,7 +4391,7 @@ function renderKpiCards(elId, cards) {
   `).join('');
 }
 
-function renderGroupTable(currRows, prevRows, keyFn, elId, nameFn) {
+function renderGroupTable(currRows, prevRows, keyFn, elId, nameFn, noShare) {
   const buildMap = rows => {
     const m = {};
     rows.forEach(r => {
@@ -4375,6 +4414,13 @@ function renderGroupTable(currRows, prevRows, keyFn, elId, nameFn) {
     });
   const hasPrev = prevRows.length > 0;
   const el = document.getElementById(elId); if (!el) return;
+  const cmpLbl = { '7':'전주 대비', '14':'2주 전 대비', month:'전월 대비' }[_trendPeriodMode] || '비교기간 대비';
+  // ▲6% 처럼 정수 %만 (비교기간에 없던 매체는 신규)
+  const pctTxt = (c, p) => {
+    if (!p) return c ? '<span style="font-weight:700;color:#ef4444;">신규</span>' : '';
+    const v = Math.round((c - p) / p * 100);
+    return `<span style="font-weight:700;color:${v >= 0 ? '#ef4444' : '#3b82f6'};">${v >= 0 ? '▲' : '▼'}${Math.abs(v)}%</span>`;
+  };
   const th = (label) => hasPrev
     ? `<th style="text-align:right;padding:6px 10px;font-size:11px;font-weight:600;color:#64748b;white-space:nowrap;">${label}<div style="font-size:9px;color:#94a3b8;font-weight:400;margin-top:1px;">(비교기간)</div></th>`
     : `<th style="text-align:right;padding:6px 10px;font-size:11px;font-weight:600;color:#64748b;white-space:nowrap;">${label}</th>`;
@@ -4385,18 +4431,20 @@ function renderGroupTable(currRows, prevRows, keyFn, elId, nameFn) {
     <table style="width:100%; border-collapse:collapse; font-size:12px; table-layout:auto;">
       <thead><tr style="border-bottom:2px solid #f1f5f9;">
         <th style="text-align:left;padding:6px 10px;font-size:11px;font-weight:600;color:#64748b;">이름</th>
-        ${th('거래금액')}${th('수량')}${th('주문')}
-        <th style="text-align:right;padding:6px 10px;font-size:11px;font-weight:600;color:#64748b;white-space:nowrap;">비중</th>
-        ${hasPrev ? '<th style="text-align:right;padding:6px 10px;font-size:11px;font-weight:600;color:#64748b;white-space:nowrap;">증감</th>' : ''}
+        ${th('거래금액')}${noShare ? '' : th('수량')}${th('주문')}
+        ${noShare ? '' : '<th style="text-align:right;padding:6px 10px;font-size:11px;font-weight:600;color:#64748b;white-space:nowrap;">비중</th>'}
+        ${hasPrev ? `<th style="text-align:right;padding:6px 10px;font-size:11px;font-weight:600;color:#64748b;white-space:nowrap;">${noShare ? '금액 ' + cmpLbl : '증감'}</th>` : ''}
+        ${hasPrev && noShare ? `<th style="text-align:right;padding:6px 10px;font-size:11px;font-weight:600;color:#64748b;white-space:nowrap;">주문 ${cmpLbl}</th>` : ''}
       </tr></thead>
       <tbody>${items.map((it,i) => `
         <tr style="border-bottom:1px solid #f8fafc;">
           <td style="padding:8px 10px;font-size:12px;color:#1e293b;font-weight:${i<3?'600':'400'};max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${(nameFn||String)(it.key)}">${(nameFn||String)(it.key)}</td>
           <td style="padding:8px 10px;text-align:right;font-size:12px;line-height:1.5;" class="num">${stackCell(it.amt, it.hasPrev?it.pAmt:null, v=>v.toLocaleString()+'원')}</td>
-          <td style="padding:8px 10px;text-align:right;font-size:12px;line-height:1.5;" class="num">${stackCell(it.qty, it.hasPrev?it.pQty:null, v=>v.toLocaleString())}</td>
+          ${noShare ? '' : `<td style="padding:8px 10px;text-align:right;font-size:12px;line-height:1.5;" class="num">${stackCell(it.qty, it.hasPrev?it.pQty:null, v=>v.toLocaleString())}</td>`}
           <td style="padding:8px 10px;text-align:right;font-size:12px;line-height:1.5;" class="num">${stackCell(it.orders, it.hasPrev?it.pOrders:null, v=>v.toLocaleString())}</td>
-          <td style="padding:8px 10px;text-align:right;font-size:11px;color:#64748b;white-space:nowrap;">${(it.amt/total*100).toFixed(1)}%</td>
-          ${hasPrev ? `<td style="padding:8px 10px;text-align:right;font-size:11px;white-space:nowrap;">${fmtChange(it.amt, it.pAmt)||'<span style="color:#cbd5e1">-</span>'}</td>` : ''}
+          ${noShare ? '' : `<td style="padding:8px 10px;text-align:right;font-size:11px;color:#64748b;white-space:nowrap;">${(it.amt/total*100).toFixed(1)}%</td>`}
+          ${hasPrev ? `<td style="padding:8px 10px;text-align:right;font-size:${noShare?12:11}px;white-space:nowrap;">${(noShare ? pctTxt : fmtChange)(it.amt, it.pAmt)||'<span style="color:#cbd5e1">-</span>'}</td>` : ''}
+          ${hasPrev && noShare ? `<td style="padding:8px 10px;text-align:right;font-size:12px;white-space:nowrap;">${pctTxt(it.orders, it.pOrders)||'<span style="color:#cbd5e1">-</span>'}</td>` : ''}
         </tr>`).join('')}
       </tbody>
     </table>`;
@@ -4718,7 +4766,7 @@ function renderTrendAll() {
     if (insEl) insEl.innerHTML = html;
   })();
 
-  renderGroupTable(_trendRows, _trendPrevRows, r=>String(col(r,'매체명')||'').trim(), 'trend-all-media',    v=>MEDIA_MAP[v]||v);
+  renderGroupTable(_trendRows, _trendPrevRows, r=>String(col(r,'매체명')||'').trim(), 'trend-all-media',    v=>MEDIA_MAP[v]||v, true);
   renderGroupTable(_trendRows, _trendPrevRows, r=>String(col(r,'공급사')||'').trim(), 'trend-all-supplier');
   renderGroupTable(_trendRows, _trendPrevRows, r=>String(col(r,'브랜드')||'').trim(),  'trend-all-brand');
   renderSupplierMediaMatrix(_trendRows, 'trend-all-matrix');

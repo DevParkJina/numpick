@@ -4403,8 +4403,8 @@ function renderKpiCards(elId, cards) {
 }
 
 // 칸 이름 눌러 복사 (보고 시트 줄만, 위에서부터 한 줄씩)
-let _grpCols = null;
-function _grpCopyCol(k) { if (_grpCols) _copyText(_grpCols[k].join('\n')); }
+const _grpCols = {}; // 표 id → { amt, qty, orders, chg }
+function _grpCopyCol(id, k) { if (_grpCols[id]) _copyText(_grpCols[id][k].join('\n')); }
 
 // fixedKeys: 이 순서로 줄 고정(0이어도 남김), 나머지는 아래에 금액 순 + 칸 이름 누르면 고정 줄만 복사
 function renderGroupTable(currRows, prevRows, keyFn, elId, nameFn, noShare, fixedKeys) {
@@ -4442,13 +4442,13 @@ function renderGroupTable(currRows, prevRows, keyFn, elId, nameFn, noShare, fixe
     const v = Math.round((c - p) / p * 100);
     return `<span style="font-weight:700;color:${v >= 0 ? '#ef4444' : '#3b82f6'};">${v >= 0 ? '▲' : '▼'}${Math.abs(v)}%</span>`;
   };
-  if (fixedKeys) {
-    const fx = items.slice(0, fixedKeys.length);
+  if (noShare) { // 브랜드·매체 표: 칸 이름 눌러 복사 (고정 줄이 있으면 그 줄만, 아니면 보이는 순서대로)
+    const fx = fixedKeys ? items.slice(0, fixedKeys.length) : items;
     const chg = it => { if (!it.pAmt) return '-%'; const v = Math.round((it.amt - it.pAmt) / it.pAmt * 100); return (v >= 0 ? '▲' : '▼') + Math.abs(v) + '%'; };
-    _grpCols = { amt: fx.map(it => Math.round(it.amt)), qty: fx.map(it => it.qty), orders: fx.map(it => it.orders), chg: fx.map(chg) };
+    _grpCols[elId] = { amt: fx.map(it => Math.round(it.amt)), qty: fx.map(it => it.qty), orders: fx.map(it => it.orders), chg: fx.map(chg) };
   }
-  const clk = k => fixedKeys ? ` onclick="_grpCopyCol('${k}')" title="눌러서 복사" ` : '';
-  const thSt = `text-align:right;padding:6px 10px;font-size:11px;font-weight:600;color:${fixedKeys ? '#4f46e5' : '#64748b'};white-space:nowrap;${fixedKeys ? 'cursor:pointer;text-decoration:underline dotted;' : ''}`;
+  const clk = k => noShare ? ` onclick="_grpCopyCol('${elId}','${k}')" title="눌러서 복사" ` : '';
+  const thSt = `text-align:right;padding:6px 10px;font-size:11px;font-weight:600;color:${noShare ? '#4f46e5' : '#64748b'};white-space:nowrap;${noShare ? 'cursor:pointer;text-decoration:underline dotted;' : ''}`;
   const th = (label, k) => hasPrev
     ? `<th ${clk(k)} style="${thSt}">${label}<div style="font-size:9px;color:#94a3b8;font-weight:400;margin-top:1px;">(비교기간)</div></th>`
     : `<th ${clk(k)} style="${thSt}">${label}</th>`;
@@ -4793,7 +4793,6 @@ function renderTrendAll() {
     if (insEl) insEl.innerHTML = html;
   })();
 
-  _grpCols = null;
   if (_trendBugoSort()) // 부고답례몰: 시트 줄 단위로 매체 합침
     renderGroupTable(_trendRows, _trendPrevRows, r=>{ const c = String(col(r,'매체명')||'').trim(); return _bugoGroupOf(c) || c; }, 'trend-all-media', v=>MEDIA_MAP[v]||v, true, BUGO_ROWS.map(x=>x[0]));
   else

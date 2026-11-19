@@ -1542,6 +1542,12 @@ const MEDIA_CAT = {
   '자체몰': ['devnium', 'md_devnium', 'ium', 'tium', 'telent', 'talent'],
 };
 const _mediaCatOf = code => Object.keys(MEDIA_CAT).find(c => MEDIA_CAT[c].includes(code)) || 'API';
+// 부고답례몰 보고 순서 (우리부고_자체답례 → 삼가 → 의전나라 → 아이리스 → 첫장 → 이엔씨 → 국민부고 → 하나부고 → 우리토탈(코드 미정) → 다솜 → 꽃길 → 사하구민 → 그리온), 목록에 없는 매체는 뒤에
+const BUGO_ORDER = ['md_wooribugo', 'samga', 'md_samga', 'md_fdnara', 'iris', 'md_iris', 'cheotjang', 'md_cheotjang', 'md_enccompany',
+  'kookminbugo', 'md_kookminbugo', 'raon_hana', 'dasom', 'flowergil', 'md_sahaguminfh', 'md_grion'];
+const _bugoRank = code => { const i = BUGO_ORDER.indexOf(code); return i < 0 ? 999 : i; };
+// 대분류가 부고답례몰이면 보고 순서, 아니면 null (호출부 기본 정렬)
+const _trendBugoSort = () => (document.getElementById('trend-filter-cat') || {}).value === '부고답례몰' ? (a, b) => _bugoRank(a) - _bugoRank(b) : null;
 let _mediaCat = '';
 function setMediaCat(btn) {
   _mediaCat = btn.dataset.cat;
@@ -3915,7 +3921,7 @@ function trendBuildMediaOpts() {
   const cat = document.getElementById('trend-filter-cat').value;
   const sel = document.getElementById('trend-filter-media'), cur = sel.value;
   const medias = [...new Set(salesData.map(r => String(col(r,'매체명')||'').trim()).filter(Boolean))]
-    .filter(m => !cat || _mediaCatOf(m) === cat).sort();
+    .filter(m => !cat || _mediaCatOf(m) === cat).sort().sort(_trendBugoSort() || undefined);
   sel.innerHTML = '<option value="">전체</option>' + medias.map(v => `<option value="${v}">${MEDIA_MAP[v] || v}</option>`).join('');
   sel.value = medias.includes(cur) ? cur : '';
 }
@@ -3930,7 +3936,8 @@ function copyTrendMedia() {
     const on = String(col(r,'주문번호')||'').trim();
     if (on) a.orders.add(on);
   });
-  const lines = Object.entries(m).sort((a,b) => b[1].amt - a[1].amt)
+  const bs = _trendBugoSort();
+  const lines = Object.entries(m).sort((a,b) => b[1].amt - a[1].amt).sort((a,b) => bs ? bs(a[0], b[0]) : 0)
     .map(([k,a]) => `${MEDIA_MAP[k] || k}\t${Math.round(a.amt)}\t${a.orders.size}`);
   if (!lines.length) return _regToast('복사할 데이터가 없어요');
   _copyText('매체\t거래금액\t주문 수\n' + lines.join('\n'));
@@ -4407,7 +4414,8 @@ function renderGroupTable(currRows, prevRows, keyFn, elId, nameFn, noShare) {
   const curr  = buildMap(currRows);
   const prev  = buildMap(prevRows);
   const total = Object.values(curr).reduce((s,v) => s+v.amt, 0) || 1;
-  const items = Object.values(curr).sort((a,b) => b.amt-a.amt).slice(0,10)
+  const bs = elId === 'trend-all-media' && _trendBugoSort(); // 부고답례몰: 보고 순서로 전체 매체
+  const items = (bs ? Object.values(curr).sort((a,b) => b.amt-a.amt).sort((a,b) => bs(a.key, b.key)) : Object.values(curr).sort((a,b) => b.amt-a.amt).slice(0,10))
     .map(it => {
       const p = prev[it.key];
       return { ...it, orders:it.orders.size, pAmt:p?p.amt:0, pQty:p?p.qty:0, pOrders:p?p.orders.size:0, hasPrev:!!p };

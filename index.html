@@ -6858,9 +6858,9 @@ async function stReconExport(key) {
 
   // ── 원인별 시트 (확인 필요 먼저)
   const COLS = [['더 많은 쪽', 10], ['차이 (+공급사/−늄픽)', 16],
-    ['주문번호', 22], ['상품코드', 16], ['상품명', 40], ['수신자번호', 14], ['발송일시', 17], ['사용일시', 17], ['금액', 12],
-    ['거래번호', 28], ['상품코드', 18], ['사용일시', 17], ['금액', 12]];
-  const S0 = 3, S1 = 9, O0 = 10, O1 = 13; // 공급사 칸 C~I, 늄픽 칸 J~M
+    ['TR_ID', 24], ['주문번호', 22], ['상품코드', 16], ['상품명', 40], ['수신자번호', 14], ['발송일시', 17], ['사용일시', 17], ['금액', 12],
+    ['공급사거래번호', 24], ['거래번호', 28], ['주문번호', 20], ['수신번호', 14], ['상품코드', 18], ['사용일시', 17], ['금액', 12]];
+  const S0 = 3, S1 = 10, O0 = 11, O1 = 17; // 공급사 칸 C~J, 늄픽 칸 K~Q (검색용 TR_ID·공급사거래번호·수신번호 포함)
   groups.forEach(([, list]) => list.forEach(([k, c]) => {
     const ws = wb.addWorksheet(sheetName(c), { views: [{ state: 'frozen', ySplit: 3, showGridLines: false }] });
     ws.columns = COLS.map(([, width]) => ({ width }));
@@ -6878,9 +6878,9 @@ async function stReconExport(key) {
       const so = s ? s.amt : 0, ou = o && k !== 'month' ? o.unit : 0, df = N(so - ou);
       tot += df;
       const r = ws.addRow([side(df), df,
-        sr ? String(col(sr, '주문번호') || '').replace(/^'/, '') : '', s ? s.code : '', String((sr && col(sr, '상품명')) || (or && col(or, '상품명')) || ''),
-        s ? s.phone : _stMaskPhone(col(or, '수신번호')), sr ? dt(col(sr, '발송일자')) : '', sr ? dt(col(sr, '교환일자')) : '', s ? N(so) : null,
-        or ? String(col(or, '거래번호') || '') : '', or ? String(col(or, '상품코드') || '') : '', or ? dt(col(or, '사용일')) : '', o && k !== 'month' ? N(ou) : null]); // 사용한 달이 다름: 늄픽은 다른 달 정산이라 이 달 금액 칸은 비움
+        s ? s.trx : '', sr ? String(col(sr, '주문번호') || '').replace(/^'/, '') : '', s ? s.code : '', String((sr && col(sr, '상품명')) || (or && col(or, '상품명')) || ''),
+        s ? s.phone : '', sr ? dt(col(sr, '발송일자')) : '', sr ? dt(col(sr, '교환일자')) : '', s ? N(so) : null,
+        or ? String(col(or, '공급사거래번호') || '') : '', or ? String(col(or, '거래번호') || '') : '', or ? String(col(or, '주문번호') || '') : '', or ? String(col(or, '수신번호') || '') : '', or ? String(col(or, '상품코드') || '') : '', or ? dt(col(or, '사용일')) : '', o && k !== 'month' ? N(ou) : null]); // 사용한 달이 다름: 늄픽은 다른 달 정산이라 이 달 금액 칸은 비움
       [S1, O1].forEach(i => r.getCell(i).numFmt = WON); r.getCell(2).numFmt = SGN;
       if (df > 0) for (let i = S0; i <= S1; i++) r.getCell(i).fill = HL;
       if (df < 0) for (let i = O0; i <= O1; i++) r.getCell(i).fill = HL;

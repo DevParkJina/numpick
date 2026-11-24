@@ -1075,12 +1075,10 @@
       <span style="font-size:13px; font-weight:600; color:#334155;">정산월</span>
       <select id="st-month" onchange="stRender()" style="padding:7px 12px; border:1px solid #e2e8f0; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:13px;"></select>
       <div style="flex:1;"></div>
-      <button onclick="stExport()" style="padding:8px 18px; background:#0f172a; color:white; border:none; border-radius:9px; font-family:'Noto Sans KR',sans-serif; font-size:12px; font-weight:600; cursor:pointer;">정산서 엑셀 (전체)</button>
     </div>
     <div id="st-kpi" style="display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:12px; margin-bottom:16px;"></div>
     <div id="st-unmatched" style="display:none; background:#f8fafc; border:1px solid #e2e8f0; color:#475569; border-radius:10px; padding:10px 14px; font-size:12px; margin-bottom:16px;"></div>
     <div id="st-cards" style="display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:14px; margin-bottom:16px;"></div>
-    <div id="st-detail"></div>
   </div>
   </div>
 </div>
@@ -6499,7 +6497,6 @@ function switchSettleTab(t) {
 // ── 정산: 공급사 정산 (발송내역 중 쿠폰상태 '사용' 건을 사용일 월로 묶고, 발송내역 공급단가로 정산)
 let _stPins = null;          // 발송내역 행 (재발송 중복 제거 후)
 let _stDup = 0;              // 제거된 재발송 중복 건수
-const _stOpen = new Set();   // 상품별 펼친 공급사
 
 let _stPinName = '';         // 올린 발송내역 파일 이름
 
@@ -6561,7 +6558,6 @@ function _stSetPins(rows, name) {
   _stPins = [...uniq.values(), ...noKey];
   _stDup = rows.length - _stPins.length;
   _stPinName = name;
-  _stOpen.clear();
 }
 function _stSetStmt(key, rows, name) {
   const keys = rows.length ? Object.keys(rows[0]).map(k => k.trim()) : [];
@@ -6651,8 +6647,8 @@ function stRender(resetMonth) {
   if (keep) sel.value = keep;
   document.getElementById('st-result').style.display = 'block';
 
-  const kpi = document.getElementById('st-kpi'), cards = document.getElementById('st-cards'), detail = document.getElementById('st-detail'), um = document.getElementById('st-unmatched');
-  const empty = msg => { kpi.innerHTML = ''; um.style.display = 'none'; detail.innerHTML = ''; cards.innerHTML = `<div class="card" style="grid-column:1/-1; padding:30px; text-align:center; color:#94a3b8;">${msg}</div>`; };
+  const kpi = document.getElementById('st-kpi'), cards = document.getElementById('st-cards'), um = document.getElementById('st-unmatched');
+  const empty = msg => { kpi.innerHTML = ''; um.style.display = 'none'; cards.innerHTML = `<div class="card" style="grid-column:1/-1; padding:30px; text-align:center; color:#94a3b8;">${msg}</div>`; };
   if (!months.length) return empty(`쿠폰상태가 '사용'인 건이 없어요`);
   if (!_stPins.some(r => _stPinSup(r) && _parsePrice(col(r, '공급단가')))) return empty('발송내역에 공급단가·공급사상품코드가 없어요 — 최신 발송내역을 올려 주세요');
 
@@ -6675,9 +6671,9 @@ function stRender(resetMonth) {
   const line = (label, val, style) => `<div style="display:flex; justify-content:space-between; gap:10px; padding:5px 0; font-size:13px; ${style || ''}"><span style="color:#64748b;">${label}</span><span>${val}</span></div>`;
   const rcs = sups.map(s => _stRecon(month, s.name));
   cards.innerHTML = sups.map((s, i) => {
-    const rc = rcs[i], open = _stOpen.has(s.name);
+    const rc = rcs[i];
     const diff = rc ? rc.supTot - rc.ourTot : 0;
-    return `<div class="card" style="padding:16px 18px; ${open ? 'border:2px solid #6366f1;' : ''}">
+    return `<div class="card" style="padding:16px 18px;">
       <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
         <span style="font-size:15px; font-weight:700; color:#0f172a;">${_csEscAttr(s.name)}</span>
         <span style="font-size:11px; color:#94a3b8;">${s.prods.size}개 상품</span>
@@ -6686,27 +6682,9 @@ function stRender(resetMonth) {
       ${rc ? line('정산서', `${rc.supCnt.toLocaleString()}건 · ${Math.round(rc.supTot).toLocaleString()}원`)
           + line('차이', `<strong style="color:${!Math.round(diff) ? '#0f172a' : '#4f46e5'};">${diff > 0 ? '+' : ''}${Math.round(diff).toLocaleString()}원</strong>`, 'border-top:1px solid #f1f5f9; margin-top:4px; padding-top:8px;')
         : line('정산서', '<span style="color:#cbd5e1;">아직 안 올림</span>')}
-      <div style="display:flex; gap:6px; margin-top:12px; flex-wrap:wrap;">
-        <button onclick="stExport(${i})" style="${btn}">엑셀</button>
-        <button onclick="stToggle(${i})" style="${btn} margin-left:auto; ${open ? 'background:#eef2ff; color:#4338ca; border-color:#c7d2fe;' : ''}">상세 ${open ? '▲' : '▼'}</button>
-      </div>
+      ${rc ? `<div style="margin-top:12px;"><button onclick="stReconExport('${_csEscAttr(s.name)}')" style="${btn} width:100%;">대사 엑셀</button></div>` : ''}
     </div>`;
   }).join('');
-
-  // 상세: 펼친 공급사만 — 정산서 비교(있으면) + 상품별 목록
-  const th = 'padding:7px 12px; font-size:11px; color:#64748b; text-align:right; border-bottom:1px solid #e2e8f0;';
-  detail.innerHTML = sups.map((s, i) => !_stOpen.has(s.name) ? '' : `<div class="card" style="padding:16px 20px; margin-bottom:16px;">
-    <div style="font-size:14px; font-weight:700; color:#0f172a; margin-bottom:12px;">${_csEscAttr(s.name)} 상세</div>
-    ${rcs[i] ? _stReconHtml(rcs[i], s.name) : ''}
-    <div style="overflow-x:auto; margin-top:${rcs[i] ? 16 : 0}px;"><table style="width:100%; border-collapse:collapse; font-size:12px; color:#475569;">
-      <thead><tr><th style="${th} text-align:left;">상품</th><th style="${th}">공급단가</th><th style="${th}">사용 건수</th><th style="${th}">정산금액</th></tr></thead>
-      <tbody>${[...s.prods.values()].sort((a, b) => b.amt - a.amt).map(p => `<tr style="border-bottom:1px solid #f1f5f9;">
-        <td style="padding:6px 12px;"><span style="font-family:monospace; color:#94a3b8;">${_csEscAttr(p.code)}</span> ${_csEscAttr(p.name)}</td>
-        <td style="padding:6px 12px; text-align:right;">${p.unit.toLocaleString()}</td>
-        <td style="padding:6px 12px; text-align:right;">${p.cnt.toLocaleString()}</td>
-        <td style="padding:6px 12px; text-align:right;">${p.amt.toLocaleString()}</td></tr>`).join('')}</tbody>
-    </table></div></div>`).join('');
-  stRender._sups = sups;
 }
 
 // ════════════════════════════════════════════════════
@@ -6810,30 +6788,6 @@ function _stRecon(month, key) {
     ourTot += o.unit; add('ourOnly', -o.unit, { o });
   });
   return { supName, supTot, ourTot, cats, supCnt: sup.length };
-}
-
-// 공급사 상세 안의 정산서 비교 (rc = _stRecon 결과)
-function _stReconHtml(rc, key) {
-  const N = v => Math.abs(Math.round(v)).toLocaleString();
-  const diff = rc.supTot - rc.ourTot;
-  const tile = (label, val, hl) => `<div style="flex:1; min-width:170px; padding:12px 16px; border-radius:10px; ${hl ? 'border:2px solid #6366f1;' : 'border:1px solid #e2e8f0;'}"><div style="font-size:12px; color:#64748b; margin-bottom:4px;">${label}</div><div style="font-size:18px; font-weight:700; color:${hl ? '#4f46e5' : '#0f172a'};">${val}</div></div>`;
-  const all = Object.entries(rc.cats).filter(([k, c]) => c.cnt && k !== 'same').map(([, c]) => c);
-  const ok = all.filter(c => c.ok), chk = all.filter(c => !c.ok);
-  const cnt = l => l.reduce((a, c) => a + c.cnt, 0);
-  return `<div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
-      <div style="font-size:14px; font-weight:700; color:#0f172a;">공급사 정산서와 비교${rc.supName ? ' · ' + _csEscAttr(rc.supName) : ''}</div>
-      <div style="flex:1;"></div>
-      <button onclick="stReconExport('${_csEscAttr(key)}')" style="padding:6px 14px; background:white; color:#334155; border:1px solid #e2e8f0; border-radius:8px; font-size:12px; font-weight:600; cursor:pointer;">대사 엑셀</button>
-    </div>
-    <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:14px;">
-      ${tile('공급사가 청구한 금액', N(rc.supTot) + '원')}${tile('늄픽이 계산한 금액', N(rc.ourTot) + '원')}${tile(!Math.round(diff) ? '차이' : diff > 0 ? '차이 · 공급사가 더 많음' : '차이 · 늄픽이 더 많음', N(diff) + '원', true)}
-    </div>
-    <div style="background:#f8fafc; border-radius:10px; padding:12px 16px; font-size:13px; color:#334155; line-height:1.7;">
-      <strong>${rc.cats.same.cnt.toLocaleString()}건</strong>은 금액이 똑같아요.
-      나머지 중 <strong>${cnt(ok).toLocaleString()}건</strong>은 공급사와 계산 기준이 달라서 생긴 차이라 문제 없고,
-      ${chk.length ? `<strong>${cnt(chk).toLocaleString()}건</strong>은 확인이 필요해요. 원인별·건별 내용은 대사 엑셀에서 볼 수 있어요.` : '확인할 건 없어요.'}
-    </div>
-`;
 }
 
 // 대사 엑셀 — 요약 시트(금액 비교 + 원인별 합계) + 원인별 시트(건별)
@@ -6944,45 +6898,6 @@ async function stReconExport(key) {
   a.download = `공급사대사_${month}${rc.supName ? '_' + rc.supName : ''}.xlsx`;
   a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
   _regToast(`${a.download} 다운로드 완료`);
-}
-
-function stToggle(i) {
-  const s = (stRender._sups || [])[i];
-  if (!s) return;
-  _stOpen.has(s.name) ? _stOpen.delete(s.name) : _stOpen.add(s.name);
-  stRender();
-}
-
-// 정산서 엑셀: Sheet1(원본 발송내역, 재발송 제외) / 요약 / 상품별 / 건별 시트 (i가 있으면 그 공급사만)
-function stExport(i) {
-  if (!_stPins) return _regToast('발송내역과 상품목록을 모두 올려주세요', 1);
-  const month = document.getElementById('st-month').value;
-  let { sups, unmatched } = _stCompute(month);
-  if (i != null) { const name = (stRender._sups || [])[i]?.name; sups = sups.filter(s => s.name === name); unmatched = []; }
-  if (!sups.length) return _regToast('정산할 건이 없어요', 1);
-
-  const wb = XLSX.utils.book_new();
-  const add = (name, aoa, widths) => { const ws = XLSX.utils.aoa_to_sheet(aoa); ws['!cols'] = widths.map(w => ({ wch: w })); XLSX.utils.book_append_sheet(wb, ws, name); };
-  const tot = sups.reduce((a, s) => [a[0] + s.cnt, a[1] + s.list, a[2] + s.amt], [0, 0, 0]);
-  // Sheet1: 올린 발송내역 그대로의 열로, 이 공급사·정산월 사용 건만 (같은 쿠폰번호 재발송은 1건)
-  const raw = sups.flatMap(s => s.raw);
-  const head = Object.keys(_stPins[0] || {});
-  const ws0 = XLSX.utils.json_to_sheet(raw.map(r => Object.fromEntries(head.map(k => [k, r[k] instanceof Date ? _stDateText(r[k]) : r[k]]))), { header: head });
-  ws0['!cols'] = head.map(k => ({ wch: /상품명/.test(k) ? 40 : /번호|일|시간/.test(k) ? 20 : 12 }));
-  XLSX.utils.book_append_sheet(wb, ws0, 'Sheet1');
-  add('요약', [['정산월', '공급사', '사용 건수', '소비자가 합계', '정산금액'],
-    ...sups.map(s => [month, s.name, s.cnt, s.list, s.amt]),
-    ...(sups.length > 1 ? [['', '합계', ...tot]] : [])], [10, 16, 10, 14, 18]);
-  add('상품별', [['공급사', '상품코드', '상품명', '소비자가', '공급단가', '사용 건수', '정산금액'],
-    ...sups.flatMap(s => [...s.prods.values()].sort((a, b) => b.amt - a.amt).map(p => [s.name, p.code, p.name, p.list, p.unit, p.cnt, p.amt]))],
-    [12, 18, 40, 10, 12, 10, 18]);
-  add('건별', [['공급사', '공급사거래번호', '거래번호', '주문번호', '상품코드', '상품명', '쿠폰번호', '사용일', '소비자가', '공급단가'],
-    ...sups.flatMap(s => s.rows)], [12, 22, 18, 18, 18, 40, 22, 20, 10, 12]);
-  if (unmatched.length) add('미매칭', [['상품코드', '상품명', '사용 건수'], ...unmatched.map(u => [u.code, u.name, u.cnt])], [18, 40, 10]);
-
-  const fname = `공급사정산_${month}${i != null ? '_' + sups[0].name : ''}.xlsx`;
-  XLSX.writeFile(wb, fname);
-  _regToast(`${fname} 다운로드 완료`);
 }
 
 // 엑셀 읽는 동안 '불러오는 중' 표시 — 큰 파일은 몇 초 걸려서 멈춘 것처럼 보이지 않게

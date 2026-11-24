@@ -1056,13 +1056,13 @@
   </div>
 
   <!-- ── 공급사 정산 ── -->
-  <div id="st-panel-sup">
+  <div id="st-panel-sup" ondragover="event.preventDefault(); document.getElementById('st-drop').style.borderColor='#6366f1';" ondragleave="if (!this.contains(event.relatedTarget)) document.getElementById('st-drop').style.borderColor='';" ondrop="event.preventDefault(); document.getElementById('st-drop').style.borderColor=''; stLoadFiles(event.dataTransfer.files);">
   <!-- 공급사 정산: 발송내역(pinList) 중 쿠폰상태 '사용' 건 · 사용일 월 기준 · 공급가 = 소비자가 × (1 + 공급수수료%) -->
-  <div class="card" ondragover="event.preventDefault(); this.style.borderColor='#6366f1';" ondragleave="this.style.borderColor='';" ondrop="event.preventDefault(); this.style.borderColor=''; stLoadFiles(event.dataTransfer.files);" style="padding:20px 24px; margin-bottom:20px; border:2px dashed #e2e8f0;">
+  <div class="card" id="st-drop" style="padding:20px 24px; margin-bottom:20px; border:2px dashed #e2e8f0;">
     <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:14px;">
       <div>
         <div style="font-size:14px; font-weight:700; color:#0f172a;">파일 올리기</div>
-        <div style="font-size:12px; color:#94a3b8; margin-top:2px;">발송내역 · KT 정산서 · 미스틱 정산서를 한 번에 끌어다 놓거나 골라 주세요 — 어떤 파일인지 알아서 구분해요</div>
+        <div style="font-size:12px; color:#94a3b8; margin-top:2px;">발송내역 · KT 정산서 · 미스틱 정산서를 화면 아무 데나 한 번에 끌어다 놓거나 골라 주세요 — 어떤 파일인지 알아서 구분해요</div>
       </div>
       <input type="file" id="st-file" accept=".csv,.xlsx,.xls" multiple style="display:none" onchange="stLoadFiles(this.files); this.value=''">
       <button onclick="document.getElementById('st-file').click()" style="margin-left:auto; padding:8px 18px; background:#4f46e5; color:white; border:none; border-radius:9px; font-family:'Noto Sans KR',sans-serif; font-size:13px; font-weight:600; cursor:pointer;">파일 선택</button>

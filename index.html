@@ -6608,6 +6608,24 @@ async function _stLoadProds(file) {
 
 function _stIsUsed(r) { return String(col(r, '쿠폰상태') || '').trim() === '사용'; }
 
+// 발송내역에 공급단가·공급사상품코드가 있으면 그걸로 정산 (상품목록 없어도 됨)
+// 공급사상품코드 G로 시작 = KT, 숫자로 시작 = 미스틱
+function _stPinSup(r) {
+  const c = String(col(r, '공급사상품코드') || '').trim().replace(/^'/, '');
+  return !c ? '' : /^G/i.test(c) ? 'KT' : /^\d/.test(c) ? '미스틱' : '';
+}
+// 한 건의 정산 정보: unit = 정산금액(발송내역 공급단가 → 없으면 상품목록 공급가), calc = 수수료 기준(상품목록 있을 때만 계산)
+function _stUnitOf(r) {
+  const code = String(col(r, '상품코드') || '').trim();
+  const p = _stProds && (_stProds.get(code) || _stProds.get(code.replace(/^0+/, '')));
+  const pinUnit = _parsePrice(col(r, '공급단가')), pinSup = _stPinSup(r);
+  if (!p && !(pinUnit && pinSup)) return null;
+  const list = (p && p.소비자가) || _parsePrice(col(r, '정상가'));
+  const calc = p ? Math.floor(list * (1 + p.수수료 / 100) + 1e-6) : pinUnit;
+  const unit = pinUnit || (p && p.공급가) || calc;
+  return { code, p, list, calc, unit, fee: p ? p.수수료 : '', sup: pinSup || (p && p.공급사) || '(공급사 없음)', bad: !!p && unit !== calc };
+}
+
 function _stMonth(v) {
   if (v instanceof Date) return isNaN(v) ? '' : `${v.getFullYear()}-${String(v.getMonth() + 1).padStart(2, '0')}`;
   const s = String(v || '').trim();
@@ -6631,31 +6649,28 @@ function _stCompute(month) {
     if (!_stIsUsed(r) || _stMonth(col(r, '사용일')) !== month) return;
     const code = String(col(r, '상품코드') || '').trim();
     const name = String(col(r, '상품명') || '').trim();
-    const p = _stProds && (_stProds.get(code) || _stProds.get(code.replace(/^0+/, '')));
-    if (!p) {
+    const u0 = _stUnitOf(r);
+    if (!u0) {
       const u = unmatched.get(code) || { code, name, cnt: 0 };
       u.cnt++; unmatched.set(code, u);
       return;
     }
-    // 정산은 등록된 공급가 그대로 — 소비자가(할인 상품은 할인가) × (1 + 수수료%) 버림과 안 맞으면 등록 오류일 수 있어 '수정 필요'로 표시
-    const list = p.소비자가 || _parsePrice(col(r, '정상가'));
-    const calc = Math.floor(list * (1 + p.수수료 / 100) + 1e-6);
-    const unit = p.공급가 || calc; // 정산금액 = 우리 DB 등록 공급가, camt = 수수료 기준
-    const bad = !!p.공급가 && p.공급가 !== calc;
+    // 정산금액 = 발송내역 공급단가(없으면 등록 공급가) — 상품목록이 있으면 소비자가 × (1 + 수수료%) 버림과 비교해 안 맞으면 '공급가 확인'
+    const { p, list, calc, unit, bad } = u0;
     if (bad) {
-      const d = diffs.get(code) || { code, name, list, fee: p.수수료, calc, goods: p.공급가, cnt: 0 };
+      const d = diffs.get(code) || { code, name, list, fee: p.수수료, calc, goods: unit, cnt: 0 };
       d.cnt++; diffs.set(code, d);
     }
-    const supName = p.공급사 || '(공급사 없음)';
+    const supName = u0.sup;
     let s = sups.get(supName);
     if (!s) sups.set(supName, s = { name: supName, cnt: 0, list: 0, amt: 0, camt: 0, prods: new Map(), rows: [], raw: [] });
     s.cnt++; s.list += list; s.amt += unit; s.camt += calc;
     const key = code + '|' + list;
-    const pr = s.prods.get(key) || { code, name, list, fee: p.수수료, unit, calc, bad, cnt: 0, amt: 0, camt: 0 };
+    const pr = s.prods.get(key) || { code, name, list, fee: u0.fee, unit, calc, bad, cnt: 0, amt: 0, camt: 0 };
     pr.cnt++; pr.amt += unit; pr.camt += calc; s.prods.set(key, pr);
     s.raw.push(r); // 원본 발송내역 행 (재발송 제외된 것)
     s.rows.push([supName, String(col(r, '거래번호') || ''), String(col(r, '주문번호') || ''), code, name,
-      String(col(r, '쿠폰번호') || ''), _stDateText(col(r, '사용일')), list, p.수수료, calc, unit, bad ? '공급가 확인' : '']);
+      String(col(r, '쿠폰번호') || ''), _stDateText(col(r, '사용일')), list, u0.fee, calc, unit, bad ? '공급가 확인' : '']);
   });
   return { sups: [...sups.values()].sort((a, b) => b.amt - a.amt), unmatched: [...unmatched.values()], diffs: [...diffs.values()] };
 }
@@ -6675,7 +6690,7 @@ function stRender(resetMonth) {
     tbody.innerHTML = `<tr><td colspan="7" style="padding:30px; text-align:center; color:#94a3b8;">쿠폰상태가 '사용'인 건이 없어요</td></tr>`;
     return;
   }
-  if (!_stProds) {
+  if (!_stProds && !_stPins.some(r => _stPinSup(r) && _parsePrice(col(r, '공급단가')))) {
     kpi.innerHTML = ''; um.style.display = 'none';
     tbody.innerHTML = `<tr><td colspan="7" style="padding:30px; text-align:center; color:#94a3b8;">② 상품목록을 올리면 공급사별 정산금액이 계산돼요</td></tr>`;
     return;
@@ -6813,19 +6828,21 @@ async function stLoadSupStatement(file) {
 }
 
 function _stRecon(month) {
-  if (!_stSupRows || !_stPins || !_stProds) return null;
-  // 우리 사용 건 (재발송 제외된 _stPins) → (수신번호 마스킹 | 공급사 상품코드)로 묶음
-  const ours = [], idx = new Map();
+  if (!_stSupRows || !_stPins) return null;
+  // 매칭: 발송내역 공급사거래번호 = 공급사 정산서 TR_ID (둘 다 있으면). 없으면 예전 방식 (수신번호 마스킹 | 공급사 상품코드 + 가까운 시각)
+  const byTrx = _stPins.some(r => String(col(r, '공급사거래번호') || '').trim()) && _stSupRows.some(r => String(col(r, 'TR_ID') || '').trim());
+  if (!byTrx && !_stProds) return null;
+  const ours = [], idx = new Map(), trx = new Map();
   _stPins.forEach(r => {
     if (!_stIsUsed(r)) return;
-    const code = String(col(r, '상품코드') || '').trim();
-    const p = _stProds.get(code) || _stProds.get(code.replace(/^0+/, ''));
-    if (!p || !p.공급사코드) return;
-    const list = p.소비자가 || _parsePrice(col(r, '정상가'));
-    const unit = p.공급가 || Math.floor(list * (1 + p.수수료 / 100) + 1e-6);
-    const o = { r, sup: p.공급사, unit, t: _stTime(col(r, '사용일')), m: _stMonth(col(r, '사용일')) };
+    const u = _stUnitOf(r);
+    if (!u) return;
+    const o = { r, sup: u.sup, unit: u.unit, t: _stTime(col(r, '사용일')), m: _stMonth(col(r, '사용일')) };
     ours.push(o);
-    const k = _stMaskPhone(col(r, '수신번호')) + '|' + p.공급사코드;
+    if (byTrx) { const id = String(col(r, '공급사거래번호') || '').trim(); if (id) trx.set(id, o); return; }
+    const sc = u.p && u.p.공급사코드;
+    if (!sc) return;
+    const k = _stMaskPhone(col(r, '수신번호')) + '|' + sc;
     if (!idx.has(k)) idx.set(k, []);
     idx.get(k).push(o);
   });
@@ -6835,11 +6852,14 @@ function _stRecon(month) {
     ret: /반품/.test(String(col(r, '핀상태') || '')),
     phone: String(col(r, '수신자번호') || '').trim(),
     code: String(col(r, '상품코드') || '').replace(/^'/, '').trim(),
+    trx: String(col(r, 'TR_ID') || '').replace(/^'/, '').trim(),
   })).filter(s => s.m === month);
-  // 시각이 가장 가까운 짝부터 1:1
+  // 시각이 가장 가까운 짝부터 1:1 (거래번호 매칭이면 같은 번호끼리 — 점수 0)
   const cand = [];
   sup.forEach((s, si) => {
-    if (s.ret || s.t == null) return;
+    if (s.ret) return;
+    if (byTrx) { const o = trx.get(s.trx); if (o) cand.push([o.m === month ? 0 : 1e11, si, o]); return; }
+    if (s.t == null) return;
     // 같은 달에 쓴 우리 건을 먼저 짝지음 (다른 달 건은 같은 달 후보가 없을 때만)
     (idx.get(s.phone + '|' + s.code) || []).forEach(o => { if (o.t != null) cand.push([Math.abs(o.t - s.t) + (o.m === month ? 0 : 1e11), si, o]); });
   });

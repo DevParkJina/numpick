@@ -7531,10 +7531,6 @@ function _csShow() {
     });
     _pfSetAll('cs-date-from', 'cs-date-to', minD ? fmtDate(minD) : '', maxD ? fmtDate(maxD) : '');
 
-    // 신규 양식엔 핵심키워드가 없어 '그룹'(상담분류)을 대신 쓰므로 차트 제목도 맞춰준다
-    const isNewFmt = _csData.some(r => r._csNewFmt);
-    document.getElementById('cs-keyword-title').textContent = isNewFmt ? '상담분류(그룹) TOP 15' : '핵심키워드 TOP 15';
-
     renderCsDashboard();
 }
 
@@ -7782,6 +7778,9 @@ function renderCsDashboard() {
   const infoRows = dateFiltered.filter(r => _csIsInfoOnly(r));
   const rows = dateFiltered.filter(r => !_csIsInfoOnly(r));
   const totalCount = dateFiltered.length; // 상담 + 안내청취 전체
+  // 9월까지(기존 양식)는 핵심키워드, 10월부터(신규 양식)는 그룹 — 조회기간에 들어온 양식에 맞춰 제목 표시
+  const hasNew = dateFiltered.some(r => r._csNewFmt), hasOld = dateFiltered.some(r => !r._csNewFmt);
+  document.getElementById('cs-keyword-title').textContent = (hasNew && hasOld ? '핵심키워드(~9월) · 그룹(10월~)' : hasNew ? '상담분류(그룹)' : '핵심키워드') + ' TOP 15';
 
   document.getElementById('cs-summary').textContent = `${totalCount.toLocaleString()}건`;
 

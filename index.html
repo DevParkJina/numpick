@@ -1058,26 +1058,16 @@
   <!-- ── 공급사 정산 ── -->
   <div id="st-panel-sup">
   <!-- 공급사 정산: 발송내역(pinList) 중 쿠폰상태 '사용' 건 · 사용일 월 기준 · 공급가 = 소비자가 × (1 + 공급수수료%) -->
-  <div class="card" style="padding:24px 28px; margin-bottom:20px;">
-    <div style="font-size:14px; font-weight:700; color:#0f172a; margin-bottom:16px; display:flex; align-items:center; gap:8px;">파일 업로드 <span style="font-size:12px; font-weight:400; color:#94a3b8;">사용된 쿠폰만 · 사용한 날짜로 월 구분 · 재발송(같은 쿠폰번호)은 1건으로</span></div>
-    <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:12px;">
-      <div ondragover="event.preventDefault();" ondrop="event.preventDefault(); const f=event.dataTransfer.files[0]; if(f) stLoadPins(f);" style="border:1px solid #e2e8f0; background:#f8fafc; border-radius:10px; padding:14px 16px; display:flex; align-items:center; justify-content:space-between; gap:10px;">
-        <div style="min-width:0;">
-          <div style="font-size:13px; font-weight:700; color:#0f172a;">① 발송내역 (pinList)</div>
-          <div id="st-pin-info" style="font-size:12px; color:#94a3b8; margin-top:3px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">파일을 올려주세요</div>
-        </div>
-        <input type="file" id="st-pin-file" accept=".xlsx,.xls" style="display:none" onchange="stLoadPins(this.files[0]); this.value=''">
-        <button onclick="document.getElementById('st-pin-file').click()" style="padding:7px 14px; background:white; color:#334155; border:1px solid #e2e8f0; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:12px; font-weight:600; cursor:pointer; white-space:nowrap;">업로드</button>
+  <div class="card" ondragover="event.preventDefault(); this.style.borderColor='#6366f1';" ondragleave="this.style.borderColor='';" ondrop="event.preventDefault(); this.style.borderColor=''; stLoadFiles(event.dataTransfer.files);" style="padding:20px 24px; margin-bottom:20px; border:2px dashed #e2e8f0;">
+    <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:14px;">
+      <div>
+        <div style="font-size:14px; font-weight:700; color:#0f172a;">파일 올리기</div>
+        <div style="font-size:12px; color:#94a3b8; margin-top:2px;">발송내역 · KT 정산서 · 미스틱 정산서를 한 번에 끌어다 놓거나 골라 주세요 — 어떤 파일인지 알아서 구분해요</div>
       </div>
-      <div ondragover="event.preventDefault();" ondrop="event.preventDefault(); stLoadSupStatement(event.dataTransfer.files);" style="border:1px solid #e2e8f0; background:#f8fafc; border-radius:10px; padding:14px 16px; display:flex; align-items:center; justify-content:space-between; gap:10px;">
-        <div style="min-width:0;">
-          <div style="font-size:13px; font-weight:700; color:#0f172a;">② 공급사 정산서 (대사용, 선택)</div>
-          <div id="st-sup-info" style="font-size:12px; color:#94a3b8; margin-top:3px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">KT CSV · 미스틱 엑셀 — 여러 개 한 번에, 공급사 자동 구분</div>
-        </div>
-        <input type="file" id="st-sup-file" accept=".csv,.xlsx,.xls" multiple style="display:none" onchange="stLoadSupStatement(this.files); this.value=''">
-        <button onclick="document.getElementById('st-sup-file').click()" style="padding:7px 14px; background:white; color:#334155; border:1px solid #e2e8f0; border-radius:8px; font-family:'Noto Sans KR',sans-serif; font-size:12px; font-weight:600; cursor:pointer; white-space:nowrap;">업로드</button>
-</div>
+      <input type="file" id="st-file" accept=".csv,.xlsx,.xls" multiple style="display:none" onchange="stLoadFiles(this.files); this.value=''">
+      <button onclick="document.getElementById('st-file').click()" style="margin-left:auto; padding:8px 18px; background:#4f46e5; color:white; border:none; border-radius:9px; font-family:'Noto Sans KR',sans-serif; font-size:13px; font-weight:600; cursor:pointer;">파일 선택</button>
     </div>
+    <div id="st-files" style="display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:8px;"></div>
   </div>
 
   <div id="st-result" style="display:none;">
@@ -1960,8 +1950,8 @@ async function saveToStorage(tab) {
       // 정산: 올린 파일들(발송내역·상품목록·공급사 정산서·매체 주문)과 화면 문구를 같이 저장
       if (!_stPins && !Object.keys(_stStmts).length && !_mdRows) { alert('저장할 데이터가 없습니다.'); return false; }
       const info = id => document.getElementById(id).innerHTML;
-      await saveDB('settle', { pins: _stPins, dup: _stDup, stmts: _stStmts, md: _mdRows, mdName: _mdFileName,
-        info: { pin: info('st-pin-info'), sup: info('st-sup-info'), md: info('md-file-info') } });
+      await saveDB('settle', { pins: _stPins, dup: _stDup, stmts: _stStmts, pinName: _stPinName, md: _mdRows, mdName: _mdFileName,
+        info: { md: info('md-file-info') } });
     }
     return true;
   } catch(e) {
@@ -2078,15 +2068,16 @@ async function loadFromStorage() {
   }
 
   // 정산
+  _stFilesRender(); // 올린 파일 현황 (아무것도 없으면 '필수/선택' 안내)
   if (isLocked('settle')) {
     try {
       const d = await loadDB('settle');
       if (d) {
         _stPins = d.pins || null; _stDup = d.dup || 0;
-        Object.assign(_stStmts, d.stmts || {});
+        Object.assign(_stStmts, d.stmts || {}); _stPinName = d.pinName || '';
         _mdRows = d.md || null; _mdFileName = d.mdName || '';
         const set = (id, html) => { if (html) document.getElementById(id).innerHTML = html; };
-        set('st-pin-info', d.info.pin); set('st-sup-info', d.info.sup); set('md-file-info', d.info.md);
+        set('md-file-info', d.info.md); _stFilesRender();
         if (_mdRows) { const hit = Object.keys(_mdCfgAll()).find(n => _mdFileName.includes(n)); if (hit) mdFillMedia(hit); mdRender(true); }
         if (_stPins) stRender(true);
         updateLockBtn('settle', true);
@@ -6510,33 +6501,86 @@ let _stPins = null;          // 발송내역 행 (재발송 중복 제거 후)
 let _stDup = 0;              // 제거된 재발송 중복 건수
 const _stOpen = new Set();   // 상품별 펼친 공급사
 
-async function stLoadPins(file) {
-  if (!file) return;
-  return _withLoading('발송내역 불러오는 중…', () => _stLoadPins(file));
-}
-async function _stLoadPins(file) {
-  try {
-    const rows = await _csReadRows(file);
-    if (!rows) return;
-    if (!rows.length || !Object.keys(rows[0]).some(k => k.trim() === '쿠폰상태'))
-      return _regToast('쿠폰상태 컬럼이 없어요. 발송내역(pinList) 파일인지 확인해 주세요', 1);
-    // 재발송 제외: 같은 쿠폰번호(핀번호)는 1건만 (사용 건이 있으면 그걸 남김)
-    const uniq = new Map(), noKey = [];
-    rows.forEach(r => {
-      const k = String(col(r, '쿠폰번호') || '').trim();
-      if (!k) return noKey.push(r);
-      const prev = uniq.get(k);
-      if (!prev || (!_stIsUsed(prev) && _stIsUsed(r))) uniq.set(k, r);
-    });
-    _stPins = [...uniq.values(), ...noKey];
-    _stDup = rows.length - _stPins.length;
-    _stOpen.clear();
-    const used = _stPins.filter(_stIsUsed).length;
-    document.getElementById('st-pin-info').innerHTML = `<strong style="color:#0f172a;">${_csEscAttr(file.name)}</strong> · ${_stPins.length.toLocaleString()}건 (사용 ${used.toLocaleString()}건)`
-      + (_stDup ? ` · <span style="color:#475569;">재발송 중복 ${_stDup.toLocaleString()}건 제외</span>` : '');
+let _stPinName = '';         // 올린 발송내역 파일 이름
+
+// 파일은 한 곳에서: 발송내역(pinList) · KT 정산서(CSV) · 미스틱 정산내역서(엑셀)를 내용으로 자동 구분해서 받음
+async function stLoadFiles(files) {
+  files = files instanceof File ? [files] : [...(files || [])];
+  if (!files.length) return;
+  return _withLoading('파일 불러오는 중…', async () => {
+    let want = null; // 정산서가 한 달짜리면 그 달로 정산월 맞춤
+    for (const file of files) {
+      try { want = (await _stLoadOne(file)) || want; } catch (err) { _regToast(file.name + ' 읽기 오류: ' + err.message, 1); }
+    }
+    _stFilesRender();
+    if (!_stPins) return;
     stRender(true);
+    const sel = document.getElementById('st-month');
+    if (want && sel.value !== want && [...sel.options].some(o => o.value === want)) { sel.value = want; stRender(); }
     await autoSaveIfLocked('settle');
-  } catch (err) { _regToast('발송내역 읽기 오류: ' + err.message, 1); }
+  });
+}
+async function _stLoadOne(file) {
+  if (/\.csv$/i.test(file.name)) { // KT 거래요약(핀그룹) CSV — UTF-8, 깨지면 EUC-KR
+    const buf = await file.arrayBuffer();
+    let text;
+    try { text = new TextDecoder('utf-8', { fatal: true }).decode(buf); } catch { text = new TextDecoder('euc-kr').decode(buf); }
+    const wb = XLSX.read(text.replace(/^\uFEFF/, ''), { type: 'string', raw: true });
+    return _stSetStmt('KT', XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { defval: '', raw: false }), file.name);
+  }
+  // 미스틱 정산내역서: '정산내역' 시트, 1행은 합계라 2행이 머리글 → KT 정산서와 같은 열 이름으로 바꿈
+  let mystic = false;
+  const rows = await _csReadRows(file, wb => {
+    const ws = wb.Sheets['정산내역'];
+    if (!ws) return null;
+    mystic = true;
+    return XLSX.utils.sheet_to_json(ws, { defval: '', range: 1 });
+  });
+  if (!rows) return;
+  if (mystic) {
+    const t = v => v instanceof Date ? _stDateText(v) : String(v || '');
+    return _stSetStmt('미스틱', rows.filter(r => String(col(r, 'TR_ID')).trim()).map(r => ({
+      TR_ID: String(col(r, 'TR_ID')).trim(),
+      교환일자: t(col(r, '쿠폰 상태 변경 일시')), 발송일자: t(col(r, '쿠폰 발행 일시')),
+      정산대상금액: col(r, '정산 가격'), 상품코드: String(col(r, '미스틱박스 상품코드')).trim(),
+      핀상태: /취소/.test(String(col(r, '쿠폰 상태'))) ? '반품' : '교환', 수신자번호: '',
+    })), file.name);
+  }
+  if (rows.length && Object.keys(rows[0]).some(k => k.trim() === '쿠폰상태')) return _stSetPins(rows, file.name);
+  _regToast(`${file.name} — 어떤 파일인지 모르겠어요. 발송내역(pinList), KT 정산서 CSV, 미스틱 정산내역서만 올릴 수 있어요`, 1);
+}
+function _stSetPins(rows, name) {
+  // 재발송 제외: 같은 쿠폰번호(핀번호)는 1건만 (사용 건이 있으면 그걸 남김)
+  const uniq = new Map(), noKey = [];
+  rows.forEach(r => {
+    const k = String(col(r, '쿠폰번호') || '').trim();
+    if (!k) return noKey.push(r);
+    const prev = uniq.get(k);
+    if (!prev || (!_stIsUsed(prev) && _stIsUsed(r))) uniq.set(k, r);
+  });
+  _stPins = [...uniq.values(), ...noKey];
+  _stDup = rows.length - _stPins.length;
+  _stPinName = name;
+  _stOpen.clear();
+}
+function _stSetStmt(key, rows, name) {
+  const keys = rows.length ? Object.keys(rows[0]).map(k => k.trim()) : [];
+  if (!['교환일자', '정산대상금액', '상품코드'].every(k => keys.includes(k)))
+    return void _regToast(`${name} — 공급사 정산서 양식이 아니에요. KT는 거래요약(핀그룹) CSV, 미스틱은 정산내역서 엑셀이에요`, 1);
+  _stStmts[key] = { rows, name };
+  const months = [...new Set(rows.map(r => _stYm(col(r, '교환일자'))).filter(Boolean))];
+  return months.length === 1 ? months[0] : null;
+}
+// 올린 파일 현황: 발송내역(필수) · KT / 미스틱 정산서(선택)
+function _stFilesRender() {
+  const chip = (ok, title, sub) => `<div style="display:flex; align-items:center; gap:8px; padding:8px 12px; border-radius:10px; border:1px solid ${ok ? '#c7d2fe' : '#e2e8f0'}; background:${ok ? '#eef2ff' : 'white'}; min-width:0;">
+    <span style="font-size:13px; color:${ok ? '#4f46e5' : '#cbd5e1'};">${ok ? '✔' : '○'}</span>
+    <div style="min-width:0;"><div style="font-size:12px; font-weight:700; color:${ok ? '#0f172a' : '#94a3b8'};">${title}</div>
+    <div style="font-size:11px; color:#94a3b8; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:260px;">${sub}</div></div></div>`;
+  const used = _stPins ? _stPins.filter(_stIsUsed).length : 0;
+  document.getElementById('st-files').innerHTML =
+    chip(!!_stPins, '발송내역', _stPins ? `${_csEscAttr(_stPinName)} · 사용 ${used.toLocaleString()}건${_stDup ? ` · 재발송 ${_stDup.toLocaleString()}건 제외` : ''}` : '필수')
+    + ['KT', '미스틱'].map(k => chip(!!_stStmts[k], `${k} 정산서`, _stStmts[k] ? `${_csEscAttr(_stStmts[k].name)} · ${_stStmts[k].rows.length.toLocaleString()}건` : '선택 — 올리면 차이 비교')).join('');
 }
 
 function _stIsUsed(r) { return String(col(r, '쿠폰상태') || '').trim() === '사용'; }
@@ -6643,7 +6687,6 @@ function stRender(resetMonth) {
           + line('차이', `<strong style="color:${!Math.round(diff) ? '#0f172a' : '#4f46e5'};">${diff > 0 ? '+' : ''}${Math.round(diff).toLocaleString()}원</strong>`, 'border-top:1px solid #f1f5f9; margin-top:4px; padding-top:8px;')
         : line('정산서', '<span style="color:#cbd5e1;">아직 안 올림</span>')}
       <div style="display:flex; gap:6px; margin-top:12px; flex-wrap:wrap;">
-        <button onclick="document.getElementById('st-sup-file').click()" style="${btn}">정산서 올리기</button>
         <button onclick="stExport(${i})" style="${btn}">엑셀</button>
         <button onclick="stToggle(${i})" style="${btn} margin-left:auto; ${open ? 'background:#eef2ff; color:#4338ca; border-color:#c7d2fe;' : ''}">상세 ${open ? '▲' : '▼'}</button>
       </div>
@@ -6674,13 +6717,6 @@ function stRender(resetMonth) {
 // ════════════════════════════════════════════════════
 // 공급사별 정산서: { KT: { rows, name }, 미스틱: { rows, name } } — 올린 파일을 보고 공급사 자동 구분, 다른 공급사 것은 그대로 둠
 const _stStmts = {};
-function _stStmtInfo() {
-  const ks = Object.keys(_stStmts);
-  document.getElementById('st-sup-info').innerHTML = ks.length
-    ? ks.map(k => `<strong style="color:#0f172a;">${_csEscAttr(k)}</strong> ${_stStmts[k].rows.length.toLocaleString()}건`).join(' · ')
-    : 'KT CSV · 미스틱 엑셀 — 여러 개 한 번에, 공급사 자동 구분';
-}
-
 function _stDigits(v) { return String(v == null ? '' : v).replace(/\D/g, ''); }
 function _stYm(v) { const d = _stDigits(v); return d.length >= 6 ? d.slice(0, 4) + '-' + d.slice(4, 6) : ''; }
 function _stTime(v) {
@@ -6692,53 +6728,6 @@ function _stTime(v) {
 }
 function _stMaskPhone(v) { const d = _stDigits(v); return d.length >= 10 ? d.slice(0, 5) + '***' + d.slice(-3) : d; }
 
-async function stLoadSupStatement(files) {
-  files = files instanceof File ? [files] : [...(files || [])];
-  if (!files.length) return;
-  return _withLoading('공급사 정산서 불러오는 중…', async () => {
-    for (const file of files) { try { await _stLoadOneStmt(file); } catch (err) { _regToast('공급사 정산서 읽기 오류: ' + err.message, 1); } }
-    _stStmtInfo();
-    stRender();
-    await autoSaveIfLocked('settle');
-  });
-}
-async function _stLoadOneStmt(file) {
-      let rows, key = 'KT';
-      if (/\.csv$/i.test(file.name)) {
-        const buf = await file.arrayBuffer();
-        let text;
-        try { text = new TextDecoder('utf-8', { fatal: true }).decode(buf); } catch { text = new TextDecoder('euc-kr').decode(buf); }
-        const wb = XLSX.read(text.replace(/^﻿/, ''), { type: 'string', raw: true });
-        rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { defval: '', raw: false });
-      } else {
-        // 미스틱 정산내역서: '정산내역' 시트, 1행은 합계라 2행이 머리글 → KT 정산서와 같은 열 이름으로 바꿈
-        let mystic = false;
-        rows = await _csReadRows(file, wb => {
-          const ws = wb.Sheets['정산내역'];
-          if (!ws) return null;
-          mystic = true;
-          return XLSX.utils.sheet_to_json(ws, { defval: '', range: 1 });
-        });
-        if (!rows) return;
-        if (mystic) {
-          key = '미스틱';
-          const t = v => v instanceof Date ? _stDateText(v) : String(v || '');
-          rows = rows.filter(r => String(col(r, 'TR_ID')).trim()).map(r => ({
-            TR_ID: String(col(r, 'TR_ID')).trim(),
-            교환일자: t(col(r, '쿠폰 상태 변경 일시')), 발송일자: t(col(r, '쿠폰 발행 일시')),
-            정산대상금액: col(r, '정산 가격'), 상품코드: String(col(r, '미스틱박스 상품코드')).trim(),
-            핀상태: /취소/.test(String(col(r, '쿠폰 상태'))) ? '반품' : '교환', 수신자번호: '',
-          }));
-        }
-      }
-      const keys = rows.length ? Object.keys(rows[0]).map(k => k.trim()) : [];
-      if (!['교환일자', '정산대상금액', '수신자번호', '상품코드'].every(k => keys.includes(k)))
-        return _regToast('공급사 정산서 양식이 아니에요. KT는 거래요약(핀그룹) CSV, 미스틱은 정산내역서 엑셀을 올려 주세요', 1);
-      _stStmts[key] = { rows, name: file.name };
-      const months = [...new Set(rows.map(r => _stYm(col(r, '교환일자'))).filter(Boolean))].sort();
-      const sel = document.getElementById('st-month'); // 정산서 달로 정산월 맞춤
-      if (months.length === 1 && [...sel.options].some(o => o.value === months[0])) sel.value = months[0];
-}
 
 function _stRecon(month, key) {
   const stmt = _stStmts[key];

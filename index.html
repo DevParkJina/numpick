@@ -1070,7 +1070,7 @@
       </div>
       <div ondragover="event.preventDefault();" ondrop="event.preventDefault(); const f=event.dataTransfer.files[0]; if(f) stLoadProds(f);" style="border:1px solid #e2e8f0; background:#f8fafc; border-radius:10px; padding:14px 16px; display:flex; align-items:center; justify-content:space-between; gap:10px;">
         <div style="min-width:0;">
-          <div style="font-size:13px; font-weight:700; color:#0f172a;">② 상품목록 (공급수수료)</div>
+          <div style="font-size:13px; font-weight:700; color:#0f172a;">② 상품목록 (공급수수료, 선택)</div>
           <div id="st-prod-info" style="font-size:12px; color:#94a3b8; margin-top:3px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">파일을 올려주세요</div>
         </div>
         <input type="file" id="st-prod-file" accept=".csv,.xlsx,.xls" style="display:none" onchange="stLoadProds(this.files[0]); this.value=''">
@@ -6694,7 +6694,7 @@ function stRender(resetMonth) {
   }
   if (!_stProds && !_stPins.some(r => _stPinSup(r) && _parsePrice(col(r, '공급단가')))) {
     kpi.innerHTML = ''; um.style.display = 'none';
-    tbody.innerHTML = `<tr><td colspan="7" style="padding:30px; text-align:center; color:#94a3b8;">② 상품목록을 올리면 공급사별 정산금액이 계산돼요</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="7" style="padding:30px; text-align:center; color:#94a3b8;">발송내역에 공급단가가 없어요 — 최신 발송내역을 올리거나 ② 상품목록을 올려 주세요</td></tr>`;
     return;
   }
 

@@ -6609,10 +6609,12 @@ async function _stLoadProds(file) {
 function _stIsUsed(r) { return String(col(r, '쿠폰상태') || '').trim() === '사용'; }
 
 // 발송내역에 공급단가·공급사상품코드가 있으면 그걸로 정산 (상품목록 없어도 됨)
-// 공급사상품코드 G로 시작 = KT, 숫자로 시작 = 미스틱
+// 공급사 구분: 공급사발급코드도 있으면 머니콘, 공급사상품코드 G로 시작 = KT, 00으로 시작 = 미스틱
 function _stPinSup(r) {
   const c = String(col(r, '공급사상품코드') || '').trim().replace(/^'/, '');
-  return !c ? '' : /^G/i.test(c) ? 'KT' : /^\d/.test(c) ? '미스틱' : '';
+  if (!c) return '';
+  if (String(col(r, '공급사발급코드') || '').trim()) return '머니콘';
+  return /^G/i.test(c) ? 'KT' : /^00/.test(c) ? '미스틱' : '';
 }
 // 한 건의 정산 정보: unit = 정산금액(발송내역 공급단가 → 없으면 상품목록 공급가), calc = 수수료 기준(상품목록 있을 때만 계산)
 function _stUnitOf(r) {

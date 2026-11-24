@@ -7650,7 +7650,7 @@ function _csNormalizeRow(r) {
     ...r,
     '날짜': inAt,
     '시작시간': inTime,
-    '종료시간': col(r, '통화 종료시간'),
+    '종료시간': col(r, '통화 종료시간', '통화 종료'),
     '핵심키워드': col(r, '핵심키워드') || col(r, '그룹'),
     '통화시간': col(r, '통화 시간'),
     _csNewFmt: true,

@@ -2087,7 +2087,8 @@ async function loadFromStorage() {
   if (isLocked('cs')) {
     try {
       const data = await loadDB('cs');
-      if (data && data.length) { _csData = data; _csShow(); updateLockBtn('cs', true); }
+      // 예전에 변환 없이 저장된 신규 양식도 그룹 → 키워드로
+      if (data && data.length) { _csData = data.map(_csNormalizeRow); _csShow(); updateLockBtn('cs', true); }
     } catch(e) { localStorage.removeItem(_SK.cs.lock); }
   }
 

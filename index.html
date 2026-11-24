@@ -860,13 +860,13 @@
     <div id="cs-upload-area" onclick="document.getElementById('cs-file').click()"
       ondragover="event.preventDefault(); this.style.borderColor='#4f46e5';"
       ondragleave="this.style.borderColor='transparent'"
-      ondrop="event.preventDefault(); this.style.borderColor='transparent'; const f=event.dataTransfer.files[0]; if(f) handleCsFile(f);"
+      ondrop="event.preventDefault(); this.style.borderColor='transparent'; handleCsFile(event.dataTransfer.files);"
       style="border:2px solid transparent; border-radius:16px; padding:80px 40px; text-align:center; background:white; box-shadow:0 1px 4px rgba(0,0,0,0.06); cursor:pointer; transition:all 0.2s;">
       <div style="font-size:44px; margin-bottom:16px;">☎️</div>
-      <div style="font-size:16px; font-weight:600; color:#374151; margin-bottom:8px;">상담 이력 엑셀 파일을 드래그하거나 클릭하세요</div>
+      <div style="font-size:16px; font-weight:600; color:#374151; margin-bottom:8px;">상담 이력 엑셀 파일을 드래그하거나 클릭하세요 (여러 개 한 번에 가능)</div>
       <div style="font-size:13px; color:#94a3b8;">기존 양식(날짜 · 시작시간 · 종료시간 · 핵심키워드) / 10월~ 신규 양식(수신목록) 모두 가능</div>
       <button type="button" style="margin-top:20px; background:#4f46e5; color:white; border:none; border-radius:10px; padding:10px 24px; font-size:13px; font-weight:600; cursor:pointer; font-family:'Noto Sans KR',sans-serif;">파일 선택</button>
-      <input type="file" id="cs-file" accept=".xlsx,.xls" style="display:none" onchange="handleCsFile(this.files[0])">
+      <input type="file" id="cs-file" accept=".xlsx,.xls" multiple style="display:none" onchange="handleCsFile(this.files); this.value=''">
     </div>
   </div>
 
@@ -895,6 +895,7 @@
       </div>
       <div style="margin-left:auto; display:flex; align-items:center; gap:14px;">
         <span id="cs-summary" style="font-size:12px; font-weight:600; color:#4f46e5; background:#eef2ff; padding:5px 12px; border-radius:20px;"></span>
+        <button onclick="document.getElementById('cs-file').click()" title="올린 데이터에 더해요 (같은 호번호는 1건)" style="font-size:12px; color:#4f46e5; background:white; border:1px solid #c7d2fe; border-radius:8px; padding:5px 12px; cursor:pointer; font-weight:600; font-family:'Noto Sans KR',sans-serif;">+ 파일 추가</button>
         <button id="lock-btn-cs" class="lock-btn" onclick="toggleLock('cs')">🔓 편집</button>
         <button onclick="resetCs()" style="font-size:12px; color:#94a3b8; background:none; border:none; cursor:pointer; font-weight:500;">초기화</button>
       </div>
@@ -7498,17 +7499,26 @@ let _csTableRows = [];
 const _csCharts = {};
 
 // 파일 읽는 동안 '불러오는 중' 표시
-function handleCsFile(file) {
-  if (!(file)) return;
-  return _withLoading('상담 이력 불러오는 중…', () => _handleCsFile(file));
+// 여러 파일을 한 번에 올리거나 나중에 '+ 파일 추가'로 올려도 기존 데이터에 합침 (같은 호번호는 1건)
+function handleCsFile(files) {
+  files = files instanceof File ? [files] : [...(files || [])];
+  if (!files.length) return;
+  return _withLoading('상담 이력 불러오는 중…', () => _handleCsFile(files));
 }
-async function _handleCsFile(file) {
-  if (!file) return;
+// 중복 판단: 호 ID(신규)·호번호(기존), 없으면 날짜+시작시간+전화번호
+const _csRowKey = r => String(col(r, '호 ID', '호번호') || '') || [col(r, '날짜'), col(r, '시작시간'), col(r, '발신번호', '고객 전화')].map(String).join('|');
+async function _handleCsFile(files) {
   try {
-    const rows = await _csReadRows(file);
-    if (!rows) return; // 비밀번호 입력 취소/불일치
-    if (!rows.length) { alert('데이터가 없습니다.'); return; }
-    _csData = rows.map(_csNormalizeRow);
+    const merged = new Map((_csData || []).map(r => [_csRowKey(r), r]));
+    const before = merged.size;
+    for (const file of files) {
+      const rows = await _csReadRows(file);
+      if (!rows) return; // 비밀번호 입력 취소/불일치
+      rows.map(_csNormalizeRow).forEach(r => merged.set(_csRowKey(r), r));
+    }
+    if (!merged.size) { alert('데이터가 없습니다.'); return; }
+    _csData = [...merged.values()];
+    _regToast(`상담 이력 ${(merged.size - before).toLocaleString()}건 추가 · 전체 ${merged.size.toLocaleString()}건`);
     _csShow();
     await autoSaveIfLocked('cs');
   } catch(e) {

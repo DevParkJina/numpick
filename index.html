@@ -6712,12 +6712,28 @@ async function stLoadSupStatement(file) {
         const wb = XLSX.read(text.replace(/^﻿/, ''), { type: 'string', raw: true });
         rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { defval: '', raw: false });
       } else {
-        rows = await _csReadRows(file);
+        // 미스틱 정산내역서: '정산내역' 시트, 1행은 합계라 2행이 머리글 → KT 정산서와 같은 열 이름으로 바꿈
+        let mystic = false;
+        rows = await _csReadRows(file, wb => {
+          const ws = wb.Sheets['정산내역'];
+          if (!ws) return null;
+          mystic = true;
+          return XLSX.utils.sheet_to_json(ws, { defval: '', range: 1 });
+        });
         if (!rows) return;
+        if (mystic) {
+          const t = v => v instanceof Date ? _stDateText(v) : String(v || '');
+          rows = rows.filter(r => String(col(r, 'TR_ID')).trim()).map(r => ({
+            TR_ID: String(col(r, 'TR_ID')).trim(),
+            교환일자: t(col(r, '쿠폰 상태 변경 일시')), 발송일자: t(col(r, '쿠폰 발행 일시')),
+            정산대상금액: col(r, '정산 가격'), 상품코드: String(col(r, '미스틱박스 상품코드')).trim(),
+            핀상태: /취소/.test(String(col(r, '쿠폰 상태'))) ? '반품' : '교환', 수신자번호: '',
+          }));
+        }
       }
       const keys = rows.length ? Object.keys(rows[0]).map(k => k.trim()) : [];
       if (!['교환일자', '정산대상금액', '수신자번호', '상품코드'].every(k => keys.includes(k)))
-        return _regToast('교환일자·정산대상금액·수신자번호·상품코드 열이 없어요. 공급사 건별 정산서(거래요약 핀그룹 CSV)인지 확인해 주세요', 1);
+        return _regToast('공급사 정산서 양식이 아니에요. KT는 거래요약(핀그룹) CSV, 미스틱은 정산내역서 엑셀을 올려 주세요', 1);
       _stSupRows = rows;
       _stSupName = file.name;
       const months = [...new Set(rows.map(r => _stYm(col(r, '교환일자'))).filter(Boolean))].sort();
@@ -6790,10 +6806,12 @@ function _stRecon(month) {
   const retKey = s => s.phone + '|' + s.code + '|' + Math.abs(s.amt);
   const retLeft = new Map();
   sup.forEach(s => { if (s.ret && s.amt) retLeft.set(retKey(s), (retLeft.get(retKey(s)) || 0) + 1); });
+  const retTrx = new Set(sup.filter(s => s.ret && s.trx).map(s => s.trx)); // 미스틱 교환 취소는 원래 건과 TR_ID가 같음
   sup.forEach(s => {
     supTot += s.amt;
     const o = s.o, row = { s, o };
     if (s.ret) return add('ret', s.amt, row);
+    if (!o && s.trx && retTrx.has(s.trx)) return add('ret', s.amt, row);
     if (!o && retLeft.get(retKey(s)) > 0) { retLeft.set(retKey(s), retLeft.get(retKey(s)) - 1); return add('ret', s.amt, row); }
     if (!o) return add('supOnly', s.amt, row);
     if (o.m !== month) return add('month', s.amt, row);
@@ -7524,7 +7542,7 @@ function _csShow() {
 // 저장소가 공개라 비밀번호를 코드에 넣지 않고, 처음 한 번 입력받아 이 브라우저(localStorage)에 기억해둔다.
 const _CS_PW_KEY = 'numpick_cs_pw';
 
-async function _csReadRows(file) {
+async function _csReadRows(file, pick) {
   let buf = new Uint8Array(await file.arrayBuffer());
   if (_csIsEncrypted(buf)) {
     let saved = '';
@@ -7545,7 +7563,7 @@ async function _csReadRows(file) {
     buf = out;
   }
   const wb = XLSX.read(buf, { type: 'array', cellDates: true });
-  return XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { defval: '' });
+  return (pick && pick(wb)) || XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { defval: '' }); // pick: 다른 시트를 읽을 때
 }
 
 function _csIsEncrypted(buf) {
